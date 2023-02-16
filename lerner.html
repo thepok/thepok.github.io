@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spelling Aid</title>
+	    <style>
+        body {
+            font-size: 24px;
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            text-align: center;
+            color: #008CBA;
+        }
+
+        #buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 20px;
+        }
+
+        button {
+            margin: 10px;
+            padding: 20px;
+            font-size: 24px;
+            background-color: #008CBA;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #006080;
+        }
+
+        #result {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 32px;
+            font-weight: bold;
+            color: #008CBA;
+        }
+
+        #answer-count {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 20px;
+            color: #008CBA;
+        }
+
+        #answer-count span {
+            font-weight: bold;
+        }
+    </style>
+    <script>
+        let correct = 0;
+        let incorrect = 0;
+        let correct_word = "";
+		var words = ["Sonne", "rennen", "toll", "drei", "neun", "Vogel", "wir", "braun", "acht", "Baum", "elf", "zwei", "Hut", "sieben", "Apfel", "vier", "sehen", "sechs", "Wiese", "zehn", "eins", "klein"];
+
+        function create_buttons(words) {
+            let buttons_div = document.getElementById("buttons");
+            buttons_div.innerHTML = "";
+            let correct_button_index = Math.floor(Math.random() * 10);
+			let correct_word_buffer=words[Math.floor(Math.random() * words.length)]
+            for (let i = 0; i < 10; i++) {
+                let button = document.createElement("button");
+                button.addEventListener("click", function() { check_answer(this); });
+                let text = (i === correct_button_index) ? correct_word_buffer : misspell_word(correct_word_buffer);
+                button.textContent = text;
+                buttons_div.appendChild(button);
+            }
+            correct_word = document.getElementById("buttons").childNodes[correct_button_index].textContent;
+        }
+
+        function update_buttons(words) {
+            let correct_button_index = Math.floor(Math.random() * 10);
+			let correct_word_buffer=words[Math.floor(Math.random() * words.length)]
+            for (let i = 0; i < 10; i++) {
+                let button = document.getElementById("buttons").childNodes[i];
+                let text = (i === correct_button_index) ? correct_word_buffer : misspell_word(correct_word_buffer);
+                button.textContent = text;
+            }
+            correct_word = document.getElementById("buttons").childNodes[correct_button_index].textContent;
+        }
+
+        function misspell_word(word) {
+            let random_index = Math.floor(Math.random() * word.length);
+            let random_char = String.fromCharCode(Math.floor(Math.random() * 26) + 97);
+            let misspelled_word = word.slice(0, random_index) + random_char + word.slice(random_index + 1);
+            return misspelled_word;
+        }
+
+        function check_answer(answer) {
+            if (answer.textContent === correct_word) {
+                correct += 1;
+                display_result("Great");
+            } else {
+                incorrect += 1;
+                display_result("Unfortunately Wrong");
+            }
+            count_answers(correct, incorrect);
+            update_buttons(words);
+        }
+
+        function display_result(result) {
+            let result_div = document.getElementById("result");
+            result_div.textContent = result;
+        }
+
+        function count_answers(correct, incorrect) {
+            document.getElementById("correct").textContent = correct;
+            document.getElementById("incorrect").textContent = incorrect;
+        }
+    </script>
+</head>
+<body onload="create_buttons(words)">
+    <h1>Spelling Aid</h1>
+    <div id="buttons"></div>
+    <div id="result"></div>
+    <div>
+        <p>Correct: <span id="correct">0</span></p>
+        <p>Incorrect: <span id="incorrect">0</span></p>
+    </div>
+</body>
+</html>
