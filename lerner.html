@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Spelling Aid</title>
+    <title>Gerne Lerner</title>
 	    <style>
         body {
-            font-size: 24px;
+            font-size: 34px;
             font-family: Arial, sans-serif;
         }
 
@@ -23,7 +23,7 @@
         button {
             margin: 10px;
             padding: 20px;
-            font-size: 24px;
+            font-size: 44px;
             background-color: #008CBA;
             color: #FFFFFF;
             border: none;
@@ -59,15 +59,16 @@
     <script>
         let correct = 0;
         let incorrect = 0;
+        let button_count = 5;
         let correct_word = "";
 		var words = ["Sonne", "rennen", "toll", "drei", "neun", "Vogel", "wir", "braun", "acht", "Baum", "elf", "zwei", "Hut", "sieben", "Apfel", "vier", "sehen", "sechs", "Wiese", "zehn", "eins", "klein"];
 
         function create_buttons(words) {
             let buttons_div = document.getElementById("buttons");
             buttons_div.innerHTML = "";
-            let correct_button_index = Math.floor(Math.random() * 10);
+            let correct_button_index = Math.floor(Math.random() * button_count);
 			let correct_word_buffer=words[Math.floor(Math.random() * words.length)]
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < button_count; i++) {
                 let button = document.createElement("button");
                 button.addEventListener("click", function() { check_answer(this); });
                 let text = (i === correct_button_index) ? correct_word_buffer : misspell_word(correct_word_buffer);
@@ -78,9 +79,9 @@
         }
 
         function update_buttons(words) {
-            let correct_button_index = Math.floor(Math.random() * 10);
+            let correct_button_index = Math.floor(Math.random() * button_count);
 			let correct_word_buffer=words[Math.floor(Math.random() * words.length)]
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < button_count; i++) {
                 let button = document.getElementById("buttons").childNodes[i];
                 let text = (i === correct_button_index) ? correct_word_buffer : misspell_word(correct_word_buffer);
                 button.textContent = text;
@@ -98,18 +99,18 @@
         function check_answer(answer) {
             if (answer.textContent === correct_word) {
                 correct += 1;
-                display_result("Great");
+                display_result("<p style='color:green;'>Richtig :)</p>");
+                update_buttons(words);
             } else {
                 incorrect += 1;
-                display_result("Unfortunately Wrong");
+                display_result("<p style='color:red;'>Leider falsch :/</p>");
             }
             count_answers(correct, incorrect);
-            update_buttons(words);
         }
 
         function display_result(result) {
             let result_div = document.getElementById("result");
-            result_div.textContent = result;
+            result_div.innerHTML = result;
         }
 
         function count_answers(correct, incorrect) {
@@ -119,12 +120,12 @@
     </script>
 </head>
 <body onload="create_buttons(words)">
-    <h1>Spelling Aid</h1>
+    <h1>Gerne Lerner</h1>
     <div id="buttons"></div>
     <div id="result"></div>
     <div>
-        <p>Correct: <span id="correct">0</span></p>
-        <p>Incorrect: <span id="incorrect">0</span></p>
+        <p>Toll: <span id="correct">0</span></p>
+        <p>Naja: <span id="incorrect">0</span></p>
     </div>
 </body>
 </html>
