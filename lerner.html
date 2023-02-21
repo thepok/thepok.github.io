@@ -92,12 +92,75 @@
             correct_word = document.getElementById("buttons").childNodes[correct_button_index].textContent;
         }
 
-        function misspell_word(word) {
+        function misspell_word_old(word) {
             let random_index = Math.floor(Math.random() * word.length);
             let random_char = String.fromCharCode(Math.floor(Math.random() * 26) + 97);
             let misspelled_word = word.slice(0, random_index) + random_char + word.slice(random_index + 1);
             return misspelled_word;
         }
+        function misspell_word(word) {
+            let misspelled_word = '';
+
+            // Loop through each character in the word
+            for (let i = 0; i < word.length; i++) {
+                let c = word[i];
+                
+                // Randomly change m to n or n to m, and p to b or b to p
+                if (c === 'm' && Math.random() < 0.5) {
+                c = 'n';
+                } else if (c === 'n' && Math.random() < 0.5) {
+                c = 'm';
+                } else if (c === 'p' && Math.random() < 0.5) {
+                c = 'b';
+                } else if (c === 'b' && Math.random() < 0.5) {
+                c = 'p';
+                } else if (c === 't' && Math.random() < 0.5) {
+                c = 'd';
+                } else if (c === 'd' && Math.random() < 0.5) {
+                c = 't';
+                } else if (c === 'k' && Math.random() < 0.5) {
+                c = 'g';
+                } else if (c === 'g' && Math.random() < 0.5) {
+                c = 'k';
+                } else if (c === 's' && Math.random() < 0.5) {
+                c = 'z';
+                } else if (c === 'z' && Math.random() < 0.5) {
+                c = 's';
+                } else if (c === 'a' && Math.random() < 0.5) {
+                c = 'o';
+                } else if (c === 'o' && Math.random() < 0.5) {
+                c = 'a';
+                } else if (c === 'e' && Math.random() < 0.5) {
+                c = 'i';
+                } else if (c === 'i' && Math.random() < 0.5) {
+                c = 'e';
+                }
+
+
+                // Double up n, m, l, or p at random
+                if (Math.random() < 0.1 && (c === 'n' || c === 'm' || c === 'l' || c === 'p')) {
+                misspelled_word += c;
+                }
+
+                // Randomly change e to i or i to e
+                if ((c === 'e' && Math.random() < 0.1) || (c === 'i' && Math.random() < 0.1)) {
+                c = (c === 'e') ? 'i' : 'e';
+                }
+
+                // Randomly remove one of two consecutive identical letters
+                if (i > 0 && c === misspelled_word[misspelled_word.length - 1] && Math.random() < 0.5) {
+                continue;
+                }
+
+                misspelled_word += c;
+            }
+
+            if(misspelled_word === word)
+                return misspell_word(word);
+            else
+                return misspelled_word;
+        }
+
 
         function check_answer(answer) {
             if (answer.textContent === correct_word) {
