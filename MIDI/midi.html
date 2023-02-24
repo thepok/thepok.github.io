@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MIDI Keyboard App</title>
+</head>
+<body>
+  <button id="sendButton">Send MIDI Message</button>
+  <script>
+    var input = null;
+    var output = null;
+    var randomNote = 60;
+    var noteOnReceived = false;
+
+    navigator.requestMIDIAccess().then(function(midiAccess) {
+      var inputs = midiAccess.inputs;
+      var outputs = midiAccess.outputs;
+      input = inputs.values().next().value;
+      output = outputs.values().next().value;
+
+      input.onmidimessage = function(event) {
+        if (event.data[0] === 0x90 && event.data[1] === randomNote) {
+          noteOnReceived = true;
+          sendNoteOff(randomNote);
+          nextNote();
+        }
+      };
+    }).catch(function(error) {
+      console.log("Failed to access MIDI devices: " + error);
+    });
+
+    document.getElementById("sendButton").addEventListener("click", function() {
+      sendNoteOn(randomNote);
+    });
+
+    function nextNote() {
+      randomNote = Math.floor(Math.random() * (20)) + 40;
+      noteOnReceived = false;
+      sendNoteOn(randomNote);
+    }
+    function sendNoteOn(note) {
+      output.send([0x90, note, 10]); //at least one, or light on key wont turn on
+    }
+
+    function sendNoteOff(note) {
+      output.send([0x80, note, 0]);
+    }
+
+    setInterval(function() {
+      if (!noteOnReceived) {
+        sendNoteOn(randomNote);
+      }
+    }, 5000);
+  </script>
+</body>
+</html>
