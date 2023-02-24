@@ -1,0 +1,120 @@
+<html>
+
+<head>
+    <title>LAME - LanguAge Model for Everything</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>;
+
+        let lastView = "<div>Hello World</div>";
+        let lastCommand = "None";
+
+        let lastComment = "None";
+
+        function CMD(tag) {
+            lastCommand = tag;
+            generateNextView();
+        }
+        function replaceContentWith(newContent) {
+            contendElement.innerHTML = newContent;
+        }
+
+        function GetKey() {
+            var key = document.getElementById("OPEN_AI_KEY").value;
+            return "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"
+            console.log(key);
+            return key;
+        }
+
+        function GetComment() {
+            var comment = document.getElementById("comment").value;
+            console.log(comment);
+            return comment;
+        }
+
+        function GetAppDescription() {
+            var appDescription = document.getElementById("AppDescription").value;
+            console.log(appDescription);
+            return appDescription;
+        }
+
+        function generateInputString() {
+            // Get the output div
+            const outputDiv = document.getElementById("output");
+
+            // Get all the inputs in the output div
+            const inputs = outputDiv.querySelectorAll("input");
+
+            // Create an array of strings for each input
+            const inputStrings = Array.from(inputs).map((input) => {
+                const inputId = input.getAttribute("id");
+                const inputValue = input.value;
+                return `${inputId}:${inputValue}`;
+            });
+
+            // Join the array of strings with a newline character
+            const finalString = inputStrings.join("\n");
+
+            // Return the final string
+            return finalString;
+        }
+
+        function generateNextView() {
+            lastView = contendElement.innerHTML;
+            nextViewPrompt =
+                `The LLM providing the logic and the GUI providing the interface. The LLM responds to user input by replacing the Current GUI with the Next GUI. adapting the GUI.
+
+If the User wants to play a game. Create a game board. If the User wants to Chat. Create A Textinput and Output...
+
+App Description:
+
+${GetAppDescription()}
+
+Current GUI:
+${lastView}
+
+Button pressed: ${lastCommand}
+
+Text Inputs:
+${generateInputString()}
+
+If you create a Button, make the event call the Function "CMD('tag')" with an string as Paramater charictarizing the Button.
+If you create a Textinput, give it an id. You will be provided with the value of the Textinput in the next call to the LLM.
+
+Next GUI:`;
+            console.log("NextViewPromp:");
+            console.log(nextViewPrompt);
+            axios({
+                method: "POST",
+                url: "https://api.openai.com/v1/engines/text-davinci-003/completions",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GetKey()}` },
+                data: {
+                    prompt: nextViewPrompt,
+                    max_tokens: 1550,
+                    n: 1,
+                    temperature: 0.1
+                }
+            })
+                .then(response => {
+                    let result = response.data.choices[0].text
+                    console.log(result);
+                    replaceContentWith(response.data.choices[0].text);
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+        }
+    </script>
+</head>
+<div>OpenAI Key:<input type="password" id="OPEN_AI_KEY"><button onclick="generateNextView()">Test</button></div>
+<div>Comment:<input type="text" id="comment"><button onclick="generateNextView()">With Comment</button></div>
+<div>App Description:<input id="AppDescription" type="text"></div>
+<div><button onclick="generateNextView()">ReTry</button></div>
+<div id="output">
+
+</div>
+<script>
+    contendElement = document.getElementById("output");
+    replaceContentWith(lastView);
+</script>
+
+</html>
