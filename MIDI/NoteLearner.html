@@ -1,0 +1,215 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Random Note Generator</title>
+    <script src="webmidi.iife.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vexflow@4.0.3/build/cjs/vexflow.js"></script>
+
+
+    <script>
+        class MusicalNote {
+            constructor(note, accident, octave, duration) {
+                this.note = note;
+                this.accident = accident;
+                this.octave = octave;
+                this.duration = duration;
+            }
+
+            static newRandomNote(octaves){
+                const noteNames = ["C", "D", "E", "F", "G", "A", "B"];
+                const accidents = ["", "#"];
+                const noteIndex = Math.floor(Math.random() * noteNames.length);
+                const accidentIndex = 0;//Math.floor(Math.random() * accidents.length);
+                //take random elemenet from octaves array
+                const octave = octaves[Math.floor(Math.random() * octaves.length)];
+
+
+                if(noteNames[noteIndex] == "E" && accidents[accidentIndex] == "#"){
+                    noteIndex = 1;
+                    accidentIndex = 0;
+                }
+                const newNote = new MusicalNote(noteNames[noteIndex], accidents[accidentIndex], octave, "q");
+                return newNote;
+            }
+
+            asVexflow(isBreak) {
+                if(isBreak)
+                {
+                    return this.note + this.accident + this.octave + "/" + this.duration + "/r";
+                }
+                return this.note + this.accident + this.octave + "/" + this.duration;
+            }
+
+            asMidiNote() {
+                return this.note + this.accident + this.octave;
+            }
+        }
+
+        class MusicNotes {
+            constructor() {
+                this.notes = [];
+            }
+
+            addNote(newNote) {
+                this.notes.push(newNote);
+            }
+
+
+            getNotes() {
+                return this.notes;
+            }
+
+            asVexflow() {
+                const vexflowNotes = [];
+                for (const note of this.notes) {
+                    vexflowNotes.push(note.asVexflow());
+                }
+                return vexflowNotes.join(", ");
+            }
+
+            fillWithRandomQuarterNotes(octaves) {
+                for (let i = 0; i < 4; i++) {
+                    this.addNote(MusicalNote.newRandomNote(octaves));
+                }
+            }
+
+            //function that removes first note, and adds a new random not at the end. functionname is "NoteShift"
+            NoteShift(octaves) {
+                this.notes.shift();
+                this.addNote(MusicalNote.newRandomNote(octaves));
+            }
+        }
+
+        trebleOctaves = ["4", "5"];
+        bassOctaves = ["2", "3"];
+        class StaffLearning {
+
+            Correct = 0;
+            Misses = 0;
+
+            
+            draw(){
+                drawNotes(this.trebleNotes, this.bassNotes);
+            }
+
+            constructor() {
+                this.bassNotes = new MusicNotes();
+                this.bassNotes.fillWithRandomQuarterNotes(bassOctaves);
+
+                this.trebleNotes = new MusicNotes();
+                this.trebleNotes.fillWithRandomQuarterNotes(trebleOctaves);
+
+                this.draw();
+            }
+            ProcessMidiOn(note) {
+
+                //test if treble note is correct
+
+                if (note == this.trebleNotes.getNotes()[0].asMidiNote()) {
+                    
+                    let output = WebMidi.outputs[0];
+                    output.stopNote(this.trebleNotes.getNotes()[0].asMidiNote());
+                    this.Correct++;
+                    this.trebleNotes.NoteShift(trebleOctaves);
+                    this.draw()
+                    output.playNote(this.trebleNotes.getNotes()[0].asMidiNote(), { duration: 5000, attack: 0.01, release: 0.01 });
+                    
+                }
+                if(note == this.bassNotes.getNotes()[0].asMidiNote()){
+                    let output = WebMidi.outputs[0];
+                    output.stopNote(this.bassNotes.getNotes()[0].asMidiNote());
+                    this.Correct++;
+                    this.bassNotes.NoteShift(bassOctaves);
+                    this.draw()
+                    output.playNote(this.bassNotes.getNotes()[0].asMidiNote(), { duration: 5000, attack: 0.01, release: 0.01 });
+                }
+                 else {
+                    this.Misses++;
+                }
+
+                document.getElementById("stats").innerHTML = `Correct: ${this.Correct} <br> Misses: ${this.Misses}`;
+            }
+        }
+
+        function drawNotes(trebleNotes, bassNotes) {
+
+            notesTreble = trebleNotes.asVexflow();
+            notesBass = bassNotes.asVexflow();
+
+            document.getElementById('output').innerHTML = '';
+            const { Factory, EasyScore, System } = Vex.Flow;
+
+            const vf = new Factory({
+                renderer: { elementId: 'output', width: 500, height: 300 },
+            });
+
+            const score = vf.EasyScore();
+            const system = vf.System();
+
+            const staveTreble = system.addStave({
+                voices: [
+                    score.voice(score.notes(notesTreble, { stem: 'up' })),
+                ],
+            }).addClef('treble').addTimeSignature('4/4');
+
+            const staveBass = system.addStave({
+                voices: [
+                    score.voice(score.notes(notesBass, {
+                        clef: 'bass',
+                        stem: 'up'
+                    })),
+                ],
+            }).addClef('bass').addTimeSignature('4/4');
+
+            vf.draw();
+        }
+        
+
+
+    </script>
+
+
+</head>
+
+<body>
+
+    <h1>Random Note Generator</h1>
+
+    <div id="output"></div>
+    <div id="stats"></div>
+
+    <br>
+    <p>Treble Staff Line Notes von unten nach Oben: (E)ine (G)eile (B)londine (D)reht (F)ilme</p>
+    <p>Treble Staff Space Notes F A C E</p>    
+    <p>Bass Staff Line Notes von unten nach Oben: (G)anz (B)erlin (D)ankt (F)ür (A)ngebote</p>
+    <p>Bass Staff Space Notes (A)(C)(E)-(G)etränke</p>
+    <a href="https://de.wikipedia.org/wiki/Klaviatur#/media/Datei:KlaviaturMitNoten.svg">
+    <img src="KlaviaturMitNoten.svg" alt="KlaviaturMitNoten">
+    Phillip Kuhrt (Original by Sergey Pushkin) - Own work, based on: http://commons.wikimedia.org/wiki/File:Octaves-notes-ru.svg CC BY-SA 3.0
+    </a>
+    <script>
+        const App = new StaffLearning();
+
+        WebMidi
+            .enable({ sysex: true })
+            .then(onEnabled)
+            .catch(err => alert(err));
+
+        function onEnabled() {
+
+
+            const mySynth = WebMidi.inputs[0];
+            // const mySynth = WebMidi.getInputByName("TYPE NAME HERE!")
+
+            mySynth.channels[1].addListener("noteon", e => {
+                console.log("Keyboard send Note: "+e.note.identifier);
+                App.ProcessMidiOn(e.note.identifier);
+
+            });
+        }
+    </script>
+</body>
+
+</html>
