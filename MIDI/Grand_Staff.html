@@ -1,64 +1,114 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8">
-    <title>Grand Staff Example</title>
-    <script src="https://cdn.jsdelivr.net/npm/vexflow@4.0.3/build/cjs/vexflow.js"></script>
-  </head>
-  <body>
-    <canvas id="some-canvas-id"></canvas>
-    <div id="output"></div>
-    <script>
 
-        
-const { Factory, EasyScore, System } = Vex.Flow;
+<head>
+  <meta charset="UTF-8">
+  <title>Grand Staff Example</title>
+  <script src="https://cdn.jsdelivr.net/npm/vexflow@4.0.3/build/cjs/vexflow.js"></script>
+</head>
 
-const vf = new Factory({
-  renderer: { elementId: 'output', width: 500, height: 300 },
-});
+<body>
+  <canvas id="some-canvas-id"></canvas>
+  <div id="output"></div>
+  <script>
 
-const score = vf.EasyScore();
-const system = vf.System();
+    function drawNotes(notesTreble, notesBass) {
+      const { Factory, EasyScore, System } = Vex.Flow;
 
-/* system
-  .addStave({
-    voices: [
-      score.voice(score.notes('C#5/q, B4, A4, G#4', { stem: 'up' })),
-      score.voice(score.notes('C#4/h, C#4', { stem: 'down' })),
-    ],
-  })
-  .addClef('treble')
-  .addTimeSignature('4/4');
+      const vf = new Factory({
+        renderer: { elementId: 'output', width: 500, height: 300 },
+      });
 
-vf.draw(); */
+      const score = vf.EasyScore();
+      const system = vf.System();
 
-system.addStave({
-    voices: [
-        score.voice(score.notes('C5/q, B4, A4, G#4', {
-            stem: 'up'
-        })),
-        score.voice(score.notes('C#4/h, C#4', {
-            stem: 'down'
-        }))
-    ]
-}).addClef('treble').addTimeSignature('3/4');
+      const staveTreble = system.addStave({
+        voices: [
+          score.voice(score.notes(notesTreble, { stem: 'up' })),
+        ],
+      }).addClef('treble').addTimeSignature('4/4');
 
-system.addConnector();
-
-system.addStave({
-    voices: [
-        score.voice(score.notes('C#3/q, B2, A2/8, B2, C#3, D3', {
+      const staveBass = system.addStave({
+        voices: [
+          score.voice(score.notes(notesBass, {
             clef: 'bass',
             stem: 'up'
-        })),
-        score.voice(score.notes('C#2/h, C#2', {
-            clef: 'bass',
-            stem: 'down'
-        }))
-    ]
-}).addClef('bass').addTimeSignature('3/4');
+          })),
+        ],
+      }).addClef('bass').addTimeSignature('4/4');
 
-vf.draw();
-    </script>
-  </body>
+      vf.draw();
+    }
+
+    function generateRandomNotesForTakt(timeSignature) {
+  const availableNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+  const availableAccidentals = ['', 'b', '#'];
+  const availableDurations = ['w', 'h', 'q', '8', '16'];
+  
+  const totalBeats = parseInt(timeSignature.split('/')[0]);
+  const beatValue = parseInt(timeSignature.split('/')[1]);
+  
+  let remainingBeats = totalBeats;
+  let notes = '';
+  
+  while (remainingBeats > 0) {
+    const note = availableNotes[Math.floor(Math.random() * availableNotes.length)];
+    const accidental = availableAccidentals[Math.floor(Math.random() * availableAccidentals.length)];
+    const duration = availableDurations[Math.floor(Math.random() * availableDurations.length)];
+    
+    const beatsInNote = duration === 'w' ? 4 : parseInt(duration) * beatValue;
+    
+    if (beatsInNote <= remainingBeats) {
+      notes += `${note}${accidental}/`;
+      notes += duration;
+      if (beatsInNote < remainingBeats) {
+        notes += ', ';
+      }
+      remainingBeats -= beatsInNote;
+    } else {
+      const notesToReduce = availableDurations.filter(d => parseInt(d) < beatValue);
+      const durationToReduce = notesToReduce[Math.floor(Math.random() * notesToReduce.length)];
+      
+      notes += `${note}${accidental}/`;
+      notes += durationToReduce;
+      notes += ', ';
+      remainingBeats -= parseInt(durationToReduce) * beatValue;
+    }
+  }
+  
+  return notes;
+}
+
+function generateRandomNotesForTakt(timeSignature, octave) {
+  const availableNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+  
+  const totalBeats = parseInt(timeSignature.split('/')[0]);
+  const beatValue = 1;
+  
+  let remainingBeats = totalBeats;
+  let notes = '';
+  
+  while (remainingBeats > 0) {
+    const note = availableNotes[Math.floor(Math.random() * availableNotes.length)];
+    
+    if (remainingBeats >= beatValue) {
+      notes += `${note}${octave}/q, `;
+      remainingBeats -= beatValue;
+    }
+    //remove last char from notes...its unused ,
+    
+  }
+  notes = notes.slice(0, -2);
+  return notes;
+}
+    // call the function with the notes you want to draw
+    let notesT = generateRandomNotesForTakt("4/4",4);
+    let notesB = generateRandomNotesForTakt("4/4", 3);
+    console.log(notesT);
+    console.log(notesB);
+    drawNotes(notesT, notesB);
+
+  </script>
+</body>
+
 </html>

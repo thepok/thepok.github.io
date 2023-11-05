@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MIDI Keyboard App</title>
+</head>
+<body>
+  <canvas id="canvas" width="200" height="200"></canvas>
+  <button id="sendButton">Send MIDI Message</button>
+  <script>
+    var input = null;
+    var output = null;
+    var randomNote = 60;
+    var noteOnReceived = false;
+
+    navigator.requestMIDIAccess().then(function(midiAccess) {
+      var inputs = midiAccess.inputs;
+      var outputs = midiAccess.outputs;
+      input = inputs.values().next().value;
+      output = outputs.values().next().value;
+
+      input.onmidimessage = function(event) {
+        if (event.data[0] === 0x90 && event.data[1] === randomNote) {
+          noteOnReceived = true;
+          sendNoteOff(randomNote);
+          nextNote();
+        }
+      };
+    }).catch(function(error) {
+      console.log("Failed to access MIDI devices: " + error);
+    });
+
+    document.getElementById("sendButton").addEventListener("click", function() {
+      sendNoteOn(randomNote);
+      drawNote(randomNote);
+    });
+
+    function nextNote() {
+      randomNote = Math.floor(Math.random() * (20)) + 40;
+      noteOnReceived = false;
+      sendNoteOn(randomNote);
+      drawNote(randomNote);
+    }
+    function sendNoteOn(note) {
+      output.send([0x90, note, 10]); //at least one, or light on key wont turn on
+    }
+
+    function sendNoteOff(note) {
+      output.send([0x80, note, 0]);
+    }
+
+    function drawNote(note) {
+      var canvas = document.getElementById("canvas");
+      var context = canvas.getContext("2d");
+      var x = canvas.width / 2;
+      var y = canvas.height / 2;
+
+      // Draw the staff lines
+      var staffHeight = 100;
+      var staffTopY = y - staffHeight / 2;
+      var staffBottomY = y + staffHeight / 2;
+      var lineSpacing = staffHeight / 4;
+      for (var i = 0; i < 5; i++) {
+        var lineY = staffTopY + i * lineSpacing;
+        context.beginPath();
+        context.moveTo(x - 50, lineY);
+        context.lineTo(x + 50, lineY);
+        context.stroke();
+      }
+
+      // Draw the note stem
+      context.beginPath();
+      context.moveTo(x, y);
+      context.lineTo(x, staffBottomY);
+      context.stroke();
+
+      // Draw the note head
+      var headRadius = 20;
+      var headX = x - headRadius / 2;
+      var headY = y - headRadius / 2;
+      context.beginPath();
+      context.arc(headX, headY, headRadius, 0, 2 * Math.PI);
+      context.fill();
+
+      // Draw the note pitch
+      var pitch = getNotePitch(note);
+      context.font = "20px Arial";
+      context.textAlign = "center";
+      context.fillText(pitch, x, staffBottomY + 20);
+    }
+
+    function getNotePitch(note) {
+      var notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+      var octave = Math.floor(note / 12) - 1;
+      var noteIndex = note % 12;
+      return notes[noteIndex] + octave;
+    }
+
+    setInterval(function() {
+      if (!noteOnReceived) {
+        sendNoteOn(randomNote);
+        drawNote(randomNote);
+      }
+    }, 5000);
+  </script>
+</body>
+</html>

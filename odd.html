@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Arbitrage Betting Calculator</title>
+</head>
+<body>
+	<h1>Arbitrage Betting Calculator</h1>
+	<p>Enter the odds for each possible outcome:</p>
+	<label for="odds-a">Odds for player A to win:</label>
+	<input type="number" id="odds-a"><br><br>
+	<label for="odds-b">Odds for player B to win:</label>
+	<input type="number" id="odds-b"><br><br>
+	<label for="odds-draw">Odds for a draw:</label>
+	<input type="number" id="odds-draw"><br><br>
+	<button onclick="calculateEV()">Calculate EV</button>
+	<p id="result"></p>
+
+	<script>
+		function calculateEV() {
+			var oddsA = parseFloat(document.getElementById("odds-a").value);
+			var oddsB = parseFloat(document.getElementById("odds-b").value);
+			var oddsDraw = parseFloat(document.getElementById("odds-draw").value);
+
+			var totalImpliedProb = 1 / oddsA + 1 / oddsB + 1 / oddsDraw;
+			var ev = (totalImpliedProb) - 1;
+
+			if (ev < 0) {
+				document.getElementById("result").innerHTML = "This is a positive expected value (EV) bet with an EV of " + ev.toFixed(5) + ".";
+			} else {
+				document.getElementById("result").innerHTML = "This is a negative expected value (EV) bet with an EV of " + ev.toFixed(5) + ".";
+			}
+		}
+	</script>
+</body>
+</html>

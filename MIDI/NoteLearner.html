@@ -2,14 +2,19 @@
 <html>
 
 <head>
+    //TODO Start Tine messaurment on first note press
     <meta charset="utf-8">
     <title>Random Note Generator</title>
     <script src="webmidi.iife.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vexflow@4.0.3/build/cjs/vexflow.js"></script>
+    <script src="vexflow.js"></script>
 
 
     <script>
         class MusicalNote {
+
+            static allPossibleTrebleNotes = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5", "D5", "E5", "F5", "G5", "A5", "B5"];
+            static allPossibleBassNotes = ["C2", "D2", "E2", "F2", "G2", "A2", "B2", "C3", "D3", "E3", "F3", "G3", "A3", "B3"];
+
             constructor(note, accident, octave, duration) {
                 this.note = note;
                 this.accident = accident;
@@ -17,16 +22,37 @@
                 this.duration = duration;
             }
 
-            static newRandomNote(octaves){
+            static fromString(noteString) {
+                if (noteString.length == 2) {
+                    const note = noteString[0];
+                    const accident = "";
+                    const octave = noteString[1];
+                    const duration = "q";
+                    return new MusicalNote(note, accident, octave, duration);
+                }
+                else if (noteString.length == 3) {
+                    const note = noteString[0];
+                    const accident = noteString[1];
+                    const octave = noteString[2];
+                    const duration = "q";
+                    return new MusicalNote(note, accident, octave, duration);
+                }
+                else {
+                    throw "Invalid note string";
+                }
+            }
+
+            static newRandomNote(octaves) {
                 const noteNames = ["C", "D", "E", "F", "G", "A", "B"];
+                //const noteNames = ["C"];
                 const accidents = ["", "#"];
                 const noteIndex = Math.floor(Math.random() * noteNames.length);
                 const accidentIndex = 0;//Math.floor(Math.random() * accidents.length);
                 //take random elemenet from octaves array
                 const octave = octaves[Math.floor(Math.random() * octaves.length)];
 
-
-                if(noteNames[noteIndex] == "E" && accidents[accidentIndex] == "#"){
+                //if note is E, then accident must be flat or else it becomes a F
+                if (noteNames[noteIndex] == "E" && accidents[accidentIndex] == "#") {
                     noteIndex = 1;
                     accidentIndex = 0;
                 }
@@ -35,8 +61,7 @@
             }
 
             asVexflow(isBreak) {
-                if(isBreak)
-                {
+                if (isBreak) {
                     return this.note + this.accident + this.octave + "/" + this.duration + "/r";
                 }
                 return this.note + this.accident + this.octave + "/" + this.duration;
@@ -69,67 +94,202 @@
                 return vexflowNotes.join(", ");
             }
 
-            fillWithRandomQuarterNotes(octaves) {
+            fillWithRandomQuarterNotes(level) {
                 for (let i = 0; i < 4; i++) {
-                    this.addNote(MusicalNote.newRandomNote(octaves));
+                    this.addNote(level.getRandomNote());
                 }
             }
 
             //function that removes first note, and adds a new random not at the end. functionname is "NoteShift"
-            NoteShift(octaves) {
+            NoteShift(level) {
                 this.notes.shift();
-                this.addNote(MusicalNote.newRandomNote(octaves));
+                this.addNote(level.getRandomNote());
             }
         }
 
-        trebleOctaves = ["4", "5"];
-        bassOctaves = ["2", "3"];
+
+        class SingleStaffLearner {
+            Correct = 0;
+
+            constructor(level) {
+                this.notes = new MusicNotes();
+                this.notes.fillWithRandomQuarterNotes(level);
+                this.level = level;
+
+                this.startTime = Date.now();
+            }
+
+            reset() {
+                this.Correct = 0;
+                this.startTime = Date.now();
+            }
+
+            getRate() {
+                const elapsedTime = (Date.now() - this.startTime) / 1000; // convert to seconds
+                const rate = this.Correct / elapsedTime;
+                return rate;
+            }
+
+            onLevelUpCheck() {
+                //increase level if rate is above 0.5
+                if (this.getRate() > 0.5) {
+                    this.level.increaseLevel();
+                }
+            }
+            isNoteEqual(note1, note2) {
+                let note1WithoutOctave = note1.replace(/[0-9]/g, '');
+                let note2WithoutOctave = note2.replace(/[0-9]/g, '');
+
+                // Check if either of the notes is missing the octave
+                if (note1.length === note1WithoutOctave.length || note2.length === note2WithoutOctave.length) {
+                    return note1WithoutOctave === note2WithoutOctave;
+                }
+
+                // If both notes have octaves, compare them with the octaves
+                return note1 === note2;
+            }
+
+            ProcessMidiOn(note) {
+                //test if note is correct
+                const currentNote = this.notes.getNotes()[0].asMidiNote();
+
+                if (this.isNoteEqual(note, currentNote)) {
+                    //let output = WebMidi.outputs[0];
+                    //output.stopNote(currentNote);
+                    this.Correct++;
+                    this.notes.NoteShift(this.level);
+                    //this.draw()
+                    //output.playNote(this.trebleNotes.getNotes()[0].asMidiNote(), { duration: 5000, attack: 0.01, release: 0.01 });
+                    return true;
+
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        class Level {
+            levelName;
+            constructor(levelName, notePool, totalPool) {
+                this.notePool = notePool;
+                this.levelName = levelName;
+                this.totalPool = totalPool;
+            }
+
+            getRandomNote() {
+                let poolNote = this.notePool[Math.floor(Math.random() * this.notePool.length)];
+                return MusicalNote.fromString(poolNote);
+            }
+
+            increaseLevel() {
+                return
+                //add random note from totalPool to notePool
+                console.log(this.totalPool);
+                let newNote = this.totalPool[Math.floor(Math.random() * this.totalPool.length)];
+                this.notePool.push(newNote);
+            }
+
+            getNotePoolCount() {
+                return this.notePool.length;
+            }
+        }
+
+
         class StaffLearning {
 
-            Correct = 0;
             Misses = 0;
 
-            
-            draw(){
-                drawNotes(this.trebleNotes, this.bassNotes);
+            trebleNotePressTimes = []; // Add this line to store the times of treble note presses
+            bassNotePressTimes = []; // Add this line to store the times of bass note presses
+
+
+            draw() {
+
+                //document.getElementById("currentTrebleNote").textContent = this.trebleLearner.notes.getNotes()[0].asMidiNote();
+                //document.getElementById("currentBassNote").textContent = this.bassLearner.notes.getNotes()[0].asMidiNote();
+
+                drawNotes(this.trebleLearner.notes, this.bassLearner.notes);
+                this.drawStats();
+            }
+
+            reset() {
+                this.Misses = 0;
+
+                this.trebleLearner.reset();
+                this.bassLearner.reset();
+
+                this.trebleNotePressTimes = [];
+                this.bassNotePressTimes = [];
+
+                this.drawStats();
             }
 
             constructor() {
-                this.bassNotes = new MusicNotes();
-                this.bassNotes.fillWithRandomQuarterNotes(bassOctaves);
+                let startLevelTreble = new Level("Start", MusicalNote.allPossibleTrebleNotes, MusicalNote.allPossibleTrebleNotes);
+                let startLevelBass = new Level("Start", MusicalNote.allPossibleBassNotes, MusicalNote.allPossibleBassNotes);
 
-                this.trebleNotes = new MusicNotes();
-                this.trebleNotes.fillWithRandomQuarterNotes(trebleOctaves);
+                this.trebleLearner = new SingleStaffLearner(startLevelTreble);
+                this.bassLearner = new SingleStaffLearner(startLevelBass);
+
+                setInterval(this.onTick.bind(this), 1000);
+                setInterval(this.onLevelUpCheck.bind(this), 10000);
+
+                this.reset();
 
                 this.draw();
             }
+
+            drawStats() {
+                let score = (this.trebleLearner.getRate() * this.bassLearner.getRate()) * 1000;
+                
+                // Calculate the average time difference between corresponding treble and bass note presses
+                const minLen = Math.min(this.trebleNotePressTimes.length, this.bassNotePressTimes.length);
+                let totalDifference = 0;
+                for (let i = 0; i < minLen; i++) {
+                    totalDifference += Math.abs(this.trebleNotePressTimes[i] - this.bassNotePressTimes[i]);
+                }
+                const averageDifference = minLen > 0 ? totalDifference / minLen : 1000;
+
+                score /= (1 + (averageDifference / 1000))
+
+                score -= (score * ((this.Misses * 5) / (this.totalCorrect() + 1)));
+
+                document.getElementById("counter-rate").textContent = `Treble rate:${this.trebleLearner.getRate()} Bass rate:${this.bassLearner.getRate()}  Score: ${score}`;
+
+                document.getElementById("stats").innerHTML = `Correct: ${this.totalCorrect()} <br> Misses: ${this.Misses}`;
+                document.getElementById("statsTreble").innerHTML = `Correct Treble: ${this.trebleLearner.Correct}`;
+                document.getElementById("statsBass").innerHTML = `Correct Bass: ${this.bassLearner.Correct}`;
+            }
+
+            onTick() {
+                this.drawStats();
+            }
+
+            onLevelUpCheck() {
+                this.trebleLearner.onLevelUpCheck();
+                this.bassLearner.onLevelUpCheck();
+            }
+
+            totalCorrect() {
+                return this.trebleLearner.Correct + this.bassLearner.Correct;
+            }
+
             ProcessMidiOn(note) {
+                const trebleResult = this.trebleLearner.ProcessMidiOn(note);
+                const bassResult = this.bassLearner.ProcessMidiOn(note);
 
-                //test if treble note is correct
-
-                if (note == this.trebleNotes.getNotes()[0].asMidiNote()) {
-                    
-                    let output = WebMidi.outputs[0];
-                    output.stopNote(this.trebleNotes.getNotes()[0].asMidiNote());
-                    this.Correct++;
-                    this.trebleNotes.NoteShift(trebleOctaves);
-                    this.draw()
-                    output.playNote(this.trebleNotes.getNotes()[0].asMidiNote(), { duration: 5000, attack: 0.01, release: 0.01 });
-                    
+                // Record the time of the note press separately for treble and bass
+                if (trebleResult) {
+                    this.trebleNotePressTimes.push(Date.now());
                 }
-                if(note == this.bassNotes.getNotes()[0].asMidiNote()){
-                    let output = WebMidi.outputs[0];
-                    output.stopNote(this.bassNotes.getNotes()[0].asMidiNote());
-                    this.Correct++;
-                    this.bassNotes.NoteShift(bassOctaves);
-                    this.draw()
-                    output.playNote(this.bassNotes.getNotes()[0].asMidiNote(), { duration: 5000, attack: 0.01, release: 0.01 });
+                if (bassResult) {
+                    this.bassNotePressTimes.push(Date.now());
                 }
-                 else {
+                
+                if (!trebleResult && !bassResult) {
                     this.Misses++;
                 }
-
-                document.getElementById("stats").innerHTML = `Correct: ${this.Correct} <br> Misses: ${this.Misses}`;
+                this.draw();
             }
         }
 
@@ -165,7 +325,21 @@
 
             vf.draw();
         }
-        
+        function keyToMidiNote(key) {
+            const keyToNote = {
+                'a': 'A',
+                'b': 'B',
+                'c': 'C',
+                'd': 'D',
+                'e': 'E',
+                'f': 'F',
+                'g': 'G'
+            };
+            const note = keyToNote[key.toLowerCase()];
+            return note ? note : null;
+        }
+
+
 
 
     </script>
@@ -177,21 +351,37 @@
 
     <h1>Random Note Generator</h1>
 
+    <div id="currentTrebleNote"></div>
     <div id="output"></div>
+    <div id="currentBassNote"></div>
     <div id="stats"></div>
+    <div id="statsTreble"></div>
+    <div id="statsBass"></div>
+
+    <p id="counter-rate">0 presses per second</p>
+    <button id="start-button">Start Timer</button>
 
     <br>
-    <p>Treble Staff Line Notes von unten nach Oben: (E)ine (G)eile (B)londine (D)reht (F)ilme</p>
-    <p>Treble Staff Space Notes F A C E</p>    
+    <p>Treble Staff Line Notes von unten nach Oben:(C)hristina (E)ine (G)eile (B)londine (D)reht (F)ilme (A)b</p>
+    <p>Treble Staff Space Notes D - F A C E - G</p>
     <p>Bass Staff Line Notes von unten nach Oben: (G)anz (B)erlin (D)ankt (F)ür (A)ngebote</p>
     <p>Bass Staff Space Notes (A)(C)(E)-(G)etränke</p>
     <a href="https://de.wikipedia.org/wiki/Klaviatur#/media/Datei:KlaviaturMitNoten.svg">
-    <img src="KlaviaturMitNoten.svg" alt="KlaviaturMitNoten">
-    Phillip Kuhrt (Original by Sergey Pushkin) - Own work, based on: http://commons.wikimedia.org/wiki/File:Octaves-notes-ru.svg CC BY-SA 3.0
+        <img src="KlaviaturMitNoten.svg" alt="KlaviaturMitNoten">
+        Phillip Kuhrt (Original by Sergey Pushkin) CC BY-SA 3.0
     </a>
     <script>
         const App = new StaffLearning();
 
+        document.getElementById("start-button").addEventListener("click", App.reset.bind(App));
+
+        // Add an event listener for keydown events on the document
+        document.addEventListener('keydown', (event) => {
+            const midiNote = keyToMidiNote(event.key);
+            if (midiNote) {
+                App.ProcessMidiOn(midiNote);
+            }
+        });
         WebMidi
             .enable({ sysex: true })
             .then(onEnabled)
@@ -204,7 +394,7 @@
             // const mySynth = WebMidi.getInputByName("TYPE NAME HERE!")
 
             mySynth.channels[1].addListener("noteon", e => {
-                console.log("Keyboard send Note: "+e.note.identifier);
+                console.log("Keyboard send Note: " + e.note.identifier);
                 App.ProcessMidiOn(e.note.identifier);
 
             });

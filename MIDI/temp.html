@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Random Notes Example</title>
+    <script src="https://cdn.jsdelivr.net/npm/vexflow@4.0.3/build/cjs/vexflow.js"></script>
+  </head>
+  <body>
+    <canvas id="some-canvas-id"></canvas>
+    <div id="output"></div>
+    <script>
+
+    function generateRandomNotes(timeSignature) {
+      const { Factory, EasyScore, System, Flow } = Vex.Flow;
+
+      const vf = new Factory({
+        renderer: { elementId: 'output', width: 500, height: 300 },
+      });
+
+      const score = vf.EasyScore();
+      const system = vf.System();
+
+      const stave = system.addStave({
+        voices: [
+          score.voice([])
+        ]
+      }).addClef('treble').addTimeSignature(timeSignature);
+
+      const notes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+      const rhythms = [
+        { duration: 'q', probability: 0.7 },
+        { duration: 'h', probability: 0.2 },
+        { duration: 'w', probability: 0.1 }
+      ];
+
+      const measureNotes = [];
+
+      const totalTicks = Flow.timeSignatureToTicks(timeSignature);
+      let ticksUsed = 0;
+
+      while (ticksUsed < totalTicks) {
+        const rhythm = getRandomRhythm();
+        const noteDuration = rhythm.duration;
+        const noteTicks = Flow.durationToTicks(noteDuration);
+
+        if (ticksUsed + noteTicks <= totalTicks) {
+          const noteValue = getRandomNote();
+          const noteString = noteValue + '/' + noteDuration;
+          measureNotes.push(score.note(noteString));
+          ticksUsed += noteTicks;
+        }
+      }
+
+      score.set({ time: timeSignature });
+      score.voice(measureNotes);
+
+      vf.draw();
+
+      function getRandomNote() {
+        const octave = Math.floor(Math.random() * 2) + 4; // choose octave between 4 and 5
+        const noteIndex = Math.floor(Math.random() * notes.length);
+        return notes[noteIndex] + '/' + octave;
+      }
+
+      function getRandomRhythm() {
+        let totalProbability = 0;
+        rhythms.forEach((rhythm) => {
+          totalProbability += rhythm.probability;
+        });
+
+        let randomProbability = Math.random() * totalProbability;
+        for (let i = 0; i < rhythms.length; i++) {
+          if (randomProbability < rhythms[i].probability) {
+            return rhythms[i];
+          }
+          randomProbability -= rhythms[i].probability;
+        }
+
+        // if we get here, we should return the last rhythm
+        return rhythms[rhythms.length - 1];
+      }
+    }
+
+    // call the function with the time signature you want and it will generate random notes for one measure
+    generateRandomNotes('4/4');
+
+    </script>
+  </body>
+</html>
