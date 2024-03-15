@@ -61,6 +61,8 @@
         let incorrect = 0;
         let button_count = 5;
         let correct_word = "";
+        let falseButton; // Variable to hold the "Alle Falsch" button
+
 		//var words = ["Sonne", "rennen", "toll", "drei", "neun", "wir", "braun", "Baum", "elf", 
         //"Hut", "sieben", "Apfel", "sehen", "sechs", "Wiese", "eins", "klein",
         //"Auto", "Oma", "Mama", "lesen", "Messer", "Tasse", "Haus", "Hund", "rennt",
@@ -71,35 +73,43 @@
         function create_buttons(words) {
             let buttons_div = document.getElementById("buttons");
             buttons_div.innerHTML = "";
-            let correct_button_index = Math.floor(Math.random() * button_count);
-			let correct_word_buffer=words[Math.floor(Math.random() * words.length)]
             for (let i = 0; i < button_count; i++) {
                 let button = document.createElement("button");
                 button.addEventListener("click", function() { check_answer(this); });
-                let text = (i === correct_button_index) ? correct_word_buffer : misspell_word(correct_word_buffer);
-                button.textContent = text;
                 buttons_div.appendChild(button);
             }
-            correct_word = document.getElementById("buttons").childNodes[correct_button_index].textContent;
+            // Add a button that always says "Alle Falsch" and save it in the variable
+            falseButton = document.createElement("button");
+            falseButton.textContent = "Alle Falsch";
+            falseButton.addEventListener("click", function() { check_answer(this); });
+            buttons_div.appendChild(falseButton);
+            
+            update_buttons(words);
         }
 
         function update_buttons(words) {
+            let all_wrong_mode = Math.random() < 0.3; // 20% chance to enter all_wrong mode
             let correct_button_index = Math.floor(Math.random() * button_count);
-			let correct_word_buffer=words[Math.floor(Math.random() * words.length)]
-            for (let i = 0; i < button_count; i++) {
-                let button = document.getElementById("buttons").childNodes[i];
-                let text = (i === correct_button_index) ? correct_word_buffer : misspell_word(correct_word_buffer);
-                button.textContent = text;
+            let correct_word_buffer = words[Math.floor(Math.random() * words.length)];
+
+            if (all_wrong_mode) {
+                falseButton.setAttribute("data-correct", "true");
+                for (let i = 0; i < button_count; i++) {
+                    let button = document.getElementById("buttons").childNodes[i];
+                    button.textContent = misspell_word(correct_word_buffer); // All buttons have a misspelled word
+                }
+                correct_word = ""; // No correct word in all_wrong mode
+            } else {
+                falseButton.removeAttribute("data-correct");
+                for (let i = 0; i < button_count; i++) {
+                    let button = document.getElementById("buttons").childNodes[i];
+                    let text = (i === correct_button_index) ? correct_word_buffer : misspell_word(correct_word_buffer);
+                    button.textContent = text;
+                }
+                correct_word = document.getElementById("buttons").childNodes[correct_button_index].textContent;
             }
-            correct_word = document.getElementById("buttons").childNodes[correct_button_index].textContent;
         }
 
-        function misspell_word_old(word) {
-            let random_index = Math.floor(Math.random() * word.length);
-            let random_char = String.fromCharCode(Math.floor(Math.random() * 26) + 97);
-            let misspelled_word = word.slice(0, random_index) + random_char + word.slice(random_index + 1);
-            return misspelled_word;
-        }
         function misspell_word(word) {
             let misspelled_word = '';
 
@@ -165,7 +175,7 @@
 
 
         function check_answer(answer) {
-            if (answer.textContent === correct_word) {
+            if (answer.textContent === correct_word || answer.getAttribute('data-correct') === 'true') {
                 correct += 1;
                 display_result("<p style='color:green;'>Richtig :)</p>");
                 update_buttons(words);
