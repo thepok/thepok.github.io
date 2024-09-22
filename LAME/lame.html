@@ -1,9 +1,10 @@
+<!--oneshot convertion with o1-preview to gpt40...nice-->
 <html>
 
 <head>
     <title>LAME - LanguAge Model for Everything</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script>;
+    <script>
 
         let lastView = "<div>Hello World</div>";
         let lastCommand = "None";
@@ -20,7 +21,6 @@
 
         function GetKey() {
             var key = document.getElementById("OPEN_AI_KEY").value;
-            return "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"
             console.log(key);
             return key;
         }
@@ -60,11 +60,20 @@
 
         function generateNextView() {
             lastView = contendElement.innerHTML;
-            nextViewPrompt =
-                `The LLM providing the logic and the GUI providing the interface. The LLM responds to user input by replacing the Current GUI with the Next GUI. adapting the GUI.
 
-If the User wants to play a game. Create a game board. If the User wants to Chat. Create A Textinput and Output...
+            // Prepare system message content
+            const systemMessageContent = `
+The LLM provides the logic and the GUI provides the interface. The LLM responds to user input by replacing the Current GUI with the Next GUI, adapting the GUI.
 
+If the User wants to play a game, create a game board. If the User wants to chat, create a TextInput and Output...
+
+If you create a Button, make the event call the Function "CMD('tag')" with a string as parameter characterizing the Button.
+
+If you create a TextInput, give it an id. You will be provided with the value of the TextInput in the next call to the LLM.
+            `;
+
+            // Prepare user message content
+            const userMessageContent = `
 App Description:
 
 ${GetAppDescription()}
@@ -77,27 +86,30 @@ Button pressed: ${lastCommand}
 Text Inputs:
 ${generateInputString()}
 
-If you create a Button, make the event call the Function "CMD('tag')" with an string as Paramater charictarizing the Button.
-If you create a Textinput, give it an id. You will be provided with the value of the Textinput in the next call to the LLM.
-
 Next GUI:`;
-            console.log("NextViewPromp:");
-            console.log(nextViewPrompt);
+
+            console.log("UserMessageContent:");
+            console.log(userMessageContent);
+
             axios({
                 method: "POST",
-                url: "https://api.openai.com/v1/engines/text-davinci-003/completions",
+                url: "https://api.openai.com/v1/chat/completions",
                 headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GetKey()}` },
                 data: {
-                    prompt: nextViewPrompt,
+                    model: 'gpt-4o-2024-08-06',
+                    messages: [
+                        { role: 'system', content: systemMessageContent },
+                        { role: 'user', content: userMessageContent }
+                    ],
                     max_tokens: 1550,
                     n: 1,
                     temperature: 0.1
                 }
             })
                 .then(response => {
-                    let result = response.data.choices[0].text
+                    let result = response.data.choices[0].message.content;
                     console.log(result);
-                    replaceContentWith(response.data.choices[0].text);
+                    replaceContentWith(result);
                 })
                 .catch(error => {
                     console.error(error);
@@ -105,16 +117,17 @@ Next GUI:`;
         }
     </script>
 </head>
-<div>OpenAI Key:<input type="password" id="OPEN_AI_KEY"><button onclick="generateNextView()">Test</button></div>
-<div>Comment:<input type="text" id="comment"><button onclick="generateNextView()">With Comment</button></div>
-<div>App Description:<input id="AppDescription" type="text"></div>
-<div><button onclick="generateNextView()">ReTry</button></div>
-<div id="output">
+<body>
+    <div>OpenAI Key:<input type="password" id="OPEN_AI_KEY"><button onclick="generateNextView()">Test</button></div>
+    <div>Comment:<input type="text" id="comment"><button onclick="generateNextView()">With Comment</button></div>
+    <div>App Description:<input id="AppDescription" type="text"></div>
+    <div><button onclick="generateNextView()">ReTry</button></div>
+    <div id="output">
 
-</div>
-<script>
-    contendElement = document.getElementById("output");
-    replaceContentWith(lastView);
-</script>
-
+    </div>
+    <script>
+        contendElement = document.getElementById("output");
+        replaceContentWith(lastView);
+    </script>
+</body>
 </html>
