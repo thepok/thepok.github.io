@@ -38,32 +38,8 @@
         max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
       overflow: hidden;
-    }
-
-    .topbar {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 10px 12px;
-      background: var(--panel);
-      border-radius: var(--radius);
-    }
-
-    .title {
-      font-weight: 700;
-      letter-spacing: 0.2px;
-      font-size: 16px;
-      line-height: 1.2;
-    }
-
-    .hint {
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.2;
-      text-align: right;
     }
 
     .staffWrap {
@@ -252,11 +228,6 @@
 
 <body>
   <div class="app">
-    <div class="topbar">
-      <div class="title">NoteLearner 2</div>
-      <div class="hint">Touch auf der Tastatur → Note im Notensystem</div>
-    </div>
-
     <div class="staffWrap">
       <div id="staff" aria-label="Notensystem (Violinschlüssel + Bassschlüssel)"></div>
     </div>
