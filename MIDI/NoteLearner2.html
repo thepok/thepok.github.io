@@ -244,7 +244,7 @@
   </div>
 
   <script>
-    const OCTAVES_TOP_TO_BOTTOM = [6, 5, 4, 3]; // höchste Oktave oben, Bass unten
+    const OCTAVES_TOP_TO_BOTTOM = [5, 4, 3, 2]; // höchste Oktave oben, Bass unten
     const WHITE = ["C", "D", "E", "F", "G", "A", "B"];
     const BLACK = ["C#", "D#", "F#", "G#", "A#"];
     const state = {
@@ -276,8 +276,8 @@
       return notes;
     }
 
-    const TREBLE_POOL = buildPool([4, 5, 6]);
-    const BASS_POOL = buildPool([3, 4]);
+    const TREBLE_POOL = buildPool([3, 4, 5]);
+    const BASS_POOL = buildPool([2, 3]);
 
     function randomFrom(arr) {
       return arr[Math.floor(Math.random() * arr.length)];
