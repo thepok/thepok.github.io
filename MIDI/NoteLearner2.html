@@ -279,7 +279,8 @@
       return notes;
     }
 
-    const TREBLE_POOL = buildPool([3, 4, 5]);
+    // Keep treble notes on/above middle C area so they don't visually "drop" into the bass staff.
+    const TREBLE_POOL = buildPool([4, 5]);
     const BASS_POOL = buildPool([2, 3]);
 
     function randomFrom(arr) {
