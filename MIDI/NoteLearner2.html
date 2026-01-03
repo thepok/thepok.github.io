@@ -260,6 +260,9 @@
         trebleNotePressTimes: [],
         bassNotePressTimes: [],
         lastResult: null, // "good" | "bad" | null
+        wrongNote: null,
+        wrongNoteUntil: 0,
+        wrongNoteToken: 0,
       }
     };
 
@@ -366,6 +369,13 @@
       return `${note}/q`;
     }
 
+    function getClefForNote(note) {
+      const m = note.match(/^([A-G])(#?)(\d)$/);
+      if (!m) return "treble";
+      const octave = Number(m[3]);
+      return octave >= 4 ? "treble" : "bass";
+    }
+
     function renderStaff() {
       const staffEl = document.getElementById("staff");
       staffEl.innerHTML = "";
@@ -439,6 +449,26 @@
 
       trebleVoice.draw(ctx, trebleStave);
       bassVoice.draw(ctx, bassStave);
+
+      // Show wrong pressed note in red for 3 seconds (overlay voice).
+      if (state.training.wrongNote && Date.now() < state.training.wrongNoteUntil) {
+        const clef = getClefForNote(state.training.wrongNote);
+        const wrong = toStaveNote(state.training.wrongNote, clef);
+        wrong.setStyle({ fillStyle: "#ff5c5c", strokeStyle: "#ff5c5c" });
+
+        const rests = [
+          new StaveNote({ clef, keys: ["b/4"], duration: "q", type: "r" }),
+          new StaveNote({ clef, keys: ["b/4"], duration: "q", type: "r" }),
+          new StaveNote({ clef, keys: ["b/4"], duration: "q", type: "r" }),
+        ];
+
+        const wrongVoice = new Voice({ num_beats: 4, beat_value: 4 }).addTickables([wrong, ...rests]);
+        wrongVoice.setStrict(false);
+
+        const stave = clef === "treble" ? trebleStave : bassStave;
+        new Formatter().joinVoices([wrongVoice]).formatToStave([wrongVoice], stave);
+        wrongVoice.draw(ctx, stave);
+      }
     }
 
     function updateStatsAndTargets() {
@@ -499,6 +529,16 @@
       } else {
         state.training.misses++;
         state.training.lastResult = "bad";
+
+        state.training.wrongNote = note;
+        state.training.wrongNoteUntil = now + 3000;
+        const token = ++state.training.wrongNoteToken;
+        setTimeout(() => {
+          if (state.training.wrongNoteToken !== token) return;
+          if (Date.now() < state.training.wrongNoteUntil) return;
+          state.training.wrongNote = null;
+          renderStaff();
+        }, 3050);
       }
 
       renderStaff();
