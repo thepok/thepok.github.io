@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="de">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>NoteLearner 2</title>
+  <script src="vexflow.js"></script>
+  <style>
+    :root {
+      --bg: #0b0c10;
+      --panel: #12141b;
+      --text: #e8e8ee;
+      --muted: #a9adbb;
+      --accent: #6aa4ff;
+      --key-white: #f7f7fb;
+      --key-white-border: #cfd2dd;
+      --key-black: #1a1c24;
+      --key-black-border: #0c0d12;
+      --active: #ffcc66;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .app {
+      height: 100dvh;
+      padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right))
+        max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--panel);
+      border-radius: var(--radius);
+    }
+
+    .title {
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      font-size: 16px;
+      line-height: 1.2;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.2;
+      text-align: right;
+    }
+
+    .staffWrap {
+      background: var(--panel);
+      border-radius: var(--radius);
+      padding: 10px 6px;
+      height: clamp(210px, 34dvh, 320px);
+      min-height: 210px;
+      overflow: hidden;
+    }
+
+    #staff {
+      width: 100%;
+      height: 100%;
+    }
+
+    .status {
+      background: var(--panel);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 44px;
+    }
+
+    .status.good { box-shadow: inset 0 0 0 2px rgba(79, 191, 125, 0.75); }
+    .status.bad { box-shadow: inset 0 0 0 2px rgba(255, 92, 92, 0.75); }
+
+    .status .left {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .status .label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .status .note {
+      font-size: 16px;
+      font-weight: 650;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .status .statsLine {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.2;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .status .clearBtn {
+      appearance: none;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      line-height: 1;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .status .clearBtn:active { transform: translateY(1px); }
+
+    .keyboards {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .octave {
+      background: var(--panel);
+      border-radius: var(--radius);
+      padding: 10px;
+      flex: 1;
+      min-height: clamp(64px, 12.5dvh, 120px);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow: hidden;
+    }
+
+    .octaveHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.2;
+    }
+
+    .piano {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      border-radius: 12px;
+      background: #0f1017;
+      overflow: hidden;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .whiteKeys {
+      position: absolute;
+      inset: 0;
+      display: flex;
+    }
+
+    .key {
+      border: none;
+      padding: 0;
+      margin: 0;
+      font: inherit;
+      cursor: pointer;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .key.white {
+      flex: 1;
+      background: var(--key-white);
+      border-right: 1px solid var(--key-white-border);
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 6px;
+      color: rgba(0, 0, 0, 0.72);
+      font-size: 11px;
+      font-weight: 650;
+    }
+    .key.white:last-child { border-right: none; }
+
+    .blackKeys {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .key.black {
+      pointer-events: auto;
+      position: absolute;
+      top: 0;
+      height: 62%;
+      width: calc((100% / 7) * 0.60);
+      background: var(--key-black);
+      border: 1px solid var(--key-black-border);
+      border-radius: 0 0 10px 10px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 6px;
+      color: rgba(255, 255, 255, 0.82);
+      font-size: 10px;
+      font-weight: 650;
+      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.35);
+    }
+
+    .key.active {
+      outline: 3px solid rgba(255, 204, 102, 0.75);
+      outline-offset: -3px;
+    }
+    .key.white.active { background: linear-gradient(#fff4d2, #ffd98a); }
+    .key.black.active { background: linear-gradient(#3a2c12, #241a0a); }
+
+    .key:focus { outline: none; }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .key { transition: background 90ms ease, outline-color 90ms ease; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="title">NoteLearner 2</div>
+      <div class="hint">Touch auf der Tastatur → Note im Notensystem</div>
+    </div>
+
+    <div class="staffWrap">
+      <div id="staff" aria-label="Notensystem (Violinschlüssel + Bassschlüssel)"></div>
+    </div>
+
+    <div class="status" id="statusBox">
+      <div class="left">
+        <div class="label">Zielnoten</div>
+        <div class="note" id="targetNotes">—</div>
+        <div class="label">Letzte Eingabe</div>
+        <div class="note" id="currentNote">—</div>
+      </div>
+      <div class="statsLine" id="statsLine">—</div>
+      <button class="clearBtn" id="clearBtn" type="button">Zurücksetzen</button>
+    </div>
+
+    <div class="keyboards" id="keyboards" aria-label="Vier Oktaven (oben hoch, unten tief)"></div>
+  </div>
+
+  <script>
+    const OCTAVES_TOP_TO_BOTTOM = [6, 5, 4, 3]; // höchste Oktave oben, Bass unten
+    const WHITE = ["C", "D", "E", "F", "G", "A", "B"];
+    const BLACK = ["C#", "D#", "F#", "G#", "A#"];
+    const state = {
+      lastPressed: null,
+      pointerId: null,
+      training: {
+        trebleQueue: [],
+        bassQueue: [],
+        correctTreble: 0,
+        correctBass: 0,
+        misses: 0,
+        startTime: 0,
+        trebleNotePressTimes: [],
+        bassNotePressTimes: [],
+        lastResult: null, // "good" | "bad" | null
+      }
+    };
+
+    function prettyNoteName(noteName) {
+      return noteName.replace("#", "♯");
+    }
+
+    function buildPool(octaves) {
+      const notes = [];
+      for (const o of octaves) {
+        for (const n of WHITE) notes.push(`${n}${o}`);
+        for (const n of BLACK) notes.push(`${n}${o}`);
+      }
+      return notes;
+    }
+
+    const TREBLE_POOL = buildPool([4, 5, 6]);
+    const BASS_POOL = buildPool([3, 4]);
+
+    function randomFrom(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function resetTraining() {
+      state.training.correctTreble = 0;
+      state.training.correctBass = 0;
+      state.training.misses = 0;
+      state.training.startTime = Date.now();
+      state.training.trebleNotePressTimes = [];
+      state.training.bassNotePressTimes = [];
+      state.training.lastResult = null;
+
+      state.training.trebleQueue = [];
+      state.training.bassQueue = [];
+      for (let i = 0; i < 4; i++) {
+        state.training.trebleQueue.push(randomFrom(TREBLE_POOL));
+        state.training.bassQueue.push(randomFrom(BASS_POOL));
+      }
+    }
+
+    function shiftQueue(queue, pool) {
+      queue.shift();
+      queue.push(randomFrom(pool));
+    }
+
+    function buildKey({ noteName, octave, isBlack }) {
+      const key = document.createElement("button");
+      key.type = "button";
+      key.className = `key ${isBlack ? "black" : "white"}`;
+      key.dataset.note = `${noteName}${octave}`;
+      key.setAttribute("aria-label", `${noteName}${octave}`);
+      key.textContent = prettyNoteName(noteName);
+      return key;
+    }
+
+    function buildOctaveRow(octave) {
+      const wrap = document.createElement("div");
+      wrap.className = "octave";
+      wrap.dataset.octave = String(octave);
+
+      const header = document.createElement("div");
+      header.className = "octaveHeader";
+      header.innerHTML = `<span>Oktave ${octave}</span><span>${octave === 6 ? "hoch" : (octave === 3 ? "tief" : "")}</span>`;
+
+      const piano = document.createElement("div");
+      piano.className = "piano";
+
+      const whites = document.createElement("div");
+      whites.className = "whiteKeys";
+      for (const n of WHITE) whites.appendChild(buildKey({ noteName: n, octave, isBlack: false }));
+
+      const blacks = document.createElement("div");
+      blacks.className = "blackKeys";
+
+      // Black key positions (percentage) assuming 7 equal white keys:
+      // width = (100/7)*0.6 => 8.571%, half = 4.285%
+      const pos = {
+        "C#": 10.0,
+        "D#": 24.285,
+        "F#": 52.857,
+        "G#": 67.142,
+        "A#": 81.428,
+      };
+
+      for (const n of BLACK) {
+        const k = buildKey({ noteName: n, octave, isBlack: true });
+        k.style.left = `${pos[n]}%`;
+        blacks.appendChild(k);
+      }
+
+      piano.appendChild(whites);
+      piano.appendChild(blacks);
+      wrap.appendChild(header);
+      wrap.appendChild(piano);
+      return wrap;
+    }
+
+    function clearActiveKeyHighlight() {
+      document.querySelectorAll(".key.active").forEach(el => el.classList.remove("active"));
+    }
+
+    function setActiveKeyHighlight(note) {
+      clearActiveKeyHighlight();
+      const el = document.querySelector(`.key[data-note="${CSS.escape(note)}"]`);
+      if (el) el.classList.add("active");
+    }
+
+    function asVexQuarter(note) {
+      return `${note}/q`;
+    }
+
+    function renderStaff() {
+      const staffEl = document.getElementById("staff");
+      staffEl.innerHTML = "";
+
+      const width = Math.max(280, staffEl.clientWidth || 280);
+      const height = Math.max(210, staffEl.clientHeight || 210);
+
+      const {
+        Renderer,
+        Stave,
+        StaveConnector,
+        Voice,
+        Formatter,
+        StaveNote,
+        Accidental,
+      } = Vex.Flow;
+
+      const renderer = new Renderer(staffEl, Renderer.Backends.SVG);
+      renderer.resize(width, height);
+      const ctx = renderer.getContext();
+      ctx.setFillStyle("#e8e8ee");
+      ctx.setStrokeStyle("#e8e8ee");
+
+      // Make the grand staff "meet" at middle C (C4) ledger line:
+      // With default line spacing ~10px: staff height = 40px, middle C ledger is 20px below treble bottom
+      // and 20px above bass top, so gap between staves should be 40px.
+      const lineGapPx = 10;
+      const staffHeightPx = lineGapPx * 4;
+      const middleCLedgerOffsetPx = lineGapPx * 2;
+      const gapBetweenStavesPx = middleCLedgerOffsetPx * 2;
+
+      const x = 14;
+      const yTreble = 12;
+      const staveWidth = width - 28;
+      const yBass = yTreble + staffHeightPx + gapBetweenStavesPx;
+
+      const trebleStave = new Stave(x, yTreble, staveWidth).addClef("treble").addTimeSignature("4/4");
+      const bassStave = new Stave(x, yBass, staveWidth).addClef("bass").addTimeSignature("4/4");
+
+      trebleStave.setContext(ctx).draw();
+      bassStave.setContext(ctx).draw();
+
+      new StaveConnector(trebleStave, bassStave).setType(StaveConnector.type.BRACE).setContext(ctx).draw();
+      new StaveConnector(trebleStave, bassStave).setType(StaveConnector.type.SINGLE_LEFT).setContext(ctx).draw();
+
+      function toStaveNote(note, clef) {
+        const m = note.match(/^([A-G])(#?)(\d)$/);
+        if (!m) {
+          return new StaveNote({ clef, keys: ["c/4"], duration: "q" });
+        }
+        const letter = m[1].toLowerCase();
+        const accidental = m[2];
+        const octave = m[3];
+
+        const sn = new StaveNote({ clef, keys: [`${letter}/${octave}`], duration: "q" });
+        if (accidental === "#") sn.addModifier(new Accidental("#"), 0);
+        return sn;
+      }
+
+      const trebleNotes = state.training.trebleQueue.map(n => toStaveNote(n, "treble"));
+      const bassNotes = state.training.bassQueue.map(n => toStaveNote(n, "bass"));
+
+      const trebleVoice = new Voice({ num_beats: 4, beat_value: 4 }).addTickables(trebleNotes);
+      const bassVoice = new Voice({ num_beats: 4, beat_value: 4 }).addTickables(bassNotes);
+
+      trebleVoice.setStrict(false);
+      bassVoice.setStrict(false);
+
+      new Formatter().joinVoices([trebleVoice]).formatToStave([trebleVoice], trebleStave);
+      new Formatter().joinVoices([bassVoice]).formatToStave([bassVoice], bassStave);
+
+      trebleVoice.draw(ctx, trebleStave);
+      bassVoice.draw(ctx, bassStave);
+    }
+
+    function updateStatsAndTargets() {
+      const t = state.training.trebleQueue[0];
+      const b = state.training.bassQueue[0];
+      document.getElementById("targetNotes").textContent =
+        `Treble: ${prettyNoteName(t)}   •   Bass: ${prettyNoteName(b)}`;
+
+      const elapsedTime = Math.max(0.001, (Date.now() - state.training.startTime) / 1000);
+      const trebleRate = state.training.correctTreble / elapsedTime;
+      const bassRate = state.training.correctBass / elapsedTime;
+      let score = (trebleRate * bassRate) * 1000;
+
+      const minLen = Math.min(state.training.trebleNotePressTimes.length, state.training.bassNotePressTimes.length);
+      let totalDifference = 0;
+      for (let i = 0; i < minLen; i++) {
+        totalDifference += Math.abs(state.training.trebleNotePressTimes[i] - state.training.bassNotePressTimes[i]);
+      }
+      const averageDifference = minLen > 0 ? totalDifference / minLen : 1000;
+      score /= (1 + (averageDifference / 1000));
+
+      const totalCorrect = state.training.correctTreble + state.training.correctBass;
+      score -= (score * ((state.training.misses * 5) / (totalCorrect + 1)));
+
+      document.getElementById("statsLine").textContent =
+        `✓ ${totalCorrect} (T ${state.training.correctTreble} / B ${state.training.correctBass})   ✗ ${state.training.misses}   Score ${Math.max(0, Math.round(score))}`;
+
+      const statusBox = document.getElementById("statusBox");
+      statusBox.classList.remove("good", "bad");
+      if (state.training.lastResult === "good") statusBox.classList.add("good");
+      if (state.training.lastResult === "bad") statusBox.classList.add("bad");
+    }
+
+    function setLastPressed(noteOrNull) {
+      state.lastPressed = noteOrNull;
+      document.getElementById("currentNote").textContent = noteOrNull ? prettyNoteName(noteOrNull) : "—";
+      if (noteOrNull) setActiveKeyHighlight(noteOrNull);
+      else clearActiveKeyHighlight();
+    }
+
+    function onNoteInput(note) {
+      setLastPressed(note);
+
+      const targetTreble = state.training.trebleQueue[0];
+      const targetBass = state.training.bassQueue[0];
+      const now = Date.now();
+
+      if (note === targetTreble) {
+        state.training.correctTreble++;
+        state.training.trebleNotePressTimes.push(now);
+        shiftQueue(state.training.trebleQueue, TREBLE_POOL);
+        state.training.lastResult = "good";
+      } else if (note === targetBass) {
+        state.training.correctBass++;
+        state.training.bassNotePressTimes.push(now);
+        shiftQueue(state.training.bassQueue, BASS_POOL);
+        state.training.lastResult = "good";
+      } else {
+        state.training.misses++;
+        state.training.lastResult = "bad";
+      }
+
+      renderStaff();
+      updateStatsAndTargets();
+    }
+
+    function keyFromPoint(clientX, clientY) {
+      const el = document.elementFromPoint(clientX, clientY);
+      if (!el) return null;
+      return el.closest?.(".key") || null;
+    }
+
+    function attachPointerHandlers(container) {
+      container.addEventListener("pointerdown", (e) => {
+        const key = e.target.closest?.(".key");
+        if (!key) return;
+        state.pointerId = e.pointerId;
+        key.setPointerCapture?.(e.pointerId);
+        onNoteInput(key.dataset.note);
+        e.preventDefault();
+      }, { passive: false });
+
+      container.addEventListener("pointermove", (e) => {
+        if (state.pointerId !== e.pointerId) return;
+        const key = keyFromPoint(e.clientX, e.clientY);
+        if (!key) return;
+        const note = key.dataset.note;
+        // Preview while sliding (no scoring on move).
+        if (note && note !== state.lastPressed) setLastPressed(note);
+        e.preventDefault();
+      }, { passive: false });
+
+      const end = (e) => {
+        if (state.pointerId !== e.pointerId) return;
+        state.pointerId = null;
+      };
+      container.addEventListener("pointerup", end);
+      container.addEventListener("pointercancel", end);
+    }
+
+    function init() {
+      const kb = document.getElementById("keyboards");
+      for (const octave of OCTAVES_TOP_TO_BOTTOM) kb.appendChild(buildOctaveRow(octave));
+
+      attachPointerHandlers(kb);
+
+      document.getElementById("clearBtn").addEventListener("click", () => {
+        setLastPressed(null);
+        resetTraining();
+        renderStaff();
+        updateStatsAndTargets();
+      });
+
+      // Responsive redraw on resize/orientation changes.
+      const ro = new ResizeObserver(() => renderStaff());
+      ro.observe(document.getElementById("staff"));
+      window.addEventListener("orientationchange", () => setTimeout(() => renderStaff(), 50));
+
+      resetTraining();
+      setLastPressed(null);
+      renderStaff();
+      updateStatsAndTargets();
+
+      setInterval(() => updateStatsAndTargets(), 1000);
+    }
+
+    init();
+  </script>
+</body>
+
+</html>
