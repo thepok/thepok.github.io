@@ -275,6 +275,8 @@
       training: {
         trebleQueue: [],
         bassQueue: [],
+        trebleSolved: false,
+        bassSolved: false,
         correctTreble: 0,
         correctBass: 0,
         misses: 0,
@@ -317,6 +319,8 @@
       state.training.trebleNotePressTimes = [];
       state.training.bassNotePressTimes = [];
       state.training.lastResult = null;
+      state.training.trebleSolved = false;
+      state.training.bassSolved = false;
 
       state.training.trebleQueue = [];
       state.training.bassQueue = [];
@@ -497,8 +501,13 @@
     function updateStatsAndTargets() {
       const t = state.training.trebleQueue[0];
       const b = state.training.bassQueue[0];
+      const tDone = state.training.trebleSolved;
+      const bDone = state.training.bassSolved;
+      const nextHint = (tDone && !bDone) ? "   •   Next: Bass"
+        : (!tDone && bDone) ? "   •   Next: Treble"
+        : "";
       document.getElementById("targetNotes").textContent =
-        `Treble: ${prettyNoteName(t)}   •   Bass: ${prettyNoteName(b)}`;
+        `Treble: ${prettyNoteName(t)}${tDone ? " ✓" : ""}   •   Bass: ${prettyNoteName(b)}${bDone ? " ✓" : ""}${nextHint}`;
 
       const elapsedTime = Math.max(0.001, (Date.now() - state.training.startTime) / 1000);
       const trebleRate = state.training.correctTreble / elapsedTime;
@@ -539,16 +548,25 @@
       const targetBass = state.training.bassQueue[0];
       const now = Date.now();
 
-      if (note === targetTreble) {
+      const needsTreble = !state.training.trebleSolved;
+      const needsBass = !state.training.bassSolved;
+
+      if (note === targetTreble && needsTreble) {
         state.training.correctTreble++;
         state.training.trebleNotePressTimes.push(now);
-        shiftQueue(state.training.trebleQueue, TREBLE_POOL);
         state.training.lastResult = "good";
-      } else if (note === targetBass) {
+        state.training.trebleSolved = true;
+      } else if (note === targetBass && needsBass) {
         state.training.correctBass++;
         state.training.bassNotePressTimes.push(now);
-        shiftQueue(state.training.bassQueue, BASS_POOL);
         state.training.lastResult = "good";
+        state.training.bassSolved = true;
+      } else if (note === targetTreble && !needsTreble && needsBass) {
+        // Already solved treble for this pair; wait for bass (no penalty).
+        state.training.lastResult = null;
+      } else if (note === targetBass && !needsBass && needsTreble) {
+        // Already solved bass for this pair; wait for treble (no penalty).
+        state.training.lastResult = null;
       } else {
         state.training.misses++;
         state.training.lastResult = "bad";
@@ -562,6 +580,14 @@
           state.training.wrongNote = null;
           renderStaff();
         }, 3050);
+      }
+
+      // Advance only after BOTH treble and bass were solved for the current pair.
+      if (state.training.trebleSolved && state.training.bassSolved) {
+        shiftQueue(state.training.trebleQueue, TREBLE_POOL);
+        shiftQueue(state.training.bassQueue, BASS_POOL);
+        state.training.trebleSolved = false;
+        state.training.bassSolved = false;
       }
 
       renderStaff();
