@@ -75,6 +75,7 @@ const el = {
   trimEnd: document.getElementById("trimEnd"),
   trimEndNum: document.getElementById("trimEndNum"),
   trimMeta: document.getElementById("trimMeta"),
+  wave: document.getElementById("wave"),
   saveTo: document.getElementById("saveTo"),
   saveSample: document.getElementById("saveSample"),
   clearKit: document.getElementById("clearKit"),
@@ -97,6 +98,8 @@ let recStream = null;
 let recorder = null;
 let recChunks = [];
 let lastRecording = null; // { blob, mime, durationSec, buffer }
+let waveDrag = null; // { which: "start" | "end", pointerId }
+let waveResizeObserver = null;
 
 function clamp(n, a, b) {
   return Math.min(b, Math.max(a, n));
@@ -904,6 +907,8 @@ function updateRecorderUI() {
     el.trimStart.max = "1";
     el.trimEnd.max = "1";
   }
+
+  drawWave();
 }
 
 function syncTrim(which, value) {
@@ -927,6 +932,8 @@ function syncTrim(which, value) {
   el.trimStartNum.value = String(nextStart);
   el.trimEnd.value = String(nextEnd);
   el.trimEndNum.value = String(nextEnd);
+
+  drawWave();
 }
 
 function getTrim() {
@@ -993,7 +1000,7 @@ async function onRecordingStopped(mimeType) {
   try {
     const ab = await blob.arrayBuffer();
     const buffer = await audioCtx.decodeAudioData(ab);
-    lastRecording = { blob, mime: blob.type, buffer, durationSec: buffer.duration };
+    lastRecording = { blob, mime: blob.type, buffer, durationSec: buffer.duration, peaks: null };
     syncTrim("start", 0);
     syncTrim("end", buffer.duration);
     updateRecorderUI();
@@ -1027,6 +1034,197 @@ function playTrimPreview() {
     src.start(time, startSec, dur);
   } catch {
     // ignore
+  }
+}
+
+function ensureWavePeaks() {
+  if (!lastRecording?.buffer) return null;
+  if (lastRecording.peaks) return lastRecording.peaks;
+
+  const buffer = lastRecording.buffer;
+  const channel = buffer.getChannelData(0);
+  const samples = channel.length;
+  const pixels = 900; // base resolution; canvas scales with CSS
+  const block = Math.max(1, Math.floor(samples / pixels));
+  const peaks = new Float32Array(pixels);
+  for (let i = 0; i < pixels; i++) {
+    let max = 0;
+    const start = i * block;
+    const end = Math.min(samples, start + block);
+    for (let j = start; j < end; j++) {
+      const v = Math.abs(channel[j]);
+      if (v > max) max = v;
+    }
+    peaks[i] = max;
+  }
+  lastRecording.peaks = peaks;
+  return peaks;
+}
+
+function drawWave() {
+  const canvas = el.wave;
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  const rect = canvas.getBoundingClientRect();
+  const dpr = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
+  const w = Math.max(320, Math.floor(rect.width * dpr));
+  const h = Math.max(120, Math.floor(rect.height * dpr));
+  if (canvas.width !== w) canvas.width = w;
+  if (canvas.height !== h) canvas.height = h;
+
+  ctx.clearRect(0, 0, w, h);
+  const bg = "rgba(255,255,255,0.06)";
+  const grid = "rgba(255,255,255,0.08)";
+  const wave = "rgba(255,255,255,0.78)";
+  const shade = "rgba(0,0,0,0.35)";
+  const handle = "rgba(83,255,188,0.95)";
+  const handle2 = "rgba(255,229,107,0.95)";
+
+  // background
+  ctx.fillStyle = bg;
+  roundRect(ctx, 0, 0, w, h, 14);
+  ctx.fill();
+
+  // grid lines
+  ctx.strokeStyle = grid;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let i = 1; i < 8; i++) {
+    const y = (h * i) / 8;
+    ctx.moveTo(0, y);
+    ctx.lineTo(w, y);
+  }
+  ctx.stroke();
+
+  if (!lastRecording?.buffer) {
+    ctx.fillStyle = "rgba(255,255,255,0.55)";
+    ctx.font = `${Math.floor(14 * dpr)}px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial`;
+    ctx.fillText("Record something to see the waveform", 16 * dpr, h / 2);
+    return;
+  }
+
+  const peaks = ensureWavePeaks();
+  const mid = h / 2;
+  const amp = (h * 0.38);
+
+  // waveform
+  ctx.strokeStyle = wave;
+  ctx.lineWidth = Math.max(1, Math.floor(1.4 * dpr));
+  ctx.beginPath();
+  const n = peaks.length;
+  for (let x = 0; x < w; x++) {
+    const idx = Math.floor((x / (w - 1)) * (n - 1));
+    const p = peaks[idx];
+    const y = p * amp;
+    ctx.moveTo(x, mid - y);
+    ctx.lineTo(x, mid + y);
+  }
+  ctx.stroke();
+
+  const dur = lastRecording.durationSec;
+  const { startSec, endSec } = getTrim();
+  const x1 = Math.floor((startSec / dur) * w);
+  const x2 = Math.floor((endSec / dur) * w);
+
+  // shaded outside selection
+  ctx.fillStyle = shade;
+  ctx.fillRect(0, 0, Math.max(0, x1), h);
+  ctx.fillRect(Math.max(0, x2), 0, Math.max(0, w - x2), h);
+
+  // selection outline
+  ctx.strokeStyle = "rgba(255,255,255,0.22)";
+  ctx.lineWidth = Math.max(1, Math.floor(2 * dpr));
+  ctx.strokeRect(x1 + 0.5, 0.5, Math.max(1, x2 - x1), h - 1);
+
+  // handles
+  drawHandle(ctx, x1, h, handle, dpr);
+  drawHandle(ctx, x2, h, handle2, dpr);
+}
+
+function drawHandle(ctx, x, h, color, dpr) {
+  ctx.strokeStyle = color;
+  ctx.lineWidth = Math.max(1, Math.floor(3 * dpr));
+  ctx.beginPath();
+  ctx.moveTo(x + 0.5, 10 * dpr);
+  ctx.lineTo(x + 0.5, h - 10 * dpr);
+  ctx.stroke();
+
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(x, 10 * dpr, 6 * dpr, 0, Math.PI * 2);
+  ctx.arc(x, h - 10 * dpr, 6 * dpr, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  const rr = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + rr, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rr);
+  ctx.arcTo(x + w, y + h, x, y + h, rr);
+  ctx.arcTo(x, y + h, x, y, rr);
+  ctx.arcTo(x, y, x + w, y, rr);
+  ctx.closePath();
+}
+
+function waveXToSec(clientX) {
+  if (!lastRecording?.buffer) return 0;
+  const canvas = el.wave;
+  const rect = canvas.getBoundingClientRect();
+  const x = clamp(clientX - rect.left, 0, rect.width);
+  const t = rect.width > 1 ? x / rect.width : 0;
+  return t * lastRecording.durationSec;
+}
+
+function bindWaveInteractions() {
+  const canvas = el.wave;
+  if (!canvas) return;
+
+  const onDown = (e) => {
+    if (!lastRecording?.buffer) return;
+    canvas.setPointerCapture?.(e.pointerId);
+    const dur = lastRecording.durationSec;
+    const { startSec, endSec } = getTrim();
+    const rect = canvas.getBoundingClientRect();
+    const x = clamp(e.clientX - rect.left, 0, rect.width);
+    const x1 = (startSec / dur) * rect.width;
+    const x2 = (endSec / dur) * rect.width;
+    const threshold = 18;
+    const d1 = Math.abs(x - x1);
+    const d2 = Math.abs(x - x2);
+    const which = d1 <= d2 ? "start" : "end";
+    if (Math.min(d1, d2) <= threshold) {
+      waveDrag = { which, pointerId: e.pointerId };
+    } else {
+      // click-to-set nearest handle
+      waveDrag = { which, pointerId: e.pointerId };
+      const sec = waveXToSec(e.clientX);
+      syncTrim(which, sec);
+      waveDrag = null;
+    }
+  };
+
+  const onMove = (e) => {
+    if (!waveDrag || waveDrag.pointerId !== e.pointerId) return;
+    const sec = waveXToSec(e.clientX);
+    syncTrim(waveDrag.which, sec);
+  };
+
+  const onUp = (e) => {
+    if (!waveDrag || waveDrag.pointerId !== e.pointerId) return;
+    waveDrag = null;
+  };
+
+  canvas.addEventListener("pointerdown", onDown);
+  canvas.addEventListener("pointermove", onMove);
+  canvas.addEventListener("pointerup", onUp);
+  canvas.addEventListener("pointercancel", onUp);
+
+  if (!waveResizeObserver && "ResizeObserver" in window) {
+    waveResizeObserver = new ResizeObserver(() => drawWave());
+    waveResizeObserver.observe(canvas);
   }
 }
 
@@ -1095,4 +1293,5 @@ function bindRecorderUI() {
   });
 
   updateRecorderUI();
+  bindWaveInteractions();
 }
