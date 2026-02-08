@@ -461,9 +461,13 @@ function playRecorded(inst, time) {
     const src = audioCtx.createBufferSource();
     src.buffer = buffer;
     const g = audioCtx.createGain();
-    g.gain.setValueAtTime(0.0001, time);
-    g.gain.exponentialRampToValueAtTime(1.0, time + 0.008);
-    g.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+    const fadeIn = 0.008;
+    const fadeOut = Math.min(0.3, dur);
+    const holdEnd = Math.max(time + fadeIn, time + dur - fadeOut);
+    g.gain.setValueAtTime(0, time);
+    g.gain.linearRampToValueAtTime(1.0, time + fadeIn);
+    g.gain.setValueAtTime(1.0, holdEnd);
+    g.gain.linearRampToValueAtTime(0, time + dur);
     src.connect(g).connect(master);
     try {
       src.start(time, start, dur);
@@ -1026,9 +1030,13 @@ function playTrimPreview() {
   const src = audioCtx.createBufferSource();
   src.buffer = lastRecording.buffer;
   const g = audioCtx.createGain();
-  g.gain.setValueAtTime(0.0001, time);
-  g.gain.exponentialRampToValueAtTime(1.0, time + 0.01);
-  g.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+  const fadeIn = 0.01;
+  const fadeOut = Math.min(0.3, dur);
+  const holdEnd = Math.max(time + fadeIn, time + dur - fadeOut);
+  g.gain.setValueAtTime(0, time);
+  g.gain.linearRampToValueAtTime(1.0, time + fadeIn);
+  g.gain.setValueAtTime(1.0, holdEnd);
+  g.gain.linearRampToValueAtTime(0, time + dur);
   src.connect(g).connect(master);
   try {
     src.start(time, startSec, dur);
