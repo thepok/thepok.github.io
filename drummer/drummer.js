@@ -101,6 +101,27 @@ let lastRecording = null; // { blob, mime, durationSec, buffer }
 let waveDrag = null; // { which: "start" | "end", pointerId }
 let waveResizeObserver = null;
 
+function stopActiveRecorded(inst, time) {
+  const entry = kit?.[inst];
+  if (!entry?.voices?.length) return;
+  const fade = 0.02;
+  for (const v of entry.voices) {
+    try {
+      v.gain.gain.cancelScheduledValues(time);
+      v.gain.gain.setValueAtTime(1, time);
+      v.gain.gain.linearRampToValueAtTime(0, time + fade);
+    } catch {
+      // ignore
+    }
+    try {
+      v.src.stop(time + fade + 0.01);
+    } catch {
+      // ignore
+    }
+  }
+  entry.voices = [];
+}
+
 function clamp(n, a, b) {
   return Math.min(b, Math.max(a, n));
 }
@@ -441,6 +462,10 @@ function playRecorded(inst, time) {
   if (!entry?.blob) return;
   if (!audioCtx) return;
 
+  // Avoid stacking long recordings on top of themselves (especially on mobile),
+  // which can trigger device limiters and make the loop sound like it gets quieter.
+  stopActiveRecorded(inst, time);
+
   if (!entry.buffer && !entry.decodePromise) {
     entry.decodePromise = entry.blob
       .arrayBuffer()
@@ -469,6 +494,13 @@ function playRecorded(inst, time) {
     g.gain.setValueAtTime(1.0, holdEnd);
     g.gain.linearRampToValueAtTime(0, time + dur);
     src.connect(g).connect(master);
+
+    if (!entry.voices) entry.voices = [];
+    entry.voices.push({ src, gain: g });
+    src.onended = () => {
+      if (!entry.voices) return;
+      entry.voices = entry.voices.filter((vv) => vv.src !== src);
+    };
     try {
       src.start(time, start, dur);
     } catch {
@@ -873,6 +905,7 @@ async function initKit() {
         endSec: typeof saved.endSec === "number" ? saved.endSec : 0,
         buffer: null,
         decodePromise: null,
+        voices: [],
       };
     }
   }
@@ -1250,7 +1283,7 @@ async function saveTrimToKit() {
   };
   const ok = await idbPut(value);
   if (ok) {
-    kit[inst] = { ...value, buffer: null, decodePromise: null };
+    kit[inst] = { ...value, buffer: null, decodePromise: null, voices: [] };
     setRecStatus(`Saved: ${SOUND_LABELS[`recorded:${inst}`]}`);
     buildGrid();
   } else {
