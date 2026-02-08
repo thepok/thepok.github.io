@@ -371,7 +371,7 @@ input[type="number"] {
 
 .trackControls {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .trackTop {
@@ -380,9 +380,36 @@ input[type="number"] {
   gap: 10px;
 }
 
+.trackName {
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.rowRemove {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.16);
+  background: rgba(0, 0, 0, 0.18);
+  color: var(--text);
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.rowRemove:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+.rowRemove:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.22);
+  outline-offset: 2px;
+}
+
 .rowSelect {
   width: 100%;
-  padding: 10px 10px;
+  padding: 9px 10px;
   border-radius: 14px;
   border: 2px solid rgba(255, 255, 255, 0.16);
   background: rgba(0, 0, 0, 0.18);
@@ -391,30 +418,6 @@ input[type="number"] {
   cursor: pointer;
 }
 .rowSelect:focus-visible {
-  outline: 3px solid rgba(255, 255, 255, 0.22);
-  outline-offset: 2px;
-}
-
-.rowActions {
-  display: grid;
-  grid-template-columns: 1fr;
-}
-
-.miniBtn {
-  appearance: none;
-  border: 2px solid rgba(255, 255, 255, 0.16);
-  border-radius: 14px;
-  padding: 10px 10px;
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text);
-  font-weight: 900;
-  cursor: pointer;
-}
-.miniBtn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.28);
-}
-.miniBtn:focus-visible {
   outline: 3px solid rgba(255, 255, 255, 0.22);
   outline-offset: 2px;
 }

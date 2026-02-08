@@ -576,14 +576,25 @@ function buildGrid() {
     const top = document.createElement("div");
     top.className = "trackTop";
 
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "rowRemove";
+    remove.textContent = "×";
+    remove.title = "Remove row";
+    remove.setAttribute("aria-label", "Remove row");
+    remove.disabled = state.tracks.length <= 1;
+    remove.addEventListener("click", () => {
+      removeRow(t);
+    });
+
     const tag = document.createElement("span");
     tag.className = "tag";
 
     const name = document.createElement("span");
-    name.className = "trackLabel";
+    name.className = "trackName";
     name.textContent = SOUND_LABELS[track.soundKey] || track.soundKey;
 
-    top.append(tag, name);
+    top.append(remove, tag, name);
 
     const select = document.createElement("select");
     select.className = "rowSelect";
@@ -609,19 +620,7 @@ function buildGrid() {
       schedulePersist();
     });
 
-    const actions = document.createElement("div");
-    actions.className = "rowActions";
-    const remove = document.createElement("button");
-    remove.type = "button";
-    remove.className = "miniBtn";
-    remove.textContent = "Remove";
-    remove.disabled = state.tracks.length <= 1;
-    remove.addEventListener("click", () => {
-      removeRow(t);
-    });
-    actions.appendChild(remove);
-
-    controls.append(top, select, actions);
+    controls.append(top, select);
     rowHead.appendChild(controls);
 
     const trackColor = trackColorFromSoundKey(css, track.soundKey);
