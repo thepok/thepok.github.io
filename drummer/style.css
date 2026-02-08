@@ -284,29 +284,55 @@ input[type="number"] {
   font-size: 14px;
 }
 
-.grid {
-  display: grid;
-  gap: 10px;
+.gridScroll {
+  overflow-x: auto;
+  padding-bottom: 6px;
 }
 
-.track {
-  display: grid;
-  grid-template-columns: 140px 1fr;
-  gap: 12px;
-  align-items: center;
+.seq {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 10px 10px;
+}
+
+.seq th,
+.seq td {
+  padding: 0;
+  vertical-align: middle;
+}
+
+.stepHead {
+  width: 48px;
+  text-align: center;
+  color: var(--muted2);
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.rowHead {
+  width: 150px;
+  padding-right: 6px;
 }
 
 @media (max-width: 540px) {
-  .track {
-    grid-template-columns: 110px 1fr;
+  .rowHead {
+    width: 120px;
+  }
+  .stepHead {
+    width: 42px;
+    font-size: 11px;
   }
 }
 
 .trackLabel {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 10px;
   font-weight: 900;
+  white-space: nowrap;
 }
 
 .tag {
@@ -316,22 +342,26 @@ input[type="number"] {
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
 }
 
-.cells {
-  display: grid;
-  grid-template-columns: repeat(16, minmax(0, 1fr));
-  gap: 8px;
+.cell {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.16);
+  cursor: pointer;
+  transition: transform 90ms ease, background 90ms ease, border-color 90ms ease,
+    filter 90ms ease;
+  position: relative;
+  background: rgba(255, 63, 63, 0.22);
 }
 
-.cell {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(0, 0, 0, 0.18);
-  cursor: pointer;
-  transition: transform 90ms ease, background 90ms ease, border-color 90ms ease;
-  position: relative;
+@media (max-width: 540px) {
+  .cell {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+  }
 }
+
 .cell:hover {
   transform: translateY(-1px);
   border-color: rgba(255, 255, 255, 0.28);
@@ -345,24 +375,25 @@ input[type="number"] {
 }
 
 .cell.on {
-  background: color-mix(in srgb, var(--trackColor) 28%, rgba(255, 255, 255, 0.08));
-  border-color: color-mix(in srgb, var(--trackColor) 55%, rgba(255, 255, 255, 0.2));
+  background: rgba(60, 255, 170, 0.26);
+  border-color: rgba(60, 255, 170, 0.6);
 }
 
 .cell.on::after {
   content: "";
   position: absolute;
-  inset: 9px;
+  inset: 10px;
   border-radius: 10px;
-  background: color-mix(in srgb, var(--trackColor) 70%, white 10%);
+  background: rgba(235, 255, 245, 0.75);
   opacity: 0.85;
   filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.32));
 }
 
 .cell.playhead {
   box-shadow:
-    0 0 0 2px rgba(255, 255, 255, 0.22),
+    0 0 0 3px color-mix(in srgb, var(--trackColor) 65%, rgba(255, 255, 255, 0.25)),
     0 18px 40px rgba(0, 0, 0, 0.25);
+  filter: saturate(1.2);
 }
 
 .foot {
@@ -381,3 +412,14 @@ input[type="number"] {
   }
 }
 
+.srOnly {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}

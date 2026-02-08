@@ -220,10 +220,39 @@ function buildGrid() {
   el.grid.innerHTML = "";
   const css = getComputedStyle(document.documentElement);
 
+  const caption = document.createElement("caption");
+  caption.className = "srOnly";
+  caption.textContent = "Step sequencer grid";
+  el.grid.appendChild(caption);
+
+  const thead = document.createElement("thead");
+  const headRow = document.createElement("tr");
+
+  const corner = document.createElement("th");
+  corner.className = "rowHead";
+  corner.scope = "col";
+  headRow.appendChild(corner);
+
+  for (let s = 0; s < STEPS; s++) {
+    const th = document.createElement("th");
+    th.className = "stepHead";
+    th.scope = "col";
+    th.textContent = String(s + 1);
+    headRow.appendChild(th);
+  }
+
+  thead.appendChild(headRow);
+  el.grid.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+
   for (let t = 0; t < tracks.length; t++) {
     const track = tracks[t];
-    const row = document.createElement("div");
-    row.className = "track";
+    const tr = document.createElement("tr");
+
+    const rowHead = document.createElement("th");
+    rowHead.className = "rowHead";
+    rowHead.scope = "row";
 
     const label = document.createElement("div");
     label.className = "trackLabel";
@@ -233,13 +262,12 @@ function buildGrid() {
     const name = document.createElement("span");
     name.textContent = track.name;
     label.append(tag, name);
-
-    const cells = document.createElement("div");
-    cells.className = "cells";
+    rowHead.appendChild(label);
 
     const trackColor = css.getPropertyValue(track.colorVar).trim();
 
     for (let s = 0; s < STEPS; s++) {
+      const td = document.createElement("td");
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "cell";
@@ -254,19 +282,21 @@ function buildGrid() {
         btn.classList.toggle("on", next);
         btn.setAttribute("aria-pressed", next ? "true" : "false");
         if (!state.isPlaying) {
-          // Tiny preview so kids get immediate feedback.
           ensureAudio();
           audioCtx.resume?.();
           player[track.id]?.(audioCtx.currentTime + 0.005);
         }
       });
 
-      cells.appendChild(btn);
+      td.appendChild(btn);
+      tr.appendChild(td);
     }
 
-    row.append(label, cells);
-    el.grid.appendChild(row);
+    tr.prepend(rowHead);
+    tbody.appendChild(tr);
   }
+
+  el.grid.appendChild(tbody);
 }
 
 function clearPattern() {
@@ -315,4 +345,3 @@ function bindUI() {
 
 buildGrid();
 bindUI();
-
