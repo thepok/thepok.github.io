@@ -14,6 +14,10 @@ const SOUND_LABELS = {
   "arcade:snare": "Arcade — Snare",
   "arcade:hat": "Arcade — Hi‑Hat",
   "arcade:perc": "Arcade — Perc",
+  "recorded:kick": "My Kit — Kick",
+  "recorded:snare": "My Kit — Snare",
+  "recorded:hat": "My Kit — Hi‑Hat",
+  "recorded:perc": "My Kit — Perc",
 };
 
 const SOUND_OPTIONS = [
@@ -26,10 +30,14 @@ const SOUND_OPTIONS = [
     label: "Arcade (Synth)",
     values: ["arcade:kick", "arcade:snare", "arcade:hat", "arcade:perc"],
   },
+  {
+    label: "My Kit (Recorded)",
+    values: ["recorded:kick", "recorded:snare", "recorded:hat", "recorded:perc"],
+  },
 ];
 
 function defaultTracks(preset = "classic") {
-  const p = ["classic", "toy", "arcade"].includes(preset) ? preset : "classic";
+  const p = ["classic", "toy", "arcade", "recorded"].includes(preset) ? preset : "classic";
   return [
     { soundKey: `${p}:kick` },
     { soundKey: `${p}:snare` },
@@ -56,12 +64,39 @@ const el = {
   bps: document.getElementById("bps"),
   bpsNumber: document.getElementById("bpsNumber"),
   bpmLabel: document.getElementById("bpmLabel"),
+
+  recStatus: document.getElementById("recStatus"),
+  micEnable: document.getElementById("micEnable"),
+  recStart: document.getElementById("recStart"),
+  recStop: document.getElementById("recStop"),
+  recPlay: document.getElementById("recPlay"),
+  trimStart: document.getElementById("trimStart"),
+  trimStartNum: document.getElementById("trimStartNum"),
+  trimEnd: document.getElementById("trimEnd"),
+  trimEndNum: document.getElementById("trimEndNum"),
+  trimMeta: document.getElementById("trimMeta"),
+  saveTo: document.getElementById("saveTo"),
+  saveSample: document.getElementById("saveSample"),
+  clearKit: document.getElementById("clearKit"),
 };
 
 let audioCtx = null;
 let master = null;
 let play = null;
 let persistTimer = null;
+
+const REC_INSTRUMENTS = ["kick", "snare", "hat", "perc"];
+const kit = {
+  kick: null,
+  snare: null,
+  hat: null,
+  perc: null,
+};
+
+let recStream = null;
+let recorder = null;
+let recChunks = [];
+let lastRecording = null; // { blob, mime, durationSec, buffer }
 
 function clamp(n, a, b) {
   return Math.min(b, Math.max(a, n));
@@ -385,7 +420,57 @@ function makeSoundSet() {
     "arcade:snare": playSnareArcade,
     "arcade:hat": playHatArcade,
     "arcade:perc": playPercArcade,
+    "recorded:kick": (time) => playRecorded("kick", time),
+    "recorded:snare": (time) => playRecorded("snare", time),
+    "recorded:hat": (time) => playRecorded("hat", time),
+    "recorded:perc": (time) => playRecorded("perc", time),
   };
+}
+
+function recordedAvailable(soundKey) {
+  const [set, inst] = String(soundKey || "").split(":");
+  if (set !== "recorded") return true;
+  return Boolean(kit?.[inst]?.blob);
+}
+
+function playRecorded(inst, time) {
+  const entry = kit?.[inst];
+  if (!entry?.blob) return;
+  if (!audioCtx) return;
+
+  if (!entry.buffer && !entry.decodePromise) {
+    entry.decodePromise = entry.blob
+      .arrayBuffer()
+      .then((ab) => audioCtx.decodeAudioData(ab))
+      .then((buf) => {
+        entry.buffer = buf;
+        return buf;
+      })
+      .catch(() => null);
+  }
+
+  const schedule = (buffer) => {
+    if (!buffer) return;
+    const start = clamp(Number(entry.startSec ?? 0), 0, buffer.duration);
+    const end = clamp(Number(entry.endSec ?? buffer.duration), 0, buffer.duration);
+    const dur = Math.max(0.02, end - start);
+
+    const src = audioCtx.createBufferSource();
+    src.buffer = buffer;
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0.0001, time);
+    g.gain.exponentialRampToValueAtTime(1.0, time + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+    src.connect(g).connect(master);
+    try {
+      src.start(time, start, dur);
+    } catch {
+      // ignore
+    }
+  };
+
+  if (entry.buffer) schedule(entry.buffer);
+  else entry.decodePromise?.then((buf) => schedule(buf));
 }
 
 function scheduleStep(stepIndex, time) {
@@ -509,7 +594,9 @@ function buildGrid() {
       for (const v of group.values) {
         const opt = document.createElement("option");
         opt.value = v;
-        opt.textContent = SOUND_LABELS[v] || v;
+        const ok = recordedAvailable(v);
+        opt.disabled = !ok;
+        opt.textContent = ok ? SOUND_LABELS[v] || v : `${SOUND_LABELS[v] || v} (record first)`;
         og.appendChild(opt);
       }
       select.appendChild(og);
@@ -598,7 +685,9 @@ function updateRowVisuals(trackIndex, soundKey) {
 
 function addRow() {
   const preset = el.soundSet?.value || "classic";
-  const soundKey = ["classic", "toy", "arcade"].includes(preset) ? `${preset}:kick` : "classic:kick";
+  const soundKey = ["classic", "toy", "arcade", "recorded"].includes(preset)
+    ? `${preset}:kick`
+    : "classic:kick";
   state.tracks.push({ soundKey });
   state.pattern.push(Array.from({ length: STEPS }, () => false));
   buildGrid();
@@ -666,6 +755,8 @@ function bindUI() {
   document.addEventListener("visibilitychange", () => {
     if (document.hidden && state.isPlaying) stop();
   });
+
+  bindRecorderUI();
 }
 
 function schedulePersist() {
@@ -697,7 +788,7 @@ function loadState() {
     if (Array.isArray(parsed.tracks) && Array.isArray(parsed.pattern)) {
       state.tracks = parsed.tracks
         .map((t) => ({ soundKey: typeof t?.soundKey === "string" ? t.soundKey : "classic:kick" }))
-        .filter((t) => Boolean(play?.[t.soundKey]) || Boolean(SOUND_LABELS[t.soundKey]));
+        .filter((t) => Boolean(SOUND_LABELS[t.soundKey]));
       if (state.tracks.length === 0) state.tracks = defaultTracks("classic");
 
       state.pattern = state.tracks.map((_, idx) => {
@@ -711,7 +802,298 @@ function loadState() {
   }
 }
 
-ensureAudio();
 loadState();
 buildGrid();
 bindUI();
+
+function openDb() {
+  if (!("indexedDB" in window)) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    const req = indexedDB.open("drummer", 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains("kit")) db.createObjectStore("kit", { keyPath: "key" });
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => resolve(null);
+  });
+}
+
+async function idbGet(key) {
+  const db = await dbPromise;
+  if (!db) return null;
+  return new Promise((resolve) => {
+    const tx = db.transaction("kit", "readonly");
+    const store = tx.objectStore("kit");
+    const req = store.get(key);
+    req.onsuccess = () => resolve(req.result || null);
+    req.onerror = () => resolve(null);
+  });
+}
+
+async function idbPut(value) {
+  const db = await dbPromise;
+  if (!db) return false;
+  return new Promise((resolve) => {
+    const tx = db.transaction("kit", "readwrite");
+    const store = tx.objectStore("kit");
+    const req = store.put(value);
+    req.onsuccess = () => resolve(true);
+    req.onerror = () => resolve(false);
+  });
+}
+
+async function idbDelete(key) {
+  const db = await dbPromise;
+  if (!db) return false;
+  return new Promise((resolve) => {
+    const tx = db.transaction("kit", "readwrite");
+    const store = tx.objectStore("kit");
+    const req = store.delete(key);
+    req.onsuccess = () => resolve(true);
+    req.onerror = () => resolve(false);
+  });
+}
+
+async function initKit() {
+  for (const inst of REC_INSTRUMENTS) {
+    const saved = await idbGet(inst);
+    if (saved?.blob) {
+      kit[inst] = {
+        key: inst,
+        blob: saved.blob,
+        mime: saved.mime || "",
+        startSec: typeof saved.startSec === "number" ? saved.startSec : 0,
+        endSec: typeof saved.endSec === "number" ? saved.endSec : 0,
+        buffer: null,
+        decodePromise: null,
+      };
+    }
+  }
+}
+
+// Recorder + IndexedDB (simple, local only)
+const dbPromise = openDb();
+
+initKit().then(() => {
+  buildGrid();
+  updateRecorderUI();
+});
+
+function setRecStatus(text) {
+  if (el.recStatus) el.recStatus.textContent = text;
+}
+
+function updateRecorderUI() {
+  const has = Boolean(lastRecording?.buffer);
+  const dur = lastRecording?.durationSec || 0;
+
+  for (const e of [el.trimStart, el.trimStartNum, el.trimEnd, el.trimEndNum, el.saveTo, el.saveSample]) {
+    if (!e) continue;
+    e.disabled = !has;
+  }
+  if (el.recPlay) el.recPlay.disabled = !has;
+  if (el.trimMeta) el.trimMeta.textContent = has ? `Recording length: ${dur.toFixed(2)} sec` : "No recording yet";
+
+  if (has) {
+    const max = Math.max(0.01, dur);
+    el.trimStart.max = String(max);
+    el.trimStartNum.max = String(max);
+    el.trimEnd.max = String(max);
+    el.trimEndNum.max = String(max);
+  } else {
+    el.trimStart.max = "1";
+    el.trimEnd.max = "1";
+  }
+}
+
+function syncTrim(which, value) {
+  if (!lastRecording?.buffer) return;
+  const dur = lastRecording.durationSec;
+  const v = clamp(Number.parseFloat(value), 0, dur);
+  const start = clamp(Number.parseFloat(el.trimStartNum.value), 0, dur);
+  const end = clamp(Number.parseFloat(el.trimEndNum.value), 0, dur);
+
+  let nextStart = start;
+  let nextEnd = end;
+  if (which === "start") nextStart = v;
+  else nextEnd = v;
+
+  if (nextEnd <= nextStart + 0.02) {
+    if (which === "start") nextEnd = clamp(nextStart + 0.1, 0, dur);
+    else nextStart = clamp(nextEnd - 0.1, 0, dur);
+  }
+
+  el.trimStart.value = String(nextStart);
+  el.trimStartNum.value = String(nextStart);
+  el.trimEnd.value = String(nextEnd);
+  el.trimEndNum.value = String(nextEnd);
+}
+
+function getTrim() {
+  if (!lastRecording?.buffer) return { startSec: 0, endSec: 0 };
+  const dur = lastRecording.durationSec;
+  const startSec = clamp(Number.parseFloat(el.trimStartNum.value), 0, dur);
+  const endSec = clamp(Number.parseFloat(el.trimEndNum.value), 0, dur);
+  return { startSec, endSec: Math.max(startSec + 0.02, endSec) };
+}
+
+async function enableMic() {
+  if (!navigator.mediaDevices?.getUserMedia) {
+    setRecStatus("Mic: not supported in this browser");
+    return false;
+  }
+  try {
+    recStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    setRecStatus("Mic: ready");
+    return true;
+  } catch {
+    setRecStatus("Mic: permission denied");
+    return false;
+  }
+}
+
+function pickMimeType() {
+  const types = ["audio/webm;codecs=opus", "audio/ogg;codecs=opus", "audio/webm", "audio/ogg"];
+  if (!window.MediaRecorder) return "";
+  for (const t of types) if (MediaRecorder.isTypeSupported(t)) return t;
+  return "";
+}
+
+async function startRecording() {
+  const ok = recStream ? true : await enableMic();
+  if (!ok) return;
+  if (!window.MediaRecorder) {
+    setRecStatus("Recorder: not supported in this browser");
+    return;
+  }
+
+  const mimeType = pickMimeType();
+  recChunks = [];
+  recorder = new MediaRecorder(recStream, mimeType ? { mimeType } : undefined);
+  recorder.ondataavailable = (e) => {
+    if (e.data && e.data.size > 0) recChunks.push(e.data);
+  };
+  recorder.onstop = () => void onRecordingStopped(mimeType);
+  recorder.start();
+
+  setRecStatus("Recording…");
+  el.recStart.disabled = true;
+  el.recStop.disabled = false;
+}
+
+async function stopRecording() {
+  if (!recorder || recorder.state === "inactive") return;
+  recorder.stop();
+  el.recStop.disabled = true;
+}
+
+async function onRecordingStopped(mimeType) {
+  const blob = new Blob(recChunks, { type: mimeType || recChunks?.[0]?.type || "audio/webm" });
+  ensureAudio();
+  try {
+    const ab = await blob.arrayBuffer();
+    const buffer = await audioCtx.decodeAudioData(ab);
+    lastRecording = { blob, mime: blob.type, buffer, durationSec: buffer.duration };
+    syncTrim("start", 0);
+    syncTrim("end", buffer.duration);
+    updateRecorderUI();
+    setRecStatus("Recording ready");
+  } catch {
+    lastRecording = null;
+    setRecStatus("Could not decode recording (try another browser)");
+  } finally {
+    el.recStart.disabled = false;
+    el.recStop.disabled = true;
+    el.recPlay.disabled = !lastRecording;
+  }
+}
+
+function playTrimPreview() {
+  if (!lastRecording?.buffer) return;
+  ensureAudio();
+  audioCtx.resume?.();
+  const { startSec, endSec } = getTrim();
+  const dur = Math.max(0.02, endSec - startSec);
+  const time = audioCtx.currentTime + 0.01;
+
+  const src = audioCtx.createBufferSource();
+  src.buffer = lastRecording.buffer;
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.0001, time);
+  g.gain.exponentialRampToValueAtTime(1.0, time + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+  src.connect(g).connect(master);
+  try {
+    src.start(time, startSec, dur);
+  } catch {
+    // ignore
+  }
+}
+
+async function saveTrimToKit() {
+  if (!lastRecording?.blob) return;
+  const inst = el.saveTo.value;
+  const { startSec, endSec } = getTrim();
+  const value = {
+    key: inst,
+    blob: lastRecording.blob,
+    mime: lastRecording.mime,
+    startSec,
+    endSec,
+    savedAt: Date.now(),
+  };
+  const ok = await idbPut(value);
+  if (ok) {
+    kit[inst] = { ...value, buffer: null, decodePromise: null };
+    setRecStatus(`Saved: ${SOUND_LABELS[`recorded:${inst}`]}`);
+    buildGrid();
+  } else {
+    setRecStatus("Save failed (storage blocked?)");
+  }
+}
+
+async function clearMyKit() {
+  for (const inst of REC_INSTRUMENTS) {
+    await idbDelete(inst);
+    kit[inst] = null;
+  }
+  setRecStatus("My Kit cleared");
+  buildGrid();
+}
+
+function bindRecorderUI() {
+  if (!el.micEnable) return;
+
+  el.micEnable.addEventListener("click", async () => {
+    await enableMic();
+  });
+  el.recStart.addEventListener("click", async () => {
+    stop();
+    await startRecording();
+  });
+  el.recStop.addEventListener("click", async () => {
+    await stopRecording();
+  });
+  el.recPlay.addEventListener("click", () => {
+    stop();
+    playTrimPreview();
+  });
+
+  const onStart = (v) => syncTrim("start", v);
+  const onEnd = (v) => syncTrim("end", v);
+  el.trimStart.addEventListener("input", (e) => onStart(e.target.value));
+  el.trimStartNum.addEventListener("input", (e) => onStart(e.target.value));
+  el.trimEnd.addEventListener("input", (e) => onEnd(e.target.value));
+  el.trimEndNum.addEventListener("input", (e) => onEnd(e.target.value));
+
+  el.saveSample.addEventListener("click", async () => {
+    await saveTrimToKit();
+  });
+  el.clearKit.addEventListener("click", async () => {
+    stop();
+    await clearMyKit();
+  });
+
+  updateRecorderUI();
+}

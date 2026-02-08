@@ -487,6 +487,107 @@ input[type="number"] {
   padding: 0 6px;
 }
 
+.recorderPanel h2 {
+  margin: 0;
+  font-family: "Fredoka", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  letter-spacing: 0.2px;
+}
+
+.recHead {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  align-items: start;
+  margin-bottom: 12px;
+}
+
+@media (min-width: 820px) {
+  .recHead {
+    grid-template-columns: 1fr 200px;
+    align-items: center;
+  }
+}
+
+.recSub {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.recStatus {
+  justify-self: start;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 2px dashed rgba(255, 255, 255, 0.22);
+  background: rgba(0, 0, 0, 0.18);
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.recGrid {
+  display: grid;
+  gap: 14px;
+}
+
+.recBtns {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr 1fr;
+}
+
+@media (min-width: 820px) {
+  .recBtns {
+    grid-template-columns: 180px 1fr 160px 160px;
+    align-items: center;
+  }
+}
+
+.trimRow .label {
+  display: block;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.trimInputs {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  gap: 10px;
+  align-items: center;
+}
+
+.trimMeta {
+  margin-top: 10px;
+  color: var(--muted2);
+  font-weight: 800;
+}
+
+.saveRow .label {
+  display: block;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.saveInputs {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 820px) {
+  .saveInputs {
+    grid-template-columns: 210px 1fr 180px;
+    align-items: center;
+  }
+}
+
+.btn:disabled,
+.select:disabled,
+.rowSelect:disabled,
+input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .btn,
   .cell,

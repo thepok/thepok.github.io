@@ -47,6 +47,7 @@
               <option value="classic">Classic (Synth)</option>
               <option value="toy">Toy (Synth)</option>
               <option value="arcade">Arcade (Synth)</option>
+              <option value="recorded">My Kit (Recorded)</option>
             </select>
             <div class="miniHint">Use this as the default for new rows.</div>
           </div>
@@ -85,9 +86,63 @@
         </div>
       </section>
 
+      <section class="panel recorderPanel" aria-label="Recorder">
+        <div class="recHead">
+          <div>
+            <h2>Recorder</h2>
+            <p class="recSub">Record your own sounds and save them as a new “My Kit” instrument.</p>
+          </div>
+          <div class="recStatus" id="recStatus">Mic: not ready</div>
+        </div>
+
+        <div class="recGrid">
+          <div class="recBtns">
+            <button id="micEnable" class="btn" type="button">Enable mic</button>
+            <button id="recStart" class="btn primary" type="button">
+              <span class="btnIcon" aria-hidden="true">●</span>
+              <span class="btnText">Record</span>
+            </button>
+            <button id="recStop" class="btn" type="button" disabled>Stop</button>
+            <button id="recPlay" class="btn" type="button" disabled>Play trim</button>
+          </div>
+
+          <div class="trim" aria-label="Trim">
+            <div class="trimRow">
+              <label class="label" for="trimStart">Start (sec)</label>
+              <div class="trimInputs">
+                <input id="trimStart" type="range" min="0" max="1" step="0.01" value="0" disabled />
+                <input id="trimStartNum" type="number" min="0" max="999" step="0.01" value="0" disabled />
+              </div>
+            </div>
+            <div class="trimRow">
+              <label class="label" for="trimEnd">End (sec)</label>
+              <div class="trimInputs">
+                <input id="trimEnd" type="range" min="0" max="1" step="0.01" value="1" disabled />
+                <input id="trimEndNum" type="number" min="0" max="999" step="0.01" value="1" disabled />
+              </div>
+            </div>
+            <div class="trimMeta" id="trimMeta">No recording yet</div>
+          </div>
+
+          <div class="saveRow" aria-label="Save sample">
+            <label class="label" for="saveTo">Save as</label>
+            <div class="saveInputs">
+              <select id="saveTo" class="select" disabled>
+                <option value="kick">Kick</option>
+                <option value="snare">Snare</option>
+                <option value="hat">Hi‑Hat</option>
+                <option value="perc">Perc</option>
+              </select>
+              <button id="saveSample" class="btn" type="button" disabled>Save to My Kit</button>
+              <button id="clearKit" class="btn" type="button">Clear My Kit</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <footer class="foot">
         <p>
-          This page is 100% static and uses Web Audio to synthesize drums (no WAV files yet).
+          This page is 100% static. Sounds are synthesized (and optionally recorded) with Web Audio.
         </p>
       </footer>
     </main>
