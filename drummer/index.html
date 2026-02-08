@@ -41,6 +41,16 @@
             <span class="btnText">Start</span>
           </button>
 
+          <div class="selectBox" role="group" aria-label="Preset">
+            <label class="label" for="soundSet">Preset</label>
+            <select id="soundSet" class="select">
+              <option value="classic">Classic (Synth)</option>
+              <option value="toy">Toy (Synth)</option>
+              <option value="arcade">Arcade (Synth)</option>
+            </select>
+            <div class="miniHint">Use this as the default for new rows.</div>
+          </div>
+
           <div class="tempo" role="group" aria-label="Tempo">
             <label class="label" for="bps">
               Speed <span class="hint">(beats/sec)</span>
@@ -56,7 +66,10 @@
             </div>
           </div>
 
-          <button id="clear" class="btn" type="button">Clear</button>
+          <div class="rowBtns">
+            <button id="addRow" class="btn" type="button">Add row</button>
+            <button id="clear" class="btn" type="button">Clear</button>
+          </div>
         </section>
       </header>
 

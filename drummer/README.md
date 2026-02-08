@@ -6,6 +6,7 @@ Kid-friendly step sequencer drum machine (static webpage).
 
 - Go to `/drummer/` on your GitHub Pages site.
 - Tap squares to turn steps on/off.
+- Use **Add row** to add more drum lines, and change the sound per row.
 - Set **Speed** in **beats per second**.
 - Press **Start** (or press Space) to loop. Press again to stop.
 
@@ -13,4 +14,3 @@ Kid-friendly step sequencer drum machine (static webpage).
 
 - Sounds are synthesized via Web Audio (no samples yet).
 - Works as a static site (no build step).
-

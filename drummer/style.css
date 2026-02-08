@@ -239,6 +239,40 @@ input[type="number"] {
   font-weight: 800;
 }
 
+.selectBox .label {
+  display: block;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.miniHint {
+  margin-top: 8px;
+  color: var(--muted2);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.select {
+  width: 100%;
+  padding: 12px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--text);
+  font-weight: 800;
+  cursor: pointer;
+}
+.select:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.22);
+  outline-offset: 2px;
+}
+
+.rowBtns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
 .tempoMeta {
   display: flex;
   gap: 10px;
@@ -333,6 +367,56 @@ input[type="number"] {
   gap: 10px;
   font-weight: 900;
   white-space: nowrap;
+}
+
+.trackControls {
+  display: grid;
+  gap: 8px;
+}
+
+.trackTop {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rowSelect {
+  width: 100%;
+  padding: 10px 10px;
+  border-radius: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.16);
+  background: rgba(0, 0, 0, 0.18);
+  color: var(--text);
+  font-weight: 800;
+  cursor: pointer;
+}
+.rowSelect:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.22);
+  outline-offset: 2px;
+}
+
+.rowActions {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.miniBtn {
+  appearance: none;
+  border: 2px solid rgba(255, 255, 255, 0.16);
+  border-radius: 14px;
+  padding: 10px 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  font-weight: 900;
+  cursor: pointer;
+}
+.miniBtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+.miniBtn:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.22);
+  outline-offset: 2px;
 }
 
 .tag {
