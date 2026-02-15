@@ -341,7 +341,6 @@
       key.className = `key ${isBlack ? "black" : "white"}`;
       key.dataset.note = `${noteName}${octave}`;
       key.setAttribute("aria-label", `${noteName}${octave}`);
-      key.textContent = prettyNoteName(noteName);
       return key;
     }
 
