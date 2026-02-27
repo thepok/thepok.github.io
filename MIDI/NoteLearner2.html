@@ -272,6 +272,13 @@
     const state = {
       lastPressed: null,
       pointerId: null,
+      redirect: {
+        enabled: false,
+        targetUrl: null,
+        targetLabel: "",
+        requiredCorrect: 0,
+        redirected: false,
+      },
       training: {
         trebleQueue: [],
         bassQueue: [],
@@ -289,6 +296,56 @@
         wrongNoteToken: 0,
       }
     };
+
+    function getTotalCorrect() {
+      return state.training.correctTreble + state.training.correctBass;
+    }
+
+    function normalizeRedirectUrl(raw) {
+      if (!raw) return null;
+      const trimmed = String(raw).trim();
+      if (!trimmed) return null;
+
+      const hasScheme = /^[a-zA-Z][a-zA-Z\d+.-]*:/.test(trimmed);
+      const candidate = hasScheme ? trimmed : `https://${trimmed}`;
+
+      try {
+        const parsed = new URL(candidate);
+        if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
+        return parsed.toString();
+      } catch {
+        return null;
+      }
+    }
+
+    function parseRedirectConfigFromQuery() {
+      const params = new URLSearchParams(window.location.search);
+      const targetUrl = normalizeRedirectUrl(params.get("url"));
+      if (!targetUrl) return;
+
+      const rawCount = params.get("count") ?? params.get("notes") ?? params.get("n");
+      let requiredCorrect = Number.parseInt(rawCount ?? "", 10);
+      if (!Number.isFinite(requiredCorrect) || requiredCorrect < 0) requiredCorrect = 10;
+
+      let targetLabel = targetUrl;
+      try {
+        targetLabel = new URL(targetUrl).host || targetUrl;
+      } catch {}
+
+      state.redirect.enabled = true;
+      state.redirect.targetUrl = targetUrl;
+      state.redirect.targetLabel = targetLabel;
+      state.redirect.requiredCorrect = requiredCorrect;
+      state.redirect.redirected = false;
+    }
+
+    function maybeRedirectNow() {
+      if (!state.redirect.enabled || state.redirect.redirected) return;
+      if (!state.redirect.targetUrl) return;
+      if (getTotalCorrect() < state.redirect.requiredCorrect) return;
+      state.redirect.redirected = true;
+      window.location.assign(state.redirect.targetUrl);
+    }
 
     function prettyNoteName(noteName) {
       return noteName.replace("#", "♯");
@@ -524,8 +581,11 @@
       const totalCorrect = state.training.correctTreble + state.training.correctBass;
       score -= (score * ((state.training.misses * 5) / (totalCorrect + 1)));
 
+      const redirectPart = state.redirect.enabled
+        ? `   •   Redirect in ${Math.max(0, state.redirect.requiredCorrect - totalCorrect)} → ${state.redirect.targetLabel}`
+        : "";
       document.getElementById("statsLine").textContent =
-        `✓ ${totalCorrect} (T ${state.training.correctTreble} / B ${state.training.correctBass})   ✗ ${state.training.misses}   Score ${Math.max(0, Math.round(score))}`;
+        `✓ ${totalCorrect} (T ${state.training.correctTreble} / B ${state.training.correctBass})   ✗ ${state.training.misses}   Score ${Math.max(0, Math.round(score))}${redirectPart}`;
 
       const statusBox = document.getElementById("statusBox");
       statusBox.classList.remove("good", "bad");
@@ -591,6 +651,7 @@
 
       renderStaff();
       updateStatsAndTargets();
+      maybeRedirectNow();
     }
 
     function keyFromPoint(clientX, clientY) {
@@ -628,6 +689,8 @@
     }
 
     function init() {
+      parseRedirectConfigFromQuery();
+
       const kb = document.getElementById("keyboards");
       for (const octave of OCTAVES_TOP_TO_BOTTOM) kb.appendChild(buildOctaveRow(octave));
 
@@ -649,6 +712,7 @@
       setLastPressed(null);
       renderStaff();
       updateStatsAndTargets();
+      maybeRedirectNow();
 
       setInterval(() => updateStatsAndTargets(), 1000);
     }
