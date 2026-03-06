@@ -4,6 +4,7 @@ import { OrbitControls } from "./vendor/OrbitControls.js";
 const DEFAULT_BLOCK_SIZE = 0.25;
 const CHUNK_SIZE = 32;
 const CHUNK_VOLUME = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
+const WORLD_NAME = "leonardos-world";
 const MESH_MIN_HEIGHT = -32768;
 const IS_COARSE_POINTER = window.matchMedia && window.matchMedia("(pointer:coarse)").matches;
 const MIN_VIEW_SCALE = 0.5;
@@ -646,6 +647,8 @@ async function fetchChunkNow(cx, cy, cz, cKey, epoch) {
     applyChunkMesh(cx, cy, cz, meshData);
     chunkLoaded.add(cKey);
   } catch (_error) {
+    console.error("chunk generation failed", _error);
+    updateNetStateLabel("Chunk generation failed");
     chunkLoaded.delete(cKey);
   } finally {
     chunkFetching.delete(cKey);
