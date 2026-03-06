@@ -1,0 +1,71 @@
+{
+  "meadow": {
+    "description": "Balanced rolling green/yellow terrain.",
+    "seed": 18042638315246809,
+    "base_height": 0,
+    "hill_amp": 9,
+    "rough_amp": 4,
+    "biome_scale": 72,
+    "cave_scale": 48,
+    "cave_threshold": 830,
+    "life_scale": 1
+  },
+  "canyon": {
+    "description": "Higher relief with stronger ridges and orange bands.",
+    "seed": 9289914381144601,
+    "base_height": 2,
+    "hill_amp": 18,
+    "rough_amp": 9,
+    "biome_scale": 88,
+    "cave_scale": 44,
+    "cave_threshold": 760,
+    "life_scale": 1
+  },
+  "dunes": {
+    "description": "Smoother, wavy lowlands with warm tones.",
+    "seed": 5139126474788713,
+    "base_height": -1,
+    "hill_amp": 6,
+    "rough_amp": 3,
+    "biome_scale": 56,
+    "cave_scale": 54,
+    "cave_threshold": 860,
+    "life_scale": 1
+  },
+  "highlands": {
+    "description": "Mountainous profile with dark rock undersides.",
+    "seed": 13907863332924207,
+    "base_height": 6,
+    "hill_amp": 24,
+    "rough_amp": 12,
+    "biome_scale": 96,
+    "cave_scale": 40,
+    "cave_threshold": 735,
+    "life_scale": 2
+  },
+  "gigantic_caves": {
+    "description": "Huge cinematic cave halls with blue ceilings, green floors, arches, temples and ruined jungle keeps.",
+    "seed": 12582591394230227,
+    "kind": "terrain",
+    "base_height": 1,
+    "hill_amp": 8,
+    "rough_amp": 4,
+    "biome_scale": 92,
+    "cave_scale": 76,
+    "cave_threshold": 600,
+    "life_scale": 2
+  },
+  "city": {
+    "description": "Dense procedural city with streets, plazas, parks, towers and block-by-block skyline variation.",
+    "seed": 8735101294462001,
+    "kind": "city",
+    "block_size_m": 0.05,
+    "base_height": 2,
+    "hill_amp": 4,
+    "rough_amp": 1,
+    "biome_scale": 96,
+    "cave_scale": 24,
+    "cave_threshold": 900,
+    "life_scale": 1
+  }
+}

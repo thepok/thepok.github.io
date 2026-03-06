@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Leonardos City Viewer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;700&family=Syne:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css?v=1" />
+  </head>
+  <body>
+    <div class="backdrop-grid" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <div class="brand">
+        <p class="brand-kicker">Procedural World Viewer</p>
+        <h1>LEONARDOS CITY</h1>
+        <p class="brand-copy">Generated-only city exploration. Static build, local wasm generation, no server.</p>
+      </div>
+      <div class="topbar-actions">
+        <button class="chip-btn" id="fly-toggle" type="button">Enter Fly Mode</button>
+        <button class="chip-btn" id="settings-toggle" type="button">View Settings</button>
+        <div class="chip" id="net-state">Loading city...</div>
+      </div>
+    </header>
+
+    <section class="settings-panel" id="settings-panel" hidden>
+      <h2>Viewer Settings</h2>
+      <label class="settings-row" for="worldgen-preset">
+        <span>Preset</span>
+      </label>
+      <select id="worldgen-preset" disabled>
+        <option value="">Loading...</option>
+      </select>
+
+      <label class="settings-row" for="view-scale">
+        <span>View Distance</span>
+        <strong id="view-scale-label">0.75x</strong>
+      </label>
+      <input id="view-scale" type="range" min="0.5" max="10" step="0.25" value="0.75" />
+      <p class="settings-hint">Reduced view distance keeps dense generated city chunks responsive.</p>
+
+      <label class="settings-row" for="object-focus">
+        <span>Inspect Object</span>
+      </label>
+      <select id="object-focus">
+        <option value="">Whole City</option>
+      </select>
+      <p class="settings-hint">Semantic object inspection is disabled in the static build.</p>
+    </section>
+
+    <main class="layout">
+      <section class="viewport-card">
+        <canvas id="world"></canvas>
+        <div class="viewport-overlay">
+          <div class="overlay-chip" id="control-mode-chip">Mode: Orbit</div>
+          <div class="overlay-chip">Fly: `F` or button</div>
+          <div class="overlay-chip">Move: `WASD` + `Space` / `Shift`</div>
+          <div class="overlay-chip">Fast: hold `Ctrl`</div>
+          <div class="overlay-chip">Look: mouse in fly mode</div>
+        </div>
+      </section>
+
+      <aside class="info-panel">
+        <section class="panel-block">
+          <h2>Navigation</h2>
+          <p class="panel-copy">
+            Orbit for overview. Enter fly mode to inspect interiors, shafts, and rooms. Press <strong>Esc</strong>
+            to leave fly mode.
+          </p>
+        </section>
+
+        <section class="panel-block">
+          <h2>Render</h2>
+          <div class="stats-list">
+            <div><span>Loaded Chunks</span><strong id="loaded-chunks">0</strong></div>
+            <div><span>Visible Progress</span><strong id="done-chunks">0 / 0</strong></div>
+            <div><span>Block Estimate</span><strong id="loaded-blocks">0</strong></div>
+          </div>
+        </section>
+
+        <section class="panel-block">
+          <h2>City Summary</h2>
+          <div class="stats-list" id="city-summary">
+            <div><span>Buildings</span><strong id="summary-buildings">-</strong></div>
+            <div><span>Floors</span><strong id="summary-floors">-</strong></div>
+            <div><span>Rooms</span><strong id="summary-rooms">-</strong></div>
+            <div><span>Stations</span><strong id="summary-stations">-</strong></div>
+          </div>
+        </section>
+
+        <section class="panel-block">
+          <h2>Validation</h2>
+          <div class="stats-list">
+            <div><span>Status</span><strong id="validation-status">-</strong></div>
+            <div><span>Errors</span><strong id="validation-errors">-</strong></div>
+            <div><span>Warnings</span><strong id="validation-warnings">-</strong></div>
+          </div>
+          <p class="panel-copy" id="validation-copy">Static build active. Semantic report endpoints are not available.</p>
+        </section>
+
+        <section class="panel-block">
+          <h2>Scope</h2>
+          <p class="panel-copy">
+            The app is now focused on generated-world viewing only. All chunk generation happens locally in your
+            browser from wasm.
+          </p>
+        </section>
+      </aside>
+    </main>
+
+    <script type="module" src="./app.js?v=40"></script>
+  </body>
+</html>
