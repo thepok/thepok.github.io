@@ -629,6 +629,9 @@
       } else {
         state.training.misses++;
         state.training.lastResult = "bad";
+        if (state.redirect.enabled && !state.redirect.redirected) {
+          state.redirect.requiredCorrect += 2;
+        }
 
         state.training.wrongNote = note;
         state.training.wrongNoteUntil = now + 3000;
