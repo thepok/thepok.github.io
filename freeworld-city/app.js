@@ -13,6 +13,7 @@ const DEFAULT_VIEW_SCALE = 0.75;
 const CHUNK_FETCH_MAX_INFLIGHT = IS_COARSE_POINTER ? 4 : 6;
 const GENERATED_WORKER_PHONE_COUNT = 2;
 const GENERATED_WORKER_DESKTOP_COUNT = 4;
+const SUPERCHUNK_SIZE = 2;
 const GENERATED_INTERIOR_SPAWNS = {
   city: { x: 22, y: 5.8, z: 26, yawDeg: -144, pitchDeg: -12 },
   gigantic_caves: { x: -10.5, y: -4.0, z: -7.5, yawDeg: -54, pitchDeg: -9 },
@@ -126,6 +127,7 @@ const chunkQuadCounts = new Map();
 const chunkRevisions = new Map();
 let loadedQuadCount = 0;
 let chunkFetchPumpScheduled = false;
+let chunkBatchJobsInFlight = 0;
 let chunkFetchEpoch = 1;
 let generatedSpawnAppliedKey = "";
 let lastCameraChunkKey = "";
@@ -266,6 +268,7 @@ function clearAllLoadedChunks() {
   chunkQueued.clear();
   chunkFetching.clear();
   chunkFetchQueue.length = 0;
+  chunkBatchJobsInFlight = 0;
   lastCameraChunkKey = "";
   updateStats();
 }
@@ -412,7 +415,7 @@ async function ensureGeneratedChunkWorkerPool() {
       const workerCount = desiredGeneratedWorkerCount();
       const slots = [];
       for (let index = 0; index < workerCount; index += 1) {
-        const worker = new Worker("./worldgen-worker.js?v=4", { type: "module" });
+        const worker = new Worker("./worldgen-worker.js?v=5", { type: "module" });
         const slot = { worker, pending: new Map(), busy: false };
         worker.addEventListener("message", (event) => {
           const message = event.data || {};
@@ -420,7 +423,7 @@ async function ensureGeneratedChunkWorkerPool() {
           if (!pending) return;
           slot.pending.delete(message.jobId);
           releaseWorkerSlot(generatedChunkWorkerPool, slot);
-          if (message.ok) pending.resolve(message.meshData);
+          if (message.ok) pending.resolve(message.meshData ?? message.results);
           else pending.reject(new Error(message.error || "worker failed"));
         });
         worker.addEventListener("error", (event) => {
@@ -457,6 +460,16 @@ async function generateGeneratedChunkMeshWithWorkers(params) {
   return new Promise((resolve, reject) => {
     slot.pending.set(jobId, { resolve, reject });
     slot.worker.postMessage({ type: "generate_chunk_mesh", jobId, params });
+  });
+}
+
+async function generateGeneratedChunkMeshesWithWorkers(batchParams) {
+  const pool = await ensureGeneratedChunkWorkerPool();
+  const slot = await acquireWorkerSlot(pool);
+  const jobId = generatedChunkWorkerJobSeq++;
+  return new Promise((resolve, reject) => {
+    slot.pending.set(jobId, { resolve, reject });
+    slot.worker.postMessage({ type: "generate_chunk_mesh_batch", jobId, batchParams });
   });
 }
 
@@ -591,6 +604,18 @@ function chunkWithinRange(cx, cy, cz, padding = 0) {
     && Math.abs(cy - center.cy) <= (getChunkRadiusY() + padding);
 }
 
+function useSuperchunkBatching() {
+  return activeBlockSize <= 0.051;
+}
+
+function superchunkCoord(value) {
+  return Math.floor(value / SUPERCHUNK_SIZE);
+}
+
+function superchunkKeyForChunk(cx, cy, cz) {
+  return `${superchunkCoord(cx)}:${superchunkCoord(cy)}:${superchunkCoord(cz)}`;
+}
+
 function enqueueChunkFetch(cx, cy, cz, priority) {
   const cKey = chunkKey(cx, cy, cz);
   if (chunkFetching.has(cKey) || chunkLoaded.has(cKey) || chunkQueued.has(cKey)) return;
@@ -651,7 +676,66 @@ async function fetchChunkNow(cx, cy, cz, cKey, epoch) {
     updateNetStateLabel("Chunk generation failed");
     chunkLoaded.delete(cKey);
   } finally {
+    chunkBatchJobsInFlight = Math.max(0, chunkBatchJobsInFlight - 1);
     chunkFetching.delete(cKey);
+    if (chunkFetchQueue.length) scheduleChunkFetchPump();
+  }
+}
+
+async function fetchChunkBatchNow(batch, epoch) {
+  if (!Array.isArray(batch) || batch.length === 0) return;
+  if (batch.length === 1) {
+    const single = batch[0];
+    await fetchChunkNow(single.cx, single.cy, single.cz, single.cKey, epoch);
+    return;
+  }
+
+  try {
+    const presetConfig = worldgenPresetConfigs.get(worldgenPreset);
+    if (!presetConfig) throw new Error("unknown preset");
+    await ensureWorldgenModule();
+    if (epoch !== chunkFetchEpoch) return;
+    const seedParts = seedPartsForPreset(presetConfig);
+
+    const batchParams = batch.map(({ cx, cy, cz }) => ({
+      seedLo: seedParts.lo,
+      seedHi: seedParts.hi,
+      cx,
+      cy,
+      cz,
+      kindCode: worldgenModule.worldgenKindCode(presetConfig.kind),
+      baseHeight: presetConfig.baseHeight,
+      hillAmp: presetConfig.hillAmp,
+      roughAmp: presetConfig.roughAmp,
+      biomeScale: presetConfig.biomeScale,
+      caveScale: presetConfig.caveScale,
+      caveThreshold: presetConfig.caveThreshold,
+      lifeScale: presetConfig.lifeScale,
+      blockSize: presetConfig.blockSizeM,
+    }));
+
+    const results = await generateGeneratedChunkMeshesWithWorkers(batchParams);
+    const byKey = new Map();
+    for (const result of (Array.isArray(results) ? results : [])) {
+      const key = chunkKey(result.cx, result.cy, result.cz);
+      byKey.set(key, result.meshData);
+    }
+
+    for (const entry of batch) {
+      if (epoch !== chunkFetchEpoch) break;
+      if (!chunkWithinRange(entry.cx, entry.cy, entry.cz, 1)) continue;
+      const meshData = byKey.get(entry.cKey);
+      if (!meshData) continue;
+      applyChunkMesh(entry.cx, entry.cy, entry.cz, meshData);
+      chunkLoaded.add(entry.cKey);
+    }
+  } catch (error) {
+    console.error("superchunk generation failed", error);
+    updateNetStateLabel("Superchunk generation failed");
+    for (const entry of batch) chunkLoaded.delete(entry.cKey);
+  } finally {
+    chunkBatchJobsInFlight = Math.max(0, chunkBatchJobsInFlight - 1);
+    for (const entry of batch) chunkFetching.delete(entry.cKey);
     if (chunkFetchQueue.length) scheduleChunkFetchPump();
   }
 }
@@ -659,12 +743,25 @@ async function fetchChunkNow(cx, cy, cz, cKey, epoch) {
 async function pumpChunkFetchQueue() {
   if (!chunkFetchQueue.length) return;
   chunkFetchQueue.sort((a, b) => a.priority - b.priority);
-  while (chunkFetchQueue.length && chunkFetching.size < CHUNK_FETCH_MAX_INFLIGHT) {
+  while (chunkFetchQueue.length && chunkBatchJobsInFlight < CHUNK_FETCH_MAX_INFLIGHT) {
     const next = chunkFetchQueue.shift();
     chunkQueued.delete(next.cKey);
     if (!chunkWithinRange(next.cx, next.cy, next.cz, 1)) continue;
-    chunkFetching.add(next.cKey);
-    void fetchChunkNow(next.cx, next.cy, next.cz, next.cKey, chunkFetchEpoch);
+    const batch = [next];
+    if (useSuperchunkBatching()) {
+      const targetSuperchunkKey = superchunkKeyForChunk(next.cx, next.cy, next.cz);
+      for (let index = chunkFetchQueue.length - 1; index >= 0; index -= 1) {
+        const candidate = chunkFetchQueue[index];
+        if (superchunkKeyForChunk(candidate.cx, candidate.cy, candidate.cz) !== targetSuperchunkKey) continue;
+        if (!chunkWithinRange(candidate.cx, candidate.cy, candidate.cz, 1)) continue;
+        batch.push(candidate);
+        chunkQueued.delete(candidate.cKey);
+        chunkFetchQueue.splice(index, 1);
+      }
+    }
+    for (const entry of batch) chunkFetching.add(entry.cKey);
+    chunkBatchJobsInFlight += 1;
+    void fetchChunkBatchNow(batch, chunkFetchEpoch);
   }
 }
 

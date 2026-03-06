@@ -143,11 +143,44 @@ async function ensureRuntime() {
 
 self.addEventListener("message", async (event) => {
   const message = event.data || {};
-  if (message.type !== "generate_chunk_mesh") return;
+  if (message.type !== "generate_chunk_mesh" && message.type !== "generate_chunk_mesh_batch") return;
 
   const jobId = message.jobId;
   try {
     const runtime = await ensureRuntime();
+    if (message.type === "generate_chunk_mesh_batch") {
+      const batchParams = Array.isArray(message.batchParams) ? message.batchParams : [];
+      const results = [];
+      const transfers = [];
+      for (const params of batchParams) {
+        const colors = runtime.generateChunkColors(params);
+        const meshData = decodeGeneratedChunkColors(
+          colors,
+          params.cx | 0,
+          params.cy | 0,
+          params.cz | 0,
+          Number(params.blockSize) || DEFAULT_BLOCK_SIZE,
+        );
+        results.push({
+          cx: params.cx | 0,
+          cy: params.cy | 0,
+          cz: params.cz | 0,
+          meshData,
+        });
+        transfers.push(
+          meshData.positions.buffer,
+          meshData.indices.buffer,
+          meshData.normals.buffer,
+          meshData.colors.buffer,
+          meshData.faceXYZ.buffer,
+          meshData.faceIds.buffer,
+          meshData.heights.buffer,
+        );
+      }
+      self.postMessage({ ok: true, jobId, results }, transfers);
+      return;
+    }
+
     const params = message.params || {};
     const colors = runtime.generateChunkColors(params);
     const meshData = decodeGeneratedChunkColors(
