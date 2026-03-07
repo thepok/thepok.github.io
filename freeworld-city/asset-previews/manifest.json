@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-03-07T12:40:09Z",
+  "generated_at": "2026-03-07T13:55:23Z",
   "world": "leonardos-world",
   "preset": "city",
-  "count": 5,
+  "count": 80,
   "items": [
     {
       "id": "building:-1:-1",
@@ -14,10 +14,10 @@
         "landmark"
       ],
       "progress": {
-        "done": 22,
+        "done": 25,
         "total": 0,
-        "loaded": 22,
-        "queued": 2852,
+        "loaded": 25,
+        "queued": 2849,
         "fetching": 6,
         "complete": false
       },
@@ -66,10 +66,10 @@
         "mixed_use"
       ],
       "progress": {
-        "done": 33,
+        "done": 32,
         "total": 0,
-        "loaded": 33,
-        "queued": 1977,
+        "loaded": 32,
+        "queued": 1978,
         "fetching": 6,
         "complete": false
       },
@@ -118,10 +118,10 @@
         "mixed_use"
       ],
       "progress": {
-        "done": 31,
+        "done": 32,
         "total": 0,
-        "loaded": 31,
-        "queued": 1943,
+        "loaded": 32,
+        "queued": 1942,
         "fetching": 6,
         "complete": false
       },
@@ -171,10 +171,10 @@
         "vacant"
       ],
       "progress": {
-        "done": 35,
+        "done": 30,
         "total": 0,
-        "loaded": 35,
-        "queued": 1639,
+        "loaded": 30,
+        "queued": 1644,
         "fetching": 6,
         "complete": false
       },
@@ -224,10 +224,10 @@
         "landmark"
       ],
       "progress": {
-        "done": 22,
+        "done": 23,
         "total": 0,
-        "loaded": 23,
-        "queued": 2996,
+        "loaded": 24,
+        "queued": 2995,
         "fetching": 6,
         "complete": false
       },
@@ -263,6 +263,3931 @@
             "z": 6.805,
             "yawDeg": 95.75,
             "pitchDeg": 19.66
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-1:1",
+      "type": "building",
+      "label": "building:-1:1 [office_tower, downtown]",
+      "tags": [
+        "office_tower",
+        "downtown",
+        "landmark"
+      ],
+      "progress": {
+        "done": 18,
+        "total": 0,
+        "loaded": 18,
+        "queued": 3168,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-1-1-hero.png",
+          "camera": {
+            "x": 7.305,
+            "y": 11.481,
+            "z": 28.575,
+            "yawDeg": -144.25,
+            "pitchDeg": 20.99
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-1-1-corner.png",
+          "camera": {
+            "x": 4.309,
+            "y": 11.481,
+            "z": -1.155,
+            "yawDeg": -24.25,
+            "pitchDeg": 20.99
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-1-1-reverse.png",
+          "camera": {
+            "x": -19.939,
+            "y": 11.481,
+            "z": 16.305,
+            "yawDeg": 95.75,
+            "pitchDeg": 20.99
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-1:2",
+      "type": "building",
+      "label": "building:-1:2 [apartment_midrise, mixed_use]",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 26,
+        "total": 0,
+        "loaded": 26,
+        "queued": 2656,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-1-2-hero.png",
+          "camera": {
+            "x": 8.055,
+            "y": 9.566,
+            "z": 38.6,
+            "yawDeg": -144.25,
+            "pitchDeg": 16.54
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-1-2-corner.png",
+          "camera": {
+            "x": 5.059,
+            "y": 9.566,
+            "z": 8.87,
+            "yawDeg": -24.25,
+            "pitchDeg": 16.54
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-1-2-reverse.png",
+          "camera": {
+            "x": -19.189,
+            "y": 9.566,
+            "z": 26.33,
+            "yawDeg": 95.75,
+            "pitchDeg": 16.54
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-1:3",
+      "type": "building",
+      "label": "building:-1:3 [apartment_midrise, mixed_use]",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 27,
+        "total": 0,
+        "loaded": 27,
+        "queued": 2151,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-1-3-hero.png",
+          "camera": {
+            "x": 5.555,
+            "y": 8.75,
+            "z": 47.625,
+            "yawDeg": -144.25,
+            "pitchDeg": 7.85
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-1-3-corner.png",
+          "camera": {
+            "x": 2.559,
+            "y": 8.75,
+            "z": 17.895,
+            "yawDeg": -24.25,
+            "pitchDeg": 7.85
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-1-3-reverse.png",
+          "camera": {
+            "x": -21.689,
+            "y": 8.75,
+            "z": 35.355,
+            "yawDeg": 95.75,
+            "pitchDeg": 7.85
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-1:4",
+      "type": "building",
+      "label": "building:-1:4 [apartment_midrise]",
+      "tags": [
+        "apartment_midrise",
+        "residential",
+        "landmark"
+      ],
+      "progress": {
+        "done": 31,
+        "total": 0,
+        "loaded": 31,
+        "queued": 2651,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-1-4-hero.png",
+          "camera": {
+            "x": 5.655,
+            "y": 9.551,
+            "z": 55.325,
+            "yawDeg": -144.25,
+            "pitchDeg": 17.92
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-1-4-corner.png",
+          "camera": {
+            "x": 2.659,
+            "y": 9.551,
+            "z": 25.595,
+            "yawDeg": -24.25,
+            "pitchDeg": 17.92
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-1-4-reverse.png",
+          "camera": {
+            "x": -21.589,
+            "y": 9.551,
+            "z": 43.055,
+            "yawDeg": 95.75,
+            "pitchDeg": 17.92
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-2:-1",
+      "type": "building",
+      "label": "building:-2:-1 [apartment_midrise, mixed_use]",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 28,
+        "total": 0,
+        "loaded": 29,
+        "queued": 2318,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-2-1-hero.png",
+          "camera": {
+            "x": -3.195,
+            "y": 8.5,
+            "z": 9.575,
+            "yawDeg": -144.25,
+            "pitchDeg": 12.77
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-2-1-corner.png",
+          "camera": {
+            "x": -6.191,
+            "y": 8.5,
+            "z": -20.155,
+            "yawDeg": -24.25,
+            "pitchDeg": 12.77
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-2-1-reverse.png",
+          "camera": {
+            "x": -30.439,
+            "y": 8.5,
+            "z": -2.695,
+            "yawDeg": 95.75,
+            "pitchDeg": 12.77
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-2:-2",
+      "type": "building",
+      "label": "building:-2:-2 [shop_row, mixed_use]",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 28,
+        "total": 0,
+        "loaded": 32,
+        "queued": 1968,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-2-2-hero.png",
+          "camera": {
+            "x": -3.495,
+            "y": 8.5,
+            "z": 1.925,
+            "yawDeg": -144.25,
+            "pitchDeg": 11.15
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-2-2-corner.png",
+          "camera": {
+            "x": -6.491,
+            "y": 8.5,
+            "z": -27.805,
+            "yawDeg": -24.25,
+            "pitchDeg": 11.15
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-2-2-reverse.png",
+          "camera": {
+            "x": -30.739,
+            "y": 8.5,
+            "z": -10.345,
+            "yawDeg": 95.75,
+            "pitchDeg": 11.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-2:-3",
+      "type": "building",
+      "label": "building:-2:-3 [shop_row, mixed_use]",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 32,
+        "total": 0,
+        "loaded": 32,
+        "queued": 2482,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-2-3-hero.png",
+          "camera": {
+            "x": -2.445,
+            "y": 8.856,
+            "z": -6.475,
+            "yawDeg": -144.25,
+            "pitchDeg": 16.14
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-2-3-corner.png",
+          "camera": {
+            "x": -5.441,
+            "y": 8.856,
+            "z": -36.205,
+            "yawDeg": -24.25,
+            "pitchDeg": 16.14
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-2-3-reverse.png",
+          "camera": {
+            "x": -29.689,
+            "y": 8.856,
+            "z": -18.745,
+            "yawDeg": 95.75,
+            "pitchDeg": 16.14
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-2:-4",
+      "type": "building",
+      "label": "building:-2:-4 [building, office]",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "progress": {
+        "done": 33,
+        "total": 0,
+        "loaded": 33,
+        "queued": 2121,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-2-4-hero.png",
+          "camera": {
+            "x": -2.57,
+            "y": 8.5,
+            "z": -15.975,
+            "yawDeg": -144.25,
+            "pitchDeg": 5.06
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-2-4-corner.png",
+          "camera": {
+            "x": -5.566,
+            "y": 8.5,
+            "z": -45.705,
+            "yawDeg": -24.25,
+            "pitchDeg": 5.06
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-2-4-reverse.png",
+          "camera": {
+            "x": -29.814,
+            "y": 8.5,
+            "z": -28.245,
+            "yawDeg": 95.75,
+            "pitchDeg": 5.06
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-2:0",
+      "type": "building",
+      "label": "building:-2:0 [apartment_midrise, mixed_use]",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 23,
+        "total": 0,
+        "loaded": 25,
+        "queued": 2491,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-2-0-hero.png",
+          "camera": {
+            "x": -2.095,
+            "y": 8.816,
+            "z": 17.725,
+            "yawDeg": -144.25,
+            "pitchDeg": 16.54
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-2-0-corner.png",
+          "camera": {
+            "x": -5.091,
+            "y": 8.816,
+            "z": -12.005,
+            "yawDeg": -24.25,
+            "pitchDeg": 16.54
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-2-0-reverse.png",
+          "camera": {
+            "x": -29.339,
+            "y": 8.816,
+            "z": 5.455,
+            "yawDeg": 95.75,
+            "pitchDeg": 16.54
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-2:1",
+      "type": "building",
+      "label": "building:-2:1 [shop_row, mixed_use]",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 22,
+        "total": 0,
+        "loaded": 22,
+        "queued": 2492,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-2-1-hero.png",
+          "camera": {
+            "x": -1.595,
+            "y": 8.75,
+            "z": 28.575,
+            "yawDeg": -144.25,
+            "pitchDeg": 14.9
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-2-1-corner.png",
+          "camera": {
+            "x": -4.591,
+            "y": 8.75,
+            "z": -1.155,
+            "yawDeg": -24.25,
+            "pitchDeg": 14.9
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-2-1-reverse.png",
+          "camera": {
+            "x": -28.839,
+            "y": 8.75,
+            "z": 16.305,
+            "yawDeg": 95.75,
+            "pitchDeg": 14.9
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-2:2",
+      "type": "building",
+      "label": "building:-2:2 [shop_row, mixed_use]",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 23,
+        "total": 0,
+        "loaded": 23,
+        "queued": 2491,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-2-2-hero.png",
+          "camera": {
+            "x": -1.47,
+            "y": 8.856,
+            "z": 36.375,
+            "yawDeg": -144.25,
+            "pitchDeg": 16.14
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-2-2-corner.png",
+          "camera": {
+            "x": -4.466,
+            "y": 8.856,
+            "z": 6.645,
+            "yawDeg": -24.25,
+            "pitchDeg": 16.14
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-2-2-reverse.png",
+          "camera": {
+            "x": -28.714,
+            "y": 8.856,
+            "z": 24.105,
+            "yawDeg": 95.75,
+            "pitchDeg": 16.14
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-2:4",
+      "type": "building",
+      "label": "building:-2:4 [building, office]",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "progress": {
+        "done": 28,
+        "total": 0,
+        "loaded": 28,
+        "queued": 2122,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-2-4-hero.png",
+          "camera": {
+            "x": -1.645,
+            "y": 8.5,
+            "z": 55.05,
+            "yawDeg": -144.25,
+            "pitchDeg": 13.3
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-2-4-corner.png",
+          "camera": {
+            "x": -4.641,
+            "y": 8.5,
+            "z": 25.32,
+            "yawDeg": -24.25,
+            "pitchDeg": 13.3
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-2-4-reverse.png",
+          "camera": {
+            "x": -28.889,
+            "y": 8.5,
+            "z": 42.78,
+            "yawDeg": 95.75,
+            "pitchDeg": 13.3
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-3:-1",
+      "type": "building",
+      "label": "building:-3:-1 [apartment_midrise, mixed_use]",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 28,
+        "total": 0,
+        "loaded": 28,
+        "queued": 1982,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-3-1-hero.png",
+          "camera": {
+            "x": -11.995,
+            "y": 8.75,
+            "z": 10.65,
+            "yawDeg": -144.25,
+            "pitchDeg": 7.3
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-3-1-corner.png",
+          "camera": {
+            "x": -14.991,
+            "y": 8.75,
+            "z": -19.08,
+            "yawDeg": -24.25,
+            "pitchDeg": 7.3
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-3-1-reverse.png",
+          "camera": {
+            "x": -39.239,
+            "y": 8.75,
+            "z": -1.62,
+            "yawDeg": 95.75,
+            "pitchDeg": 7.3
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-3:-2",
+      "type": "building",
+      "label": "building:-3:-2 [apartment_midrise, mixed_use]",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 26,
+        "total": 0,
+        "loaded": 26,
+        "queued": 2488,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-3-2-hero.png",
+          "camera": {
+            "x": -11.095,
+            "y": 8.75,
+            "z": 0.575,
+            "yawDeg": -144.25,
+            "pitchDeg": 14.9
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-3-2-corner.png",
+          "camera": {
+            "x": -14.091,
+            "y": 8.75,
+            "z": -29.155,
+            "yawDeg": -24.25,
+            "pitchDeg": 14.9
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-3-2-reverse.png",
+          "camera": {
+            "x": -38.339,
+            "y": 8.75,
+            "z": -11.695,
+            "yawDeg": 95.75,
+            "pitchDeg": 14.9
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-3:-3",
+      "type": "building",
+      "label": "building:-3:-3 [apartment_midrise, mixed_use]",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 32,
+        "total": 0,
+        "loaded": 32,
+        "queued": 2118,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-3-3-hero.png",
+          "camera": {
+            "x": -11.295,
+            "y": 9.0,
+            "z": -6.225,
+            "yawDeg": -144.25,
+            "pitchDeg": 12.77
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-3-3-corner.png",
+          "camera": {
+            "x": -14.291,
+            "y": 9.0,
+            "z": -35.955,
+            "yawDeg": -24.25,
+            "pitchDeg": 12.77
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-3-3-reverse.png",
+          "camera": {
+            "x": -38.539,
+            "y": 9.0,
+            "z": -18.495,
+            "yawDeg": 95.75,
+            "pitchDeg": 12.77
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-3:-4",
+      "type": "building",
+      "label": "building:-3:-4 [apartment_midrise]",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "progress": {
+        "done": 30,
+        "total": 0,
+        "loaded": 30,
+        "queued": 1966,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-3-4-hero.png",
+          "camera": {
+            "x": -11.945,
+            "y": 8.75,
+            "z": -15.225,
+            "yawDeg": -144.25,
+            "pitchDeg": 8.41
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-3-4-corner.png",
+          "camera": {
+            "x": -14.941,
+            "y": 8.75,
+            "z": -44.955,
+            "yawDeg": -24.25,
+            "pitchDeg": 8.41
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-3-4-reverse.png",
+          "camera": {
+            "x": -39.189,
+            "y": 8.75,
+            "z": -27.495,
+            "yawDeg": 95.75,
+            "pitchDeg": 8.41
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-3:0",
+      "type": "building",
+      "label": "building:-3:0 [apartment_midrise, mixed_use]",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 25,
+        "total": 0,
+        "loaded": 25,
+        "queued": 2153,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-3-0-hero.png",
+          "camera": {
+            "x": -10.745,
+            "y": 8.5,
+            "z": 20.575,
+            "yawDeg": -144.25,
+            "pitchDeg": 11.69
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-3-0-corner.png",
+          "camera": {
+            "x": -13.741,
+            "y": 8.5,
+            "z": -9.155,
+            "yawDeg": -24.25,
+            "pitchDeg": 11.69
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-3-0-reverse.png",
+          "camera": {
+            "x": -37.989,
+            "y": 8.5,
+            "z": 8.305,
+            "yawDeg": 95.75,
+            "pitchDeg": 11.69
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-3:1",
+      "type": "building",
+      "label": "building:-3:1 [apartment_midrise, mixed_use]",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 26,
+        "total": 0,
+        "loaded": 26,
+        "queued": 1984,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-3-1-hero.png",
+          "camera": {
+            "x": -10.695,
+            "y": 9.25,
+            "z": 29.075,
+            "yawDeg": -144.25,
+            "pitchDeg": 3.38
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-3-1-corner.png",
+          "camera": {
+            "x": -13.691,
+            "y": 9.25,
+            "z": -0.655,
+            "yawDeg": -24.25,
+            "pitchDeg": 3.38
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-3-1-reverse.png",
+          "camera": {
+            "x": -37.939,
+            "y": 9.25,
+            "z": 16.805,
+            "yawDeg": 95.75,
+            "pitchDeg": 3.38
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-3:2",
+      "type": "building",
+      "label": "building:-3:2 [shop_row, mixed_use]",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 30,
+        "total": 0,
+        "loaded": 30,
+        "queued": 1992,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-3-2-hero.png",
+          "camera": {
+            "x": -12.12,
+            "y": 9.0,
+            "z": 38.175,
+            "yawDeg": -144.25,
+            "pitchDeg": 8.41
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-3-2-corner.png",
+          "camera": {
+            "x": -15.116,
+            "y": 9.0,
+            "z": 8.445,
+            "yawDeg": -24.25,
+            "pitchDeg": 8.41
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-3-2-reverse.png",
+          "camera": {
+            "x": -39.364,
+            "y": 9.0,
+            "z": 25.905,
+            "yawDeg": 95.75,
+            "pitchDeg": 8.41
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-3:3",
+      "type": "building",
+      "label": "building:-3:3 [shop_row, mixed_use]",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 30,
+        "total": 0,
+        "loaded": 30,
+        "queued": 1658,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-3-3-hero.png",
+          "camera": {
+            "x": -11.47,
+            "y": 8.75,
+            "z": 44.85,
+            "yawDeg": -144.25,
+            "pitchDeg": 2.82
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-3-3-corner.png",
+          "camera": {
+            "x": -14.466,
+            "y": 8.75,
+            "z": 15.12,
+            "yawDeg": -24.25,
+            "pitchDeg": 2.82
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-3-3-reverse.png",
+          "camera": {
+            "x": -38.714,
+            "y": 8.75,
+            "z": 32.58,
+            "yawDeg": 95.75,
+            "pitchDeg": 2.82
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-3:4",
+      "type": "building",
+      "label": "building:-3:4 [building, office]",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "progress": {
+        "done": 30,
+        "total": 0,
+        "loaded": 30,
+        "queued": 2484,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-3-4-hero.png",
+          "camera": {
+            "x": -11.995,
+            "y": 8.5,
+            "z": 54.825,
+            "yawDeg": -144.25,
+            "pitchDeg": 12.23
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-3-4-corner.png",
+          "camera": {
+            "x": -14.991,
+            "y": 8.5,
+            "z": 25.095,
+            "yawDeg": -24.25,
+            "pitchDeg": 12.23
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-3-4-reverse.png",
+          "camera": {
+            "x": -39.239,
+            "y": 8.5,
+            "z": 42.555,
+            "yawDeg": 95.75,
+            "pitchDeg": 12.23
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-4:-1",
+      "type": "building",
+      "label": "building:-4:-1 [building, office]",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "progress": {
+        "done": 28,
+        "total": 0,
+        "loaded": 28,
+        "queued": 1506,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-4-1-hero.png",
+          "camera": {
+            "x": -21.145,
+            "y": 8.5,
+            "z": 9.65,
+            "yawDeg": -144.25,
+            "pitchDeg": 0.56
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-4-1-corner.png",
+          "camera": {
+            "x": -24.141,
+            "y": 8.5,
+            "z": -20.08,
+            "yawDeg": -24.25,
+            "pitchDeg": 0.56
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-4-1-reverse.png",
+          "camera": {
+            "x": -48.389,
+            "y": 8.5,
+            "z": -2.62,
+            "yawDeg": 95.75,
+            "pitchDeg": 0.56
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-4:-2",
+      "type": "building",
+      "label": "building:-4:-2 [apartment_midrise]",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "progress": {
+        "done": 30,
+        "total": 0,
+        "loaded": 30,
+        "queued": 2109,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-4-2-hero.png",
+          "camera": {
+            "x": -19.545,
+            "y": 8.75,
+            "z": 1.625,
+            "yawDeg": -144.25,
+            "pitchDeg": 10.06
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-4-2-corner.png",
+          "camera": {
+            "x": -22.541,
+            "y": 8.75,
+            "z": -28.105,
+            "yawDeg": -24.25,
+            "pitchDeg": 10.06
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-4-2-reverse.png",
+          "camera": {
+            "x": -46.789,
+            "y": 8.75,
+            "z": -10.645,
+            "yawDeg": 95.75,
+            "pitchDeg": 10.06
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-4:-4",
+      "type": "building",
+      "label": "building:-4:-4 [building, office]",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "progress": {
+        "done": 36,
+        "total": 0,
+        "loaded": 36,
+        "queued": 1960,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-4-4-hero.png",
+          "camera": {
+            "x": -20.92,
+            "y": 8.5,
+            "z": -16.2,
+            "yawDeg": -144.25,
+            "pitchDeg": 9.51
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-4-4-corner.png",
+          "camera": {
+            "x": -23.916,
+            "y": 8.5,
+            "z": -45.93,
+            "yawDeg": -24.25,
+            "pitchDeg": 9.51
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-4-4-reverse.png",
+          "camera": {
+            "x": -48.164,
+            "y": 8.5,
+            "z": -28.47,
+            "yawDeg": 95.75,
+            "pitchDeg": 9.51
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-4:0",
+      "type": "building",
+      "label": "building:-4:0 [building, office]",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "progress": {
+        "done": 26,
+        "total": 0,
+        "loaded": 26,
+        "queued": 1648,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-4-0-hero.png",
+          "camera": {
+            "x": -20.495,
+            "y": 8.75,
+            "z": 20.25,
+            "yawDeg": -144.25,
+            "pitchDeg": -0.57
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-4-0-corner.png",
+          "camera": {
+            "x": -23.491,
+            "y": 8.75,
+            "z": -9.48,
+            "yawDeg": -24.25,
+            "pitchDeg": -0.57
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-4-0-reverse.png",
+          "camera": {
+            "x": -47.739,
+            "y": 8.75,
+            "z": 7.98,
+            "yawDeg": 95.75,
+            "pitchDeg": -0.57
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-4:1",
+      "type": "building",
+      "label": "building:-4:1 [apartment_midrise]",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "progress": {
+        "done": 31,
+        "total": 0,
+        "loaded": 31,
+        "queued": 2119,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-4-1-hero.png",
+          "camera": {
+            "x": -19.595,
+            "y": 8.75,
+            "z": 29.975,
+            "yawDeg": -144.25,
+            "pitchDeg": 12.77
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-4-1-corner.png",
+          "camera": {
+            "x": -22.591,
+            "y": 8.75,
+            "z": 0.245,
+            "yawDeg": -24.25,
+            "pitchDeg": 12.77
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-4-1-reverse.png",
+          "camera": {
+            "x": -46.839,
+            "y": 8.75,
+            "z": 17.705,
+            "yawDeg": 95.75,
+            "pitchDeg": 12.77
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-4:2",
+      "type": "building",
+      "label": "building:-4:2 [apartment_midrise]",
+      "tags": [
+        "apartment_midrise",
+        "residential",
+        "vacant"
+      ],
+      "progress": {
+        "done": 31,
+        "total": 0,
+        "loaded": 31,
+        "queued": 1979,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-4-2-hero.png",
+          "camera": {
+            "x": -21.37,
+            "y": 8.5,
+            "z": 37.375,
+            "yawDeg": -144.25,
+            "pitchDeg": 5.62
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-4-2-corner.png",
+          "camera": {
+            "x": -24.366,
+            "y": 8.5,
+            "z": 7.645,
+            "yawDeg": -24.25,
+            "pitchDeg": 5.62
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-4-2-reverse.png",
+          "camera": {
+            "x": -48.614,
+            "y": 8.5,
+            "z": 25.105,
+            "yawDeg": 95.75,
+            "pitchDeg": 5.62
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-4:3",
+      "type": "building",
+      "label": "building:-4:3 [apartment_midrise]",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "progress": {
+        "done": 32,
+        "total": 0,
+        "loaded": 32,
+        "queued": 2146,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-4-3-hero.png",
+          "camera": {
+            "x": -21.095,
+            "y": 8.75,
+            "z": 47.55,
+            "yawDeg": -144.25,
+            "pitchDeg": 9.51
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-4-3-corner.png",
+          "camera": {
+            "x": -24.091,
+            "y": 8.75,
+            "z": 17.82,
+            "yawDeg": -24.25,
+            "pitchDeg": 9.51
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-4-3-reverse.png",
+          "camera": {
+            "x": -48.339,
+            "y": 8.75,
+            "z": 35.28,
+            "yawDeg": 95.75,
+            "pitchDeg": 9.51
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:-4:4",
+      "type": "building",
+      "label": "building:-4:4 [building, office]",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "progress": {
+        "done": 35,
+        "total": 0,
+        "loaded": 35,
+        "queued": 2115,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-4-4-hero.png",
+          "camera": {
+            "x": -19.895,
+            "y": 8.5,
+            "z": 54.8,
+            "yawDeg": -144.25,
+            "pitchDeg": 13.3
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-4-4-corner.png",
+          "camera": {
+            "x": -22.891,
+            "y": 8.5,
+            "z": 25.07,
+            "yawDeg": -24.25,
+            "pitchDeg": 13.3
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-4-4-reverse.png",
+          "camera": {
+            "x": -47.139,
+            "y": 8.5,
+            "z": 42.53,
+            "yawDeg": 95.75,
+            "pitchDeg": 13.3
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:0:-1",
+      "type": "building",
+      "label": "building:0:-1 [mixed_use_midrise, downtown]",
+      "tags": [
+        "mixed_use_midrise",
+        "downtown",
+        "landmark"
+      ],
+      "progress": {
+        "done": 19,
+        "total": 0,
+        "loaded": 23,
+        "queued": 2593,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-0-1-hero.png",
+          "camera": {
+            "x": 15.78,
+            "y": 9.931,
+            "z": 9.675,
+            "yawDeg": -144.25,
+            "pitchDeg": 19.08
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-0-1-corner.png",
+          "camera": {
+            "x": 12.784,
+            "y": 9.931,
+            "z": -20.055,
+            "yawDeg": -24.25,
+            "pitchDeg": 19.08
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-0-1-reverse.png",
+          "camera": {
+            "x": -11.464,
+            "y": 9.931,
+            "z": -2.595,
+            "yawDeg": 95.75,
+            "pitchDeg": 19.08
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:0:-3",
+      "type": "building",
+      "label": "building:0:-3 [apartment_midrise, mixed_use]",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 30,
+        "total": 0,
+        "loaded": 30,
+        "queued": 1812,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-0-3-hero.png",
+          "camera": {
+            "x": 14.855,
+            "y": 8.5,
+            "z": -8.075,
+            "yawDeg": -144.25,
+            "pitchDeg": 3.38
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-0-3-corner.png",
+          "camera": {
+            "x": 11.859,
+            "y": 8.5,
+            "z": -37.805,
+            "yawDeg": -24.25,
+            "pitchDeg": 3.38
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-0-3-reverse.png",
+          "camera": {
+            "x": -12.389,
+            "y": 8.5,
+            "z": -20.345,
+            "yawDeg": 95.75,
+            "pitchDeg": 3.38
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:0:0",
+      "type": "building",
+      "label": "building:0:0 [mixed_use_midrise, downtown]",
+      "tags": [
+        "mixed_use_midrise",
+        "downtown",
+        "landmark"
+      ],
+      "progress": {
+        "done": 17,
+        "total": 0,
+        "loaded": 21,
+        "queued": 2551,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-0-0-hero.png",
+          "camera": {
+            "x": 14.18,
+            "y": 10.641,
+            "z": 19.075,
+            "yawDeg": -144.25,
+            "pitchDeg": 19.47
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-0-0-corner.png",
+          "camera": {
+            "x": 11.184,
+            "y": 10.641,
+            "z": -10.655,
+            "yawDeg": -24.25,
+            "pitchDeg": 19.47
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-0-0-reverse.png",
+          "camera": {
+            "x": -13.064,
+            "y": 10.641,
+            "z": 6.805,
+            "yawDeg": 95.75,
+            "pitchDeg": 19.47
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:0:1",
+      "type": "building",
+      "label": "building:0:1 [mixed_use_midrise, downtown]",
+      "tags": [
+        "mixed_use_midrise",
+        "downtown",
+        "landmark"
+      ],
+      "progress": {
+        "done": 20,
+        "total": 0,
+        "loaded": 20,
+        "queued": 2944,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-0-1-hero.png",
+          "camera": {
+            "x": 15.705,
+            "y": 10.916,
+            "z": 28.975,
+            "yawDeg": -144.25,
+            "pitchDeg": 20.42
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-0-1-corner.png",
+          "camera": {
+            "x": 12.709,
+            "y": 10.916,
+            "z": -0.755,
+            "yawDeg": -24.25,
+            "pitchDeg": 20.42
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-0-1-reverse.png",
+          "camera": {
+            "x": -11.539,
+            "y": 10.916,
+            "z": 16.705,
+            "yawDeg": 95.75,
+            "pitchDeg": 20.42
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:0:3",
+      "type": "building",
+      "label": "building:0:3 [shop_row, mixed_use]",
+      "tags": [
+        "shop_row",
+        "mixed_use",
+        "landmark"
+      ],
+      "progress": {
+        "done": 21,
+        "total": 0,
+        "loaded": 21,
+        "queued": 2829,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-0-3-hero.png",
+          "camera": {
+            "x": 16.58,
+            "y": 9.906,
+            "z": 45.525,
+            "yawDeg": -144.25,
+            "pitchDeg": 18.11
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-0-3-corner.png",
+          "camera": {
+            "x": 13.584,
+            "y": 9.906,
+            "z": 15.795,
+            "yawDeg": -24.25,
+            "pitchDeg": 18.11
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-0-3-reverse.png",
+          "camera": {
+            "x": -10.664,
+            "y": 9.906,
+            "z": 33.255,
+            "yawDeg": 95.75,
+            "pitchDeg": 18.11
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:0:4",
+      "type": "building",
+      "label": "building:0:4 [apartment_midrise]",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "progress": {
+        "done": 29,
+        "total": 0,
+        "loaded": 29,
+        "queued": 1981,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-0-4-hero.png",
+          "camera": {
+            "x": 16.355,
+            "y": 8.5,
+            "z": 55.2,
+            "yawDeg": -144.25,
+            "pitchDeg": 6.74
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-0-4-corner.png",
+          "camera": {
+            "x": 13.359,
+            "y": 8.5,
+            "z": 25.47,
+            "yawDeg": -24.25,
+            "pitchDeg": 6.74
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-0-4-reverse.png",
+          "camera": {
+            "x": -10.889,
+            "y": 8.5,
+            "z": 42.93,
+            "yawDeg": 95.75,
+            "pitchDeg": 6.74
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:1:-1",
+      "type": "building",
+      "label": "building:1:-1 [office_tower, downtown]",
+      "tags": [
+        "office_tower",
+        "downtown",
+        "landmark"
+      ],
+      "progress": {
+        "done": 20,
+        "total": 0,
+        "loaded": 20,
+        "queued": 3166,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-1-1-hero.png",
+          "camera": {
+            "x": 25.305,
+            "y": 11.231,
+            "z": 10.575,
+            "yawDeg": -144.25,
+            "pitchDeg": 20.99
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-1-1-corner.png",
+          "camera": {
+            "x": 22.309,
+            "y": 11.231,
+            "z": -19.155,
+            "yawDeg": -24.25,
+            "pitchDeg": 20.99
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-1-1-reverse.png",
+          "camera": {
+            "x": -1.939,
+            "y": 11.231,
+            "z": -1.695,
+            "yawDeg": 95.75,
+            "pitchDeg": 20.99
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:1:-2",
+      "type": "building",
+      "label": "building:1:-2 [apartment_midrise, mixed_use]",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use",
+        "landmark"
+      ],
+      "progress": {
+        "done": 26,
+        "total": 0,
+        "loaded": 26,
+        "queued": 2894,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-1-2-hero.png",
+          "camera": {
+            "x": 25.405,
+            "y": 11.231,
+            "z": 1.475,
+            "yawDeg": -144.25,
+            "pitchDeg": 20.99
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-1-2-corner.png",
+          "camera": {
+            "x": 22.409,
+            "y": 11.231,
+            "z": -28.255,
+            "yawDeg": -24.25,
+            "pitchDeg": 20.99
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-1-2-reverse.png",
+          "camera": {
+            "x": -1.839,
+            "y": 11.231,
+            "z": -10.795,
+            "yawDeg": 95.75,
+            "pitchDeg": 20.99
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:1:-3",
+      "type": "building",
+      "label": "building:1:-3 [apartment_midrise, mixed_use]",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 26,
+        "total": 0,
+        "loaded": 26,
+        "queued": 1970,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-1-3-hero.png",
+          "camera": {
+            "x": 23.555,
+            "y": 8.75,
+            "z": -6.375,
+            "yawDeg": -144.25,
+            "pitchDeg": 7.85
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-1-3-corner.png",
+          "camera": {
+            "x": 20.559,
+            "y": 8.75,
+            "z": -36.105,
+            "yawDeg": -24.25,
+            "pitchDeg": 7.85
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-1-3-reverse.png",
+          "camera": {
+            "x": -3.689,
+            "y": 8.75,
+            "z": -18.645,
+            "yawDeg": 95.75,
+            "pitchDeg": 7.85
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:1:-4",
+      "type": "building",
+      "label": "building:1:-4 [building, office]",
+      "tags": [
+        "office_midrise",
+        "office",
+        "vacant"
+      ],
+      "progress": {
+        "done": 19,
+        "total": 0,
+        "loaded": 19,
+        "queued": 2159,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-1-4-hero.png",
+          "camera": {
+            "x": 24.605,
+            "y": 8.5,
+            "z": -17.25,
+            "yawDeg": -144.25,
+            "pitchDeg": 10.06
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-1-4-corner.png",
+          "camera": {
+            "x": 21.609,
+            "y": 8.5,
+            "z": -46.98,
+            "yawDeg": -24.25,
+            "pitchDeg": 10.06
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-1-4-reverse.png",
+          "camera": {
+            "x": -2.639,
+            "y": 8.5,
+            "z": -29.52,
+            "yawDeg": 95.75,
+            "pitchDeg": 10.06
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:1:0",
+      "type": "building",
+      "label": "building:1:0 [office_tower, downtown]",
+      "tags": [
+        "office_tower",
+        "downtown",
+        "landmark"
+      ],
+      "progress": {
+        "done": 21,
+        "total": 0,
+        "loaded": 21,
+        "queued": 3165,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-1-0-hero.png",
+          "camera": {
+            "x": 23.605,
+            "y": 11.651,
+            "z": 20.9,
+            "yawDeg": -144.25,
+            "pitchDeg": 21.74
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-1-0-corner.png",
+          "camera": {
+            "x": 20.609,
+            "y": 11.651,
+            "z": -8.83,
+            "yawDeg": -24.25,
+            "pitchDeg": 21.74
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-1-0-reverse.png",
+          "camera": {
+            "x": -3.639,
+            "y": 11.651,
+            "z": 8.63,
+            "yawDeg": 95.75,
+            "pitchDeg": 21.74
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:1:1",
+      "type": "building",
+      "label": "building:1:1 [mixed_use_midrise, downtown]",
+      "tags": [
+        "mixed_use_midrise",
+        "downtown",
+        "landmark"
+      ],
+      "progress": {
+        "done": 24,
+        "total": 0,
+        "loaded": 24,
+        "queued": 2658,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-1-1-hero.png",
+          "camera": {
+            "x": 25.155,
+            "y": 9.591,
+            "z": 29.35,
+            "yawDeg": -144.25,
+            "pitchDeg": 17.53
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-1-1-corner.png",
+          "camera": {
+            "x": 22.159,
+            "y": 9.591,
+            "z": -0.38,
+            "yawDeg": -24.25,
+            "pitchDeg": 17.53
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-1-1-reverse.png",
+          "camera": {
+            "x": -2.089,
+            "y": 9.591,
+            "z": 17.08,
+            "yawDeg": 95.75,
+            "pitchDeg": 17.53
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:1:2",
+      "type": "building",
+      "label": "building:1:2 [apartment_midrise, mixed_use]",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 23,
+        "total": 0,
+        "loaded": 23,
+        "queued": 2659,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-1-2-hero.png",
+          "camera": {
+            "x": 24.405,
+            "y": 9.881,
+            "z": 36.45,
+            "yawDeg": -144.25,
+            "pitchDeg": 17.13
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-1-2-corner.png",
+          "camera": {
+            "x": 21.409,
+            "y": 9.881,
+            "z": 6.72,
+            "yawDeg": -24.25,
+            "pitchDeg": 17.13
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-1-2-reverse.png",
+          "camera": {
+            "x": -2.839,
+            "y": 9.881,
+            "z": 24.18,
+            "yawDeg": 95.75,
+            "pitchDeg": 17.13
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:1:3",
+      "type": "building",
+      "label": "building:1:3 [shop_row, mixed_use]",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 27,
+        "total": 0,
+        "loaded": 27,
+        "queued": 1983,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-1-3-hero.png",
+          "camera": {
+            "x": 24.305,
+            "y": 8.75,
+            "z": 46.225,
+            "yawDeg": -144.25,
+            "pitchDeg": 6.18
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-1-3-corner.png",
+          "camera": {
+            "x": 21.309,
+            "y": 8.75,
+            "z": 16.495,
+            "yawDeg": -24.25,
+            "pitchDeg": 6.18
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-1-3-reverse.png",
+          "camera": {
+            "x": -2.939,
+            "y": 8.75,
+            "z": 33.955,
+            "yawDeg": 95.75,
+            "pitchDeg": 6.18
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:1:4",
+      "type": "building",
+      "label": "building:1:4 [building, office]",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "progress": {
+        "done": 27,
+        "total": 0,
+        "loaded": 27,
+        "queued": 1507,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-1-4-hero.png",
+          "camera": {
+            "x": 25.555,
+            "y": 8.75,
+            "z": 54.125,
+            "yawDeg": -144.25,
+            "pitchDeg": 0.56
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-1-4-corner.png",
+          "camera": {
+            "x": 22.559,
+            "y": 8.75,
+            "z": 24.395,
+            "yawDeg": -24.25,
+            "pitchDeg": 0.56
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-1-4-reverse.png",
+          "camera": {
+            "x": -1.689,
+            "y": 8.75,
+            "z": 41.855,
+            "yawDeg": 95.75,
+            "pitchDeg": 0.56
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:2:-1",
+      "type": "building",
+      "label": "building:2:-1 [apartment_midrise, mixed_use]",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 23,
+        "total": 0,
+        "loaded": 23,
+        "queued": 2659,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-2-1-hero.png",
+          "camera": {
+            "x": 34.355,
+            "y": 9.381,
+            "z": 11.0,
+            "yawDeg": -144.25,
+            "pitchDeg": 17.13
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-2-1-corner.png",
+          "camera": {
+            "x": 31.359,
+            "y": 9.381,
+            "z": -18.73,
+            "yawDeg": -24.25,
+            "pitchDeg": 17.13
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-2-1-reverse.png",
+          "camera": {
+            "x": 7.111,
+            "y": 9.381,
+            "z": -1.27,
+            "yawDeg": 95.75,
+            "pitchDeg": 17.13
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:2:-2",
+      "type": "building",
+      "label": "building:2:-2 [shop_row, mixed_use]",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 23,
+        "total": 0,
+        "loaded": 23,
+        "queued": 2281,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-2-2-hero.png",
+          "camera": {
+            "x": 34.53,
+            "y": 9.106,
+            "z": 0.375,
+            "yawDeg": -144.25,
+            "pitchDeg": 16.14
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-2-2-corner.png",
+          "camera": {
+            "x": 31.534,
+            "y": 9.106,
+            "z": -29.355,
+            "yawDeg": -24.25,
+            "pitchDeg": 16.14
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-2-2-reverse.png",
+          "camera": {
+            "x": 7.286,
+            "y": 9.106,
+            "z": -11.895,
+            "yawDeg": 95.75,
+            "pitchDeg": 16.14
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:2:-3",
+      "type": "building",
+      "label": "building:2:-3 [apartment_midrise, mixed_use]",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 28,
+        "total": 0,
+        "loaded": 28,
+        "queued": 2276,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-2-3-hero.png",
+          "camera": {
+            "x": 34.505,
+            "y": 9.0,
+            "z": -8.9,
+            "yawDeg": -144.25,
+            "pitchDeg": 15.42
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-2-3-corner.png",
+          "camera": {
+            "x": 31.509,
+            "y": 9.0,
+            "z": -38.63,
+            "yawDeg": -24.25,
+            "pitchDeg": 15.42
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-2-3-reverse.png",
+          "camera": {
+            "x": 7.261,
+            "y": 9.0,
+            "z": -21.17,
+            "yawDeg": 95.75,
+            "pitchDeg": 15.42
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:2:-4",
+      "type": "building",
+      "label": "building:2:-4 [building, office]",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "progress": {
+        "done": 29,
+        "total": 0,
+        "loaded": 29,
+        "queued": 1837,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-2-4-hero.png",
+          "camera": {
+            "x": 34.38,
+            "y": 8.75,
+            "z": -16.075,
+            "yawDeg": -144.25,
+            "pitchDeg": 6.18
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-2-4-corner.png",
+          "camera": {
+            "x": 31.384,
+            "y": 8.75,
+            "z": -45.805,
+            "yawDeg": -24.25,
+            "pitchDeg": 6.18
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-2-4-reverse.png",
+          "camera": {
+            "x": 7.136,
+            "y": 8.75,
+            "z": -28.345,
+            "yawDeg": 95.75,
+            "pitchDeg": 6.18
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:2:0",
+      "type": "building",
+      "label": "building:2:0 [apartment_midrise, mixed_use]",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use",
+        "landmark"
+      ],
+      "progress": {
+        "done": 24,
+        "total": 0,
+        "loaded": 24,
+        "queued": 2490,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-2-0-hero.png",
+          "camera": {
+            "x": 33.905,
+            "y": 8.961,
+            "z": 19.6,
+            "yawDeg": -144.25,
+            "pitchDeg": 16.34
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-2-0-corner.png",
+          "camera": {
+            "x": 30.909,
+            "y": 8.961,
+            "z": -10.13,
+            "yawDeg": -24.25,
+            "pitchDeg": 16.34
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-2-0-reverse.png",
+          "camera": {
+            "x": 6.661,
+            "y": 8.961,
+            "z": 7.33,
+            "yawDeg": 95.75,
+            "pitchDeg": 16.34
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:2:1",
+      "type": "building",
+      "label": "building:2:1 [apartment_midrise, mixed_use]",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 20,
+        "total": 0,
+        "loaded": 20,
+        "queued": 1990,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-2-1-hero.png",
+          "camera": {
+            "x": 34.38,
+            "y": 8.5,
+            "z": 28.475,
+            "yawDeg": -144.25,
+            "pitchDeg": 6.74
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-2-1-corner.png",
+          "camera": {
+            "x": 31.384,
+            "y": 8.5,
+            "z": -1.255,
+            "yawDeg": -24.25,
+            "pitchDeg": 6.74
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-2-1-reverse.png",
+          "camera": {
+            "x": 7.136,
+            "y": 8.5,
+            "z": 16.205,
+            "yawDeg": 95.75,
+            "pitchDeg": 6.74
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:2:2",
+      "type": "building",
+      "label": "building:2:2 [shop_row, mixed_use]",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 21,
+        "total": 0,
+        "loaded": 21,
+        "queued": 2325,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-2-2-hero.png",
+          "camera": {
+            "x": 32.505,
+            "y": 9.25,
+            "z": 37.925,
+            "yawDeg": -144.25,
+            "pitchDeg": 11.15
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-2-2-corner.png",
+          "camera": {
+            "x": 29.509,
+            "y": 9.25,
+            "z": 8.195,
+            "yawDeg": -24.25,
+            "pitchDeg": 11.15
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-2-2-reverse.png",
+          "camera": {
+            "x": 5.261,
+            "y": 9.25,
+            "z": 25.655,
+            "yawDeg": 95.75,
+            "pitchDeg": 11.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:2:3",
+      "type": "building",
+      "label": "building:2:3 [apartment_midrise, mixed_use]",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use",
+        "vacant"
+      ],
+      "progress": {
+        "done": 23,
+        "total": 0,
+        "loaded": 23,
+        "queued": 1819,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-2-3-hero.png",
+          "camera": {
+            "x": 32.555,
+            "y": 9.25,
+            "z": 45.925,
+            "yawDeg": -144.25,
+            "pitchDeg": 2.82
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-2-3-corner.png",
+          "camera": {
+            "x": 29.559,
+            "y": 9.25,
+            "z": 16.195,
+            "yawDeg": -24.25,
+            "pitchDeg": 2.82
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-2-3-reverse.png",
+          "camera": {
+            "x": 5.311,
+            "y": 9.25,
+            "z": 33.655,
+            "yawDeg": 95.75,
+            "pitchDeg": 2.82
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:2:4",
+      "type": "building",
+      "label": "building:2:4 [apartment_midrise]",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "progress": {
+        "done": 31,
+        "total": 0,
+        "loaded": 31,
+        "queued": 2147,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-2-4-hero.png",
+          "camera": {
+            "x": 32.43,
+            "y": 8.75,
+            "z": 56.4,
+            "yawDeg": -144.25,
+            "pitchDeg": 10.06
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-2-4-corner.png",
+          "camera": {
+            "x": 29.434,
+            "y": 8.75,
+            "z": 26.67,
+            "yawDeg": -24.25,
+            "pitchDeg": 10.06
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-2-4-reverse.png",
+          "camera": {
+            "x": 5.186,
+            "y": 8.75,
+            "z": 44.13,
+            "yawDeg": 95.75,
+            "pitchDeg": 10.06
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:3:-1",
+      "type": "building",
+      "label": "building:3:-1 [apartment_midrise, mixed_use]",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 28,
+        "total": 0,
+        "loaded": 28,
+        "queued": 1682,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-3-1-hero.png",
+          "camera": {
+            "x": 43.305,
+            "y": 9.0,
+            "z": 11.075,
+            "yawDeg": -144.25,
+            "pitchDeg": 3.38
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-3-1-corner.png",
+          "camera": {
+            "x": 40.309,
+            "y": 9.0,
+            "z": -18.655,
+            "yawDeg": -24.25,
+            "pitchDeg": 3.38
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-3-1-reverse.png",
+          "camera": {
+            "x": 16.061,
+            "y": 9.0,
+            "z": -1.195,
+            "yawDeg": 95.75,
+            "pitchDeg": 3.38
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:3:-2",
+      "type": "building",
+      "label": "building:3:-2 [shop_row, mixed_use]",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 29,
+        "total": 0,
+        "loaded": 29,
+        "queued": 2149,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-3-2-hero.png",
+          "camera": {
+            "x": 43.305,
+            "y": 8.75,
+            "z": 0.7,
+            "yawDeg": -144.25,
+            "pitchDeg": 10.6
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-3-2-corner.png",
+          "camera": {
+            "x": 40.309,
+            "y": 8.75,
+            "z": -29.03,
+            "yawDeg": -24.25,
+            "pitchDeg": 10.6
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-3-2-reverse.png",
+          "camera": {
+            "x": 16.061,
+            "y": 8.75,
+            "z": -11.57,
+            "yawDeg": 95.75,
+            "pitchDeg": 10.6
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:3:-3",
+      "type": "building",
+      "label": "building:3:-3 [shop_row, mixed_use]",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 25,
+        "total": 0,
+        "loaded": 25,
+        "queued": 1817,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-3-3-hero.png",
+          "camera": {
+            "x": 42.53,
+            "y": 8.5,
+            "z": -9.15,
+            "yawDeg": -144.25,
+            "pitchDeg": 2.82
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-3-3-corner.png",
+          "camera": {
+            "x": 39.534,
+            "y": 8.5,
+            "z": -38.88,
+            "yawDeg": -24.25,
+            "pitchDeg": 2.82
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-3-3-reverse.png",
+          "camera": {
+            "x": 15.286,
+            "y": 8.5,
+            "z": -21.42,
+            "yawDeg": 95.75,
+            "pitchDeg": 2.82
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:3:-4",
+      "type": "building",
+      "label": "building:3:-4 [building, office]",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "progress": {
+        "done": 29,
+        "total": 0,
+        "loaded": 29,
+        "queued": 1813,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-3-4-hero.png",
+          "camera": {
+            "x": 43.73,
+            "y": 8.75,
+            "z": -14.925,
+            "yawDeg": -144.25,
+            "pitchDeg": 2.82
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-3-4-corner.png",
+          "camera": {
+            "x": 40.734,
+            "y": 8.75,
+            "z": -44.655,
+            "yawDeg": -24.25,
+            "pitchDeg": 2.82
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-3-4-reverse.png",
+          "camera": {
+            "x": 16.486,
+            "y": 8.75,
+            "z": -27.195,
+            "yawDeg": 95.75,
+            "pitchDeg": 2.82
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:3:0",
+      "type": "building",
+      "label": "building:3:0 [shop_row, mixed_use]",
+      "tags": [
+        "shop_row",
+        "mixed_use",
+        "vacant"
+      ],
+      "progress": {
+        "done": 24,
+        "total": 0,
+        "loaded": 24,
+        "queued": 2490,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-3-0-hero.png",
+          "camera": {
+            "x": 42.18,
+            "y": 8.856,
+            "z": 20.1,
+            "yawDeg": -144.25,
+            "pitchDeg": 16.14
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-3-0-corner.png",
+          "camera": {
+            "x": 39.184,
+            "y": 8.856,
+            "z": -9.63,
+            "yawDeg": -24.25,
+            "pitchDeg": 16.14
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-3-0-reverse.png",
+          "camera": {
+            "x": 14.936,
+            "y": 8.856,
+            "z": 7.83,
+            "yawDeg": 95.75,
+            "pitchDeg": 16.14
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:3:1",
+      "type": "building",
+      "label": "building:3:1 [apartment_midrise, mixed_use]",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 28,
+        "total": 0,
+        "loaded": 28,
+        "queued": 1994,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-3-1-hero.png",
+          "camera": {
+            "x": 42.005,
+            "y": 9.0,
+            "z": 28.65,
+            "yawDeg": -144.25,
+            "pitchDeg": 7.3
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-3-1-corner.png",
+          "camera": {
+            "x": 39.009,
+            "y": 9.0,
+            "z": -1.08,
+            "yawDeg": -24.25,
+            "pitchDeg": 7.3
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-3-1-reverse.png",
+          "camera": {
+            "x": 14.761,
+            "y": 9.0,
+            "z": 16.38,
+            "yawDeg": 95.75,
+            "pitchDeg": 7.3
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:3:2",
+      "type": "building",
+      "label": "building:3:2 [apartment_midrise, mixed_use]",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 24,
+        "total": 0,
+        "loaded": 24,
+        "queued": 2154,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-3-2-hero.png",
+          "camera": {
+            "x": 41.88,
+            "y": 9.0,
+            "z": 37.55,
+            "yawDeg": -144.25,
+            "pitchDeg": 8.96
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-3-2-corner.png",
+          "camera": {
+            "x": 38.884,
+            "y": 9.0,
+            "z": 7.82,
+            "yawDeg": -24.25,
+            "pitchDeg": 8.96
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-3-2-reverse.png",
+          "camera": {
+            "x": 14.636,
+            "y": 9.0,
+            "z": 25.28,
+            "yawDeg": 95.75,
+            "pitchDeg": 8.96
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:3:3",
+      "type": "building",
+      "label": "building:3:3 [apartment_midrise, mixed_use]",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "progress": {
+        "done": 28,
+        "total": 0,
+        "loaded": 28,
+        "queued": 1968,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-3-3-hero.png",
+          "camera": {
+            "x": 42.705,
+            "y": 8.75,
+            "z": 47.775,
+            "yawDeg": -144.25,
+            "pitchDeg": 12.77
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-3-3-corner.png",
+          "camera": {
+            "x": 39.709,
+            "y": 8.75,
+            "z": 18.045,
+            "yawDeg": -24.25,
+            "pitchDeg": 12.77
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-3-3-reverse.png",
+          "camera": {
+            "x": 15.461,
+            "y": 8.75,
+            "z": 35.505,
+            "yawDeg": 95.75,
+            "pitchDeg": 12.77
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:3:4",
+      "type": "building",
+      "label": "building:3:4 [apartment_midrise]",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "progress": {
+        "done": 28,
+        "total": 0,
+        "loaded": 28,
+        "queued": 1781,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-3-4-hero.png",
+          "camera": {
+            "x": 42.855,
+            "y": 8.25,
+            "z": 54.425,
+            "yawDeg": -144.25,
+            "pitchDeg": 2.82
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-3-4-corner.png",
+          "camera": {
+            "x": 39.859,
+            "y": 8.25,
+            "z": 24.695,
+            "yawDeg": -24.25,
+            "pitchDeg": 2.82
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-3-4-reverse.png",
+          "camera": {
+            "x": 15.611,
+            "y": 8.25,
+            "z": 42.155,
+            "yawDeg": 95.75,
+            "pitchDeg": 2.82
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:4:-1",
+      "type": "building",
+      "label": "building:4:-1 [apartment_midrise]",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "progress": {
+        "done": 26,
+        "total": 0,
+        "loaded": 26,
+        "queued": 2320,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-4-1-hero.png",
+          "camera": {
+            "x": 50.405,
+            "y": 8.75,
+            "z": 9.6,
+            "yawDeg": -144.25,
+            "pitchDeg": 13.3
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-4-1-corner.png",
+          "camera": {
+            "x": 47.409,
+            "y": 8.75,
+            "z": -20.13,
+            "yawDeg": -24.25,
+            "pitchDeg": 13.3
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-4-1-reverse.png",
+          "camera": {
+            "x": 23.161,
+            "y": 8.75,
+            "z": -2.67,
+            "yawDeg": 95.75,
+            "pitchDeg": 13.3
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:4:-2",
+      "type": "building",
+      "label": "building:4:-2 [apartment_midrise]",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "progress": {
+        "done": 31,
+        "total": 0,
+        "loaded": 31,
+        "queued": 1679,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-4-2-hero.png",
+          "camera": {
+            "x": 50.48,
+            "y": 8.25,
+            "z": 1.525,
+            "yawDeg": -144.25,
+            "pitchDeg": 5.06
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-4-2-corner.png",
+          "camera": {
+            "x": 47.484,
+            "y": 8.25,
+            "z": -28.205,
+            "yawDeg": -24.25,
+            "pitchDeg": 5.06
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-4-2-reverse.png",
+          "camera": {
+            "x": 23.236,
+            "y": 8.25,
+            "z": -10.745,
+            "yawDeg": 95.75,
+            "pitchDeg": 5.06
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:4:-3",
+      "type": "building",
+      "label": "building:4:-3 [building, office]",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "progress": {
+        "done": 32,
+        "total": 0,
+        "loaded": 32,
+        "queued": 1964,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-4-3-hero.png",
+          "camera": {
+            "x": 50.93,
+            "y": 8.5,
+            "z": -8.5,
+            "yawDeg": -144.25,
+            "pitchDeg": 9.51
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-4-3-corner.png",
+          "camera": {
+            "x": 47.934,
+            "y": 8.5,
+            "z": -38.23,
+            "yawDeg": -24.25,
+            "pitchDeg": 9.51
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-4-3-reverse.png",
+          "camera": {
+            "x": 23.686,
+            "y": 8.5,
+            "z": -20.77,
+            "yawDeg": 95.75,
+            "pitchDeg": 9.51
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:4:-4",
+      "type": "building",
+      "label": "building:4:-4 [building, office]",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "progress": {
+        "done": 31,
+        "total": 0,
+        "loaded": 31,
+        "queued": 2119,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-4-4-hero.png",
+          "camera": {
+            "x": 52.105,
+            "y": 8.5,
+            "z": -17.2,
+            "yawDeg": -144.25,
+            "pitchDeg": 13.3
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-4-4-corner.png",
+          "camera": {
+            "x": 49.109,
+            "y": 8.5,
+            "z": -46.93,
+            "yawDeg": -24.25,
+            "pitchDeg": 13.3
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-4-4-reverse.png",
+          "camera": {
+            "x": 24.861,
+            "y": 8.5,
+            "z": -29.47,
+            "yawDeg": 95.75,
+            "pitchDeg": 13.3
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:4:0",
+      "type": "building",
+      "label": "building:4:0 [building, office]",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "progress": {
+        "done": 29,
+        "total": 0,
+        "loaded": 29,
+        "queued": 1813,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-4-0-hero.png",
+          "camera": {
+            "x": 51.63,
+            "y": 8.75,
+            "z": 19.975,
+            "yawDeg": -144.25,
+            "pitchDeg": 2.82
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-4-0-corner.png",
+          "camera": {
+            "x": 48.634,
+            "y": 8.75,
+            "z": -9.755,
+            "yawDeg": -24.25,
+            "pitchDeg": 2.82
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-4-0-reverse.png",
+          "camera": {
+            "x": 24.386,
+            "y": 8.75,
+            "z": 7.705,
+            "yawDeg": 95.75,
+            "pitchDeg": 2.82
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:4:1",
+      "type": "building",
+      "label": "building:4:1 [building, office]",
+      "tags": [
+        "office_midrise",
+        "office",
+        "landmark",
+        "vacant"
+      ],
+      "progress": {
+        "done": 26,
+        "total": 0,
+        "loaded": 26,
+        "queued": 2488,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-4-1-hero.png",
+          "camera": {
+            "x": 51.255,
+            "y": 8.671,
+            "z": 29.25,
+            "yawDeg": -144.25,
+            "pitchDeg": 16.74
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-4-1-corner.png",
+          "camera": {
+            "x": 48.259,
+            "y": 8.671,
+            "z": -0.48,
+            "yawDeg": -24.25,
+            "pitchDeg": 16.74
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-4-1-reverse.png",
+          "camera": {
+            "x": 24.011,
+            "y": 8.671,
+            "z": 16.98,
+            "yawDeg": 95.75,
+            "pitchDeg": 16.74
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:4:2",
+      "type": "building",
+      "label": "building:4:2 [apartment_midrise]",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "progress": {
+        "done": 28,
+        "total": 0,
+        "loaded": 28,
+        "queued": 1646,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-4-2-hero.png",
+          "camera": {
+            "x": 50.23,
+            "y": 8.5,
+            "z": 37.325,
+            "yawDeg": -144.25,
+            "pitchDeg": -0.57
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-4-2-corner.png",
+          "camera": {
+            "x": 47.234,
+            "y": 8.5,
+            "z": 7.595,
+            "yawDeg": -24.25,
+            "pitchDeg": -0.57
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-4-2-reverse.png",
+          "camera": {
+            "x": 22.986,
+            "y": 8.5,
+            "z": 25.055,
+            "yawDeg": 95.75,
+            "pitchDeg": -0.57
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:4:3",
+      "type": "building",
+      "label": "building:4:3 [building, office]",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "progress": {
+        "done": 32,
+        "total": 0,
+        "loaded": 32,
+        "queued": 1978,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-4-3-hero.png",
+          "camera": {
+            "x": 51.93,
+            "y": 8.25,
+            "z": 46.425,
+            "yawDeg": -144.25,
+            "pitchDeg": 6.74
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-4-3-corner.png",
+          "camera": {
+            "x": 48.934,
+            "y": 8.25,
+            "z": 16.695,
+            "yawDeg": -24.25,
+            "pitchDeg": 6.74
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-4-3-reverse.png",
+          "camera": {
+            "x": 24.686,
+            "y": 8.25,
+            "z": 34.155,
+            "yawDeg": 95.75,
+            "pitchDeg": 6.74
+          }
+        }
+      ]
+    },
+    {
+      "id": "building:4:4",
+      "type": "building",
+      "label": "building:4:4 [building, office]",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "progress": {
+        "done": 34,
+        "total": 0,
+        "loaded": 34,
+        "queued": 1962,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/building/building-4-4-hero.png",
+          "camera": {
+            "x": 51.08,
+            "y": 8.5,
+            "z": 55.8,
+            "yawDeg": -144.25,
+            "pitchDeg": 9.51
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/building/building-4-4-corner.png",
+          "camera": {
+            "x": 48.084,
+            "y": 8.5,
+            "z": 26.07,
+            "yawDeg": -24.25,
+            "pitchDeg": 9.51
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/building/building-4-4-reverse.png",
+          "camera": {
+            "x": 23.836,
+            "y": 8.5,
+            "z": 43.53,
+            "yawDeg": 95.75,
+            "pitchDeg": 9.51
+          }
+        }
+      ]
+    },
+    {
+      "id": "station:-4:0",
+      "type": "station",
+      "label": "station:-4:0 [station]",
+      "tags": [
+        "status:planned",
+        "planned",
+        "subway",
+        "station"
+      ],
+      "progress": {
+        "done": 28,
+        "total": 0,
+        "loaded": 28,
+        "queued": 1136,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/station/station-4-0-hero.png",
+          "camera": {
+            "x": -25.92,
+            "y": 6.8,
+            "z": 14.0,
+            "yawDeg": -144.25,
+            "pitchDeg": -16.77
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/station/station-4-0-corner.png",
+          "camera": {
+            "x": -28.916,
+            "y": 6.8,
+            "z": -15.73,
+            "yawDeg": -24.25,
+            "pitchDeg": -16.77
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/station/station-4-0-reverse.png",
+          "camera": {
+            "x": -53.164,
+            "y": 6.8,
+            "z": 1.73,
+            "yawDeg": 95.75,
+            "pitchDeg": -16.77
+          }
+        }
+      ]
+    },
+    {
+      "id": "station:0:0",
+      "type": "station",
+      "label": "station:0:0 [station]",
+      "tags": [
+        "status:planned",
+        "planned",
+        "subway",
+        "station"
+      ],
+      "progress": {
+        "done": 21,
+        "total": 0,
+        "loaded": 21,
+        "queued": 1260,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/station/station-0-0-hero.png",
+          "camera": {
+            "x": 10.08,
+            "y": 6.8,
+            "z": 14.0,
+            "yawDeg": -144.25,
+            "pitchDeg": -16.77
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/station/station-0-0-corner.png",
+          "camera": {
+            "x": 7.084,
+            "y": 6.8,
+            "z": -15.73,
+            "yawDeg": -24.25,
+            "pitchDeg": -16.77
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/station/station-0-0-reverse.png",
+          "camera": {
+            "x": -17.164,
+            "y": 6.8,
+            "z": 1.73,
+            "yawDeg": 95.75,
+            "pitchDeg": -16.77
+          }
+        }
+      ]
+    },
+    {
+      "id": "station:0:4",
+      "type": "station",
+      "label": "station:0:4 [station]",
+      "tags": [
+        "status:planned",
+        "planned",
+        "subway",
+        "station"
+      ],
+      "progress": {
+        "done": 24,
+        "total": 0,
+        "loaded": 24,
+        "queued": 1257,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/station/station-0-4-hero.png",
+          "camera": {
+            "x": 10.08,
+            "y": 6.8,
+            "z": 50.0,
+            "yawDeg": -144.25,
+            "pitchDeg": -16.77
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/station/station-0-4-corner.png",
+          "camera": {
+            "x": 7.084,
+            "y": 6.8,
+            "z": 20.27,
+            "yawDeg": -24.25,
+            "pitchDeg": -16.77
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/station/station-0-4-reverse.png",
+          "camera": {
+            "x": -17.164,
+            "y": 6.8,
+            "z": 37.73,
+            "yawDeg": 95.75,
+            "pitchDeg": -16.77
+          }
+        }
+      ]
+    },
+    {
+      "id": "station:4:0",
+      "type": "station",
+      "label": "station:4:0 [station]",
+      "tags": [
+        "status:planned",
+        "planned",
+        "subway",
+        "station"
+      ],
+      "progress": {
+        "done": 23,
+        "total": 0,
+        "loaded": 23,
+        "queued": 1141,
+        "fetching": 6,
+        "complete": false
+      },
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/station/station-4-0-hero.png",
+          "camera": {
+            "x": 46.08,
+            "y": 6.8,
+            "z": 14.0,
+            "yawDeg": -144.25,
+            "pitchDeg": -16.77
+          }
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/station/station-4-0-corner.png",
+          "camera": {
+            "x": 43.084,
+            "y": 6.8,
+            "z": -15.73,
+            "yawDeg": -24.25,
+            "pitchDeg": -16.77
+          }
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/station/station-4-0-reverse.png",
+          "camera": {
+            "x": 18.836,
+            "y": 6.8,
+            "z": 1.73,
+            "yawDeg": 95.75,
+            "pitchDeg": -16.77
           }
         }
       ]
