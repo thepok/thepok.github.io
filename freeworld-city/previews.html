@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Leonardos City Asset Previews</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;700&family=Syne:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css?v=2" />
+  </head>
+  <body class="gallery-body">
+    <div class="backdrop-grid" aria-hidden="true"></div>
+    <main class="gallery-shell">
+      <header class="gallery-header">
+        <div>
+          <p class="brand-kicker">Static Preview Atlas</p>
+          <h1>City Asset Views</h1>
+          <p class="brand-copy">Precomputed renders committed with the site. No client-side preview rendering.</p>
+        </div>
+        <a class="gallery-link" href="./">Open Viewer</a>
+      </header>
+      <section class="gallery-meta" id="gallery-meta">Loading asset preview manifest...</section>
+      <section class="gallery-grid" id="asset-gallery"></section>
+    </main>
+    <script type="module" src="./previews.js?v=1"></script>
+  </body>
+</html>
