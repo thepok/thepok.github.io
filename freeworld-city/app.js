@@ -273,7 +273,25 @@ function clearAllLoadedChunks() {
   updateStats();
 }
 
+function countChunksWithinTarget(source) {
+  let count = 0;
+  for (const cKey of source) {
+    const { cx, cy, cz } = parseChunkKey(cKey);
+    if (chunkWithinRange(cx, cy, cz, 0)) count += 1;
+  }
+  return count;
+}
+
 function getVisibleChunkProgress() {
+  if (focusChunkBounds) {
+    const sizeX = Math.max(0, (focusChunkBounds.max[0] - focusChunkBounds.min[0]) + 1);
+    const sizeY = Math.max(0, (focusChunkBounds.max[1] - focusChunkBounds.min[1]) + 1);
+    const sizeZ = Math.max(0, (focusChunkBounds.max[2] - focusChunkBounds.min[2]) + 1);
+    return {
+      done: countChunksWithinTarget(chunkLoaded),
+      target: sizeX * sizeY * sizeZ,
+    };
+  }
   const radiusXZ = getChunkRadiusXZ();
   const radiusY = getChunkRadiusY();
   const center = getCameraChunkCoords();
@@ -286,6 +304,22 @@ function getVisibleChunkProgress() {
     }
   }
   return { done, target };
+}
+
+function getChunkLoadState() {
+  const progress = getVisibleChunkProgress();
+  const queued = countChunksWithinTarget(chunkQueued);
+  const fetching = countChunksWithinTarget(chunkFetching);
+  return {
+    focus: Boolean(focusChunkBounds),
+    done: progress.done,
+    target: progress.target,
+    loaded: chunkLoaded.size,
+    queued,
+    fetching,
+    inFlight: queued + fetching,
+    complete: progress.target > 0 ? (progress.done >= progress.target && queued === 0 && fetching === 0) : (queued === 0 && fetching === 0),
+  };
 }
 
 function updateStats() {
@@ -1109,18 +1143,24 @@ window.__lwCapture = {
     return this.stats();
   },
   stats() {
-    const progress = getVisibleChunkProgress();
+    const progress = getChunkLoadState();
     return {
       preset: worldgenPreset,
-      loaded: chunkLoaded.size,
+      loaded: progress.loaded,
       done: progress.done,
       total: progress.target,
+      queued: progress.queued,
+      fetching: progress.fetching,
+      complete: progress.complete,
       position: {
         x: camera.position.x,
         y: camera.position.y,
         z: camera.position.z,
       },
     };
+  },
+  getLoadState() {
+    return getChunkLoadState();
   },
 };
 

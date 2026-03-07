@@ -157,18 +157,14 @@ def hide_ui(page) -> None:
     )
 
 
-def read_chunk_progress(page) -> dict[str, int]:
+def read_chunk_progress(page) -> dict[str, int | bool]:
     payload = page.evaluate(
         """
         () => {
-          const txt = (document.getElementById("done-chunks")?.textContent || "").trim();
-          const m = txt.match(/(\\d+)\\s*\\/\\s*(\\d+)/);
-          const loaded = parseInt((document.getElementById("loaded-chunks")?.textContent || "0").trim(), 10) || 0;
-          return {
-            done: m ? parseInt(m[1], 10) : 0,
-            total: m ? parseInt(m[2], 10) : 0,
-            loaded,
-          };
+          if (window.__lwCapture && typeof window.__lwCapture.getLoadState === "function") {
+            return window.__lwCapture.getLoadState();
+          }
+          return { done: 0, total: 0, loaded: 0, queued: 0, fetching: 0, complete: false };
         }
         """
     )
@@ -176,42 +172,29 @@ def read_chunk_progress(page) -> dict[str, int]:
         "done": int(payload.get("done", 0)),
         "total": int(payload.get("total", 0)),
         "loaded": int(payload.get("loaded", 0)),
+        "queued": int(payload.get("queued", 0)),
+        "fetching": int(payload.get("fetching", 0)),
+        "complete": bool(payload.get("complete", False)),
     }
-
-
-def expected_focus_chunk_count(object_meta: dict) -> int:
-    bounds = object_meta.get("chunk_bounds") or {}
-    mins = list(bounds.get("min") or [])
-    maxs = list(bounds.get("max") or [])
-    if len(mins) != 3 or len(maxs) != 3:
-        return 0
-    span_x = max(0, int(maxs[0]) - int(mins[0]) + 1)
-    span_y = max(0, int(maxs[1]) - int(mins[1]) + 1)
-    span_z = max(0, int(maxs[2]) - int(mins[2]) + 1)
-    return span_x * span_y * span_z
-
 
 def wait_for_preview_progress(page, object_meta: dict, max_wait: float) -> dict[str, int]:
     deadline = time.time() + max(0.1, max_wait)
-    latest = {"done": 0, "total": 0, "loaded": 0}
-    expected_chunks = expected_focus_chunk_count(object_meta)
+    latest = {"done": 0, "total": 0, "loaded": 0, "queued": 0, "fetching": 0, "complete": False}
     stable_loaded = -1
     stable_ticks = 0
     while time.time() < deadline:
         latest = read_chunk_progress(page)
-        if expected_chunks > 0 and latest["loaded"] >= expected_chunks:
+        if bool(latest["complete"]):
             return latest
-        if latest["loaded"] == stable_loaded:
+        if int(latest["loaded"]) == stable_loaded:
             stable_ticks += 1
         else:
-            stable_loaded = latest["loaded"]
+            stable_loaded = int(latest["loaded"])
             stable_ticks = 0
-        if expected_chunks > 0 and latest["loaded"] >= max(8, int(expected_chunks * 0.9)) and stable_ticks >= 3:
-            return latest
-        if expected_chunks == 0 and latest["loaded"] >= 20 and stable_ticks >= 2:
+        if int(latest["queued"]) == 0 and int(latest["fetching"]) == 0 and stable_ticks >= 2:
             return latest
         page.wait_for_timeout(250)
-    return latest
+    return latest  # type: ignore[return-value]
 
 
 def set_camera(page, *, x: float, y: float, z: float, yaw_deg: float, pitch_deg: float, fov: float = 70.0) -> None:
