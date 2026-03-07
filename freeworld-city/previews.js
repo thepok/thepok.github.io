@@ -33,6 +33,12 @@ function buildCard(item) {
   }
 
   card.appendChild(header);
+  if (item.description) {
+    const copy = document.createElement("p");
+    copy.className = "asset-card-copy";
+    copy.textContent = item.description;
+    card.appendChild(copy);
+  }
   card.appendChild(strip);
   return card;
 }
@@ -42,7 +48,7 @@ async function bootstrap() {
     const response = await fetch("./asset-previews/manifest.json");
     if (!response.ok) throw new Error(`manifest fetch failed: ${response.status}`);
     const manifest = await response.json();
-    metaEl.textContent = `${manifest.count || 0} assets · preset ${manifest.preset || "city"} · generated ${manifest.generated_at || "-"}`;
+    metaEl.textContent = `${manifest.count || 0} isolated assets · generated ${manifest.generated_at || "-"}`;
     galleryEl.innerHTML = "";
     for (const item of (manifest.items || [])) {
       galleryEl.appendChild(buildCard(item));

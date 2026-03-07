@@ -1,0 +1,60 @@
+{
+  "assets": [
+    {
+      "id": "office_tower",
+      "label": "Office Tower",
+      "type": "building",
+      "tags": ["downtown", "glass", "crown"],
+      "description": "Tall Manhattan-style office slab with a retail podium and lit crown."
+    },
+    {
+      "id": "mixed_use_midrise",
+      "label": "Mixed-Use Midrise",
+      "type": "building",
+      "tags": ["downtown", "retail", "midrise"],
+      "description": "Brick-and-stone midrise with storefronts, repetitive bays, and rooftop utility bulk."
+    },
+    {
+      "id": "apartment_midrise",
+      "label": "Apartment Midrise",
+      "type": "building",
+      "tags": ["residential", "balconies", "courtyard"],
+      "description": "Residential slab with balcony bands, inset lobby, and a calmer facade rhythm."
+    },
+    {
+      "id": "shop_row",
+      "label": "Shop Row",
+      "type": "building",
+      "tags": ["retail", "blockfront", "awning"],
+      "description": "Attached storefront sequence with signage strips, awnings, and upper rental floors."
+    },
+    {
+      "id": "warehouse",
+      "label": "Warehouse",
+      "type": "industrial",
+      "tags": ["industrial", "loading", "backlot"],
+      "description": "Low industrial shed with loading docks, rooftop kit, and yard barriers."
+    },
+    {
+      "id": "townhouse_row",
+      "label": "Townhouse Row",
+      "type": "residential",
+      "tags": ["rowhouse", "stoops", "brownstone"],
+      "description": "Attached townhouse frontage with stoops, cornices, and narrow rhythm."
+    },
+    {
+      "id": "transit_station",
+      "label": "Transit Station",
+      "type": "transit",
+      "tags": ["station", "entrance", "plaza"],
+      "description": "Surface station entrance composition with railings, stairs, kiosks, and signage."
+    },
+    {
+      "id": "civic_hall",
+      "label": "Civic Hall",
+      "type": "public",
+      "tags": ["civic", "plaza", "columns"],
+      "description": "Public building mass with stepped forecourt, civic doorway, and lantern roofline."
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>City Asset Preview Scene</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;700&family=Syne:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css?v=3" />
+  </head>
+  <body class="preview-body">
+    <div class="backdrop-grid" aria-hidden="true"></div>
+    <header class="preview-topbar">
+      <div>
+        <p class="brand-kicker">Isolated Asset Preview</p>
+        <h1 id="preview-title">Loading Asset...</h1>
+      </div>
+      <div class="preview-controls">
+        <label>
+          <span>Asset</span>
+          <select id="asset-select"></select>
+        </label>
+        <label>
+          <span>View</span>
+          <select id="view-select">
+            <option value="hero">Hero</option>
+            <option value="corner">Corner</option>
+            <option value="reverse">Reverse</option>
+          </select>
+        </label>
+      </div>
+    </header>
+    <main class="preview-shell">
+      <canvas id="preview-canvas"></canvas>
+    </main>
+    <script type="module" src="./asset-scene.js?v=1"></script>
+  </body>
+</html>

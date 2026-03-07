@@ -30,6 +30,10 @@ body {
   overflow: hidden;
 }
 
+.preview-body {
+  overflow: hidden;
+}
+
 .backdrop-grid {
   position: fixed;
   inset: 0;
@@ -348,6 +352,14 @@ body {
   font-size: 0.75rem;
 }
 
+.asset-card-copy {
+  margin: 0;
+  padding: 0 1rem 0.85rem;
+  color: var(--ink-1);
+  font-size: 0.86rem;
+  line-height: 1.4;
+}
+
 .asset-strip {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -376,6 +388,81 @@ body {
   color: var(--ink-1);
   text-transform: uppercase;
   letter-spacing: 0.08em;
+}
+
+.preview-topbar {
+  position: fixed;
+  top: 0.8rem;
+  left: 0.8rem;
+  right: 0.8rem;
+  z-index: 20;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.95rem 1.05rem;
+  border: 1px solid var(--edge);
+  border-radius: 20px;
+  background: var(--glass);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: blur(10px);
+}
+
+.preview-topbar h1 {
+  margin: 0;
+  font-family: "Syne", sans-serif;
+  font-size: 1.2rem;
+}
+
+.preview-controls {
+  display: flex;
+  gap: 0.7rem;
+}
+
+.preview-controls label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--ink-1);
+}
+
+.preview-controls select {
+  min-width: 11rem;
+  min-height: 2.15rem;
+  border-radius: 12px;
+  border: 1px solid var(--edge);
+  background: rgba(255, 251, 244, 0.95);
+  padding: 0.35rem 0.55rem;
+  color: var(--ink-0);
+}
+
+.preview-shell {
+  min-height: 100vh;
+  padding: 5.4rem 0.8rem 0.8rem;
+}
+
+#preview-canvas {
+  width: 100%;
+  height: calc(100vh - 6.2rem);
+  display: block;
+  border-radius: 28px;
+  border: 1px solid var(--edge);
+  box-shadow: var(--panel-shadow);
+}
+
+body.screenshot-mode .preview-topbar {
+  display: none;
+}
+
+body.screenshot-mode .preview-shell {
+  padding: 0;
+}
+
+body.screenshot-mode #preview-canvas {
+  height: 100vh;
+  border-radius: 0;
+  border: 0;
+  box-shadow: none;
 }
 
 body.screenshot-mode .topbar,
@@ -423,5 +510,29 @@ body.screenshot-mode .layout {
 
   .asset-strip {
     grid-template-columns: 1fr;
+  }
+
+  .preview-topbar {
+    position: static;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .preview-controls {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .preview-controls select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .preview-shell {
+    padding: 0.8rem;
+  }
+
+  #preview-canvas {
+    height: 68dvh;
   }
 }
