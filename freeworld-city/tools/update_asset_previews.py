@@ -179,16 +179,36 @@ def read_chunk_progress(page) -> dict[str, int]:
     }
 
 
-def wait_for_preview_progress(page, max_wait: float) -> dict[str, int]:
+def expected_focus_chunk_count(object_meta: dict) -> int:
+    bounds = object_meta.get("chunk_bounds") or {}
+    mins = list(bounds.get("min") or [])
+    maxs = list(bounds.get("max") or [])
+    if len(mins) != 3 or len(maxs) != 3:
+        return 0
+    span_x = max(0, int(maxs[0]) - int(mins[0]) + 1)
+    span_y = max(0, int(maxs[1]) - int(mins[1]) + 1)
+    span_z = max(0, int(maxs[2]) - int(mins[2]) + 1)
+    return span_x * span_y * span_z
+
+
+def wait_for_preview_progress(page, object_meta: dict, max_wait: float) -> dict[str, int]:
     deadline = time.time() + max(0.1, max_wait)
     latest = {"done": 0, "total": 0, "loaded": 0}
+    expected_chunks = expected_focus_chunk_count(object_meta)
+    stable_loaded = -1
+    stable_ticks = 0
     while time.time() < deadline:
         latest = read_chunk_progress(page)
-        if latest["total"] > 0 and latest["done"] >= latest["total"]:
+        if expected_chunks > 0 and latest["loaded"] >= expected_chunks:
             return latest
-        if latest["total"] > 0 and latest["loaded"] >= max(28, int(latest["total"] * 0.06)):
+        if latest["loaded"] == stable_loaded:
+            stable_ticks += 1
+        else:
+            stable_loaded = latest["loaded"]
+            stable_ticks = 0
+        if expected_chunks > 0 and latest["loaded"] >= max(8, int(expected_chunks * 0.9)) and stable_ticks >= 3:
             return latest
-        if latest["total"] == 0 and latest["loaded"] >= 20:
+        if expected_chunks == 0 and latest["loaded"] >= 20 and stable_ticks >= 2:
             return latest
         page.wait_for_timeout(250)
     return latest
@@ -282,7 +302,7 @@ def render_asset_previews(args: argparse.Namespace) -> dict:
             wait_for_page_ready(page)
             configure_world_mode(page, PRESET)
             apply_view_scale(page, args.view_scale)
-            progress = wait_for_preview_progress(page, args.max_wait)
+            progress = wait_for_preview_progress(page, object_meta, args.max_wait)
             if args.post_wait > 0:
                 page.wait_for_timeout(int(args.post_wait * 1000))
             hide_ui(page)

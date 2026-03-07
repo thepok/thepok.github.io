@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-07T12:20:57Z",
+  "generated_at": "2026-03-07T12:27:09Z",
   "world": "leonardos-world",
   "preset": "city",
   "count": 5,
@@ -16,7 +16,7 @@
       "progress": {
         "done": 0,
         "total": 405,
-        "loaded": 22
+        "loaded": 24
       },
       "views": [
         {
@@ -65,7 +65,7 @@
       "progress": {
         "done": 0,
         "total": 405,
-        "loaded": 28
+        "loaded": 31
       },
       "views": [
         {
@@ -164,7 +164,7 @@
       "progress": {
         "done": 0,
         "total": 405,
-        "loaded": 28
+        "loaded": 32
       },
       "views": [
         {
@@ -214,7 +214,7 @@
       "progress": {
         "done": 0,
         "total": 405,
-        "loaded": 25
+        "loaded": 24
       },
       "views": [
         {
