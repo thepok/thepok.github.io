@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-07T12:27:09Z",
+  "generated_at": "2026-03-07T12:40:09Z",
   "world": "leonardos-world",
   "preset": "city",
   "count": 5,
@@ -14,9 +14,12 @@
         "landmark"
       ],
       "progress": {
-        "done": 0,
-        "total": 405,
-        "loaded": 24
+        "done": 22,
+        "total": 0,
+        "loaded": 22,
+        "queued": 2852,
+        "fetching": 6,
+        "complete": false
       },
       "views": [
         {
@@ -63,9 +66,12 @@
         "mixed_use"
       ],
       "progress": {
-        "done": 0,
-        "total": 405,
-        "loaded": 31
+        "done": 33,
+        "total": 0,
+        "loaded": 33,
+        "queued": 1977,
+        "fetching": 6,
+        "complete": false
       },
       "views": [
         {
@@ -112,9 +118,12 @@
         "mixed_use"
       ],
       "progress": {
-        "done": 0,
-        "total": 405,
-        "loaded": 31
+        "done": 31,
+        "total": 0,
+        "loaded": 31,
+        "queued": 1943,
+        "fetching": 6,
+        "complete": false
       },
       "views": [
         {
@@ -162,9 +171,12 @@
         "vacant"
       ],
       "progress": {
-        "done": 0,
-        "total": 405,
-        "loaded": 32
+        "done": 35,
+        "total": 0,
+        "loaded": 35,
+        "queued": 1639,
+        "fetching": 6,
+        "complete": false
       },
       "views": [
         {
@@ -212,9 +224,12 @@
         "landmark"
       ],
       "progress": {
-        "done": 0,
-        "total": 405,
-        "loaded": 24
+        "done": 22,
+        "total": 0,
+        "loaded": 23,
+        "queued": 2996,
+        "fetching": 6,
+        "complete": false
       },
       "views": [
         {
