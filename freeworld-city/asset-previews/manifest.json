@@ -1,204 +1,2032 @@
 {
-  "generated_at": "2026-03-07T14:20:35Z",
-  "count": 8,
+  "generated_at": "2026-03-08T13:22:11Z",
+  "count": 80,
   "items": [
     {
-      "id": "office_tower",
-      "label": "Office Tower",
-      "type": "building",
+      "id": "building_neg1_neg1",
+      "label": "building:-1:-1 [mixed_use_midrise, downtown]",
+      "type": "mixed_use_midrise",
+      "source_object_id": "building:-1:-1",
       "tags": [
+        "mixed_use_midrise",
         "downtown",
-        "glass",
-        "crown"
+        "landmark"
       ],
-      "description": "Tall Manhattan-style office slab with a retail podium and lit crown.",
+      "description": "Real generated mixed_use_midrise specimen from the city world.",
       "views": [
         {
           "name": "hero",
-          "image": "asset-previews/building/office_tower-hero.png"
+          "image": "asset-previews/mixed_use_midrise/building_neg1_neg1-hero.png"
         },
         {
           "name": "corner",
-          "image": "asset-previews/building/office_tower-corner.png"
+          "image": "asset-previews/mixed_use_midrise/building_neg1_neg1-corner.png"
         },
         {
           "name": "reverse",
-          "image": "asset-previews/building/office_tower-reverse.png"
+          "image": "asset-previews/mixed_use_midrise/building_neg1_neg1-reverse.png"
         }
       ]
     },
     {
-      "id": "mixed_use_midrise",
-      "label": "Mixed-Use Midrise",
-      "type": "building",
+      "id": "building_neg1_neg2",
+      "label": "building:-1:-2 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-1:-2",
       "tags": [
-        "downtown",
-        "retail",
-        "midrise"
+        "apartment_midrise",
+        "mixed_use"
       ],
-      "description": "Brick-and-stone midrise with storefronts, repetitive bays, and rooftop utility bulk.",
+      "description": "Real generated apartment_midrise specimen from the city world.",
       "views": [
         {
           "name": "hero",
-          "image": "asset-previews/building/mixed_use_midrise-hero.png"
+          "image": "asset-previews/apartment_midrise/building_neg1_neg2-hero.png"
         },
         {
           "name": "corner",
-          "image": "asset-previews/building/mixed_use_midrise-corner.png"
+          "image": "asset-previews/apartment_midrise/building_neg1_neg2-corner.png"
         },
         {
           "name": "reverse",
-          "image": "asset-previews/building/mixed_use_midrise-reverse.png"
+          "image": "asset-previews/apartment_midrise/building_neg1_neg2-reverse.png"
         }
       ]
     },
     {
-      "id": "apartment_midrise",
-      "label": "Apartment Midrise",
-      "type": "building",
+      "id": "building_neg1_neg3",
+      "label": "building:-1:-3 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:-1:-3",
       "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/shop_row/building_neg1_neg3-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/shop_row/building_neg1_neg3-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/shop_row/building_neg1_neg3-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg1_neg4",
+      "label": "building:-1:-4 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-1:-4",
+      "tags": [
+        "apartment_midrise",
         "residential",
-        "balconies",
-        "courtyard"
+        "vacant"
       ],
-      "description": "Residential slab with balcony bands, inset lobby, and a calmer facade rhythm.",
+      "description": "Real generated apartment_midrise specimen from the city world.",
       "views": [
         {
           "name": "hero",
-          "image": "asset-previews/building/apartment_midrise-hero.png"
+          "image": "asset-previews/apartment_midrise/building_neg1_neg4-hero.png"
         },
         {
           "name": "corner",
-          "image": "asset-previews/building/apartment_midrise-corner.png"
+          "image": "asset-previews/apartment_midrise/building_neg1_neg4-corner.png"
         },
         {
           "name": "reverse",
-          "image": "asset-previews/building/apartment_midrise-reverse.png"
+          "image": "asset-previews/apartment_midrise/building_neg1_neg4-reverse.png"
         }
       ]
     },
     {
-      "id": "shop_row",
-      "label": "Shop Row",
-      "type": "building",
+      "id": "building_neg1_0",
+      "label": "building:-1:0 [mixed_use_midrise, downtown]",
+      "type": "mixed_use_midrise",
+      "source_object_id": "building:-1:0",
       "tags": [
-        "retail",
-        "blockfront",
-        "awning"
+        "mixed_use_midrise",
+        "downtown",
+        "landmark"
       ],
-      "description": "Attached storefront sequence with signage strips, awnings, and upper rental floors.",
+      "description": "Real generated mixed_use_midrise specimen from the city world.",
       "views": [
         {
           "name": "hero",
-          "image": "asset-previews/building/shop_row-hero.png"
+          "image": "asset-previews/mixed_use_midrise/building_neg1_0-hero.png"
         },
         {
           "name": "corner",
-          "image": "asset-previews/building/shop_row-corner.png"
+          "image": "asset-previews/mixed_use_midrise/building_neg1_0-corner.png"
         },
         {
           "name": "reverse",
-          "image": "asset-previews/building/shop_row-reverse.png"
+          "image": "asset-previews/mixed_use_midrise/building_neg1_0-reverse.png"
         }
       ]
     },
     {
-      "id": "warehouse",
-      "label": "Warehouse",
-      "type": "industrial",
+      "id": "building_neg1_1",
+      "label": "building:-1:1 [office_tower, downtown]",
+      "type": "office_tower",
+      "source_object_id": "building:-1:1",
       "tags": [
-        "industrial",
-        "loading",
-        "backlot"
+        "office_tower",
+        "downtown",
+        "landmark"
       ],
-      "description": "Low industrial shed with loading docks, rooftop kit, and yard barriers.",
+      "description": "Real generated office_tower specimen from the city world.",
       "views": [
         {
           "name": "hero",
-          "image": "asset-previews/industrial/warehouse-hero.png"
+          "image": "asset-previews/office_tower/building_neg1_1-hero.png"
         },
         {
           "name": "corner",
-          "image": "asset-previews/industrial/warehouse-corner.png"
+          "image": "asset-previews/office_tower/building_neg1_1-corner.png"
         },
         {
           "name": "reverse",
-          "image": "asset-previews/industrial/warehouse-reverse.png"
+          "image": "asset-previews/office_tower/building_neg1_1-reverse.png"
         }
       ]
     },
     {
-      "id": "townhouse_row",
-      "label": "Townhouse Row",
-      "type": "residential",
+      "id": "building_neg1_2",
+      "label": "building:-1:2 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-1:2",
       "tags": [
-        "rowhouse",
-        "stoops",
-        "brownstone"
+        "apartment_midrise",
+        "mixed_use"
       ],
-      "description": "Attached townhouse frontage with stoops, cornices, and narrow rhythm.",
+      "description": "Real generated apartment_midrise specimen from the city world.",
       "views": [
         {
           "name": "hero",
-          "image": "asset-previews/residential/townhouse_row-hero.png"
+          "image": "asset-previews/apartment_midrise/building_neg1_2-hero.png"
         },
         {
           "name": "corner",
-          "image": "asset-previews/residential/townhouse_row-corner.png"
+          "image": "asset-previews/apartment_midrise/building_neg1_2-corner.png"
         },
         {
           "name": "reverse",
-          "image": "asset-previews/residential/townhouse_row-reverse.png"
+          "image": "asset-previews/apartment_midrise/building_neg1_2-reverse.png"
         }
       ]
     },
     {
-      "id": "transit_station",
-      "label": "Transit Station",
-      "type": "transit",
+      "id": "building_neg1_3",
+      "label": "building:-1:3 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-1:3",
       "tags": [
-        "station",
-        "entrance",
-        "plaza"
+        "apartment_midrise",
+        "mixed_use"
       ],
-      "description": "Surface station entrance composition with railings, stairs, kiosks, and signage.",
+      "description": "Real generated apartment_midrise specimen from the city world.",
       "views": [
         {
           "name": "hero",
-          "image": "asset-previews/transit/transit_station-hero.png"
+          "image": "asset-previews/apartment_midrise/building_neg1_3-hero.png"
         },
         {
           "name": "corner",
-          "image": "asset-previews/transit/transit_station-corner.png"
+          "image": "asset-previews/apartment_midrise/building_neg1_3-corner.png"
         },
         {
           "name": "reverse",
-          "image": "asset-previews/transit/transit_station-reverse.png"
+          "image": "asset-previews/apartment_midrise/building_neg1_3-reverse.png"
         }
       ]
     },
     {
-      "id": "civic_hall",
-      "label": "Civic Hall",
-      "type": "public",
+      "id": "building_neg1_4",
+      "label": "building:-1:4 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-1:4",
       "tags": [
-        "civic",
-        "plaza",
-        "columns"
+        "apartment_midrise",
+        "residential",
+        "landmark"
       ],
-      "description": "Public building mass with stepped forecourt, civic doorway, and lantern roofline.",
+      "description": "Real generated apartment_midrise specimen from the city world.",
       "views": [
         {
           "name": "hero",
-          "image": "asset-previews/public/civic_hall-hero.png"
+          "image": "asset-previews/apartment_midrise/building_neg1_4-hero.png"
         },
         {
           "name": "corner",
-          "image": "asset-previews/public/civic_hall-corner.png"
+          "image": "asset-previews/apartment_midrise/building_neg1_4-corner.png"
         },
         {
           "name": "reverse",
-          "image": "asset-previews/public/civic_hall-reverse.png"
+          "image": "asset-previews/apartment_midrise/building_neg1_4-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg2_neg1",
+      "label": "building:-2:-1 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-2:-1",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_neg2_neg1-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_neg2_neg1-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_neg2_neg1-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg2_neg2",
+      "label": "building:-2:-2 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:-2:-2",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/shop_row/building_neg2_neg2-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/shop_row/building_neg2_neg2-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/shop_row/building_neg2_neg2-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg2_neg3",
+      "label": "building:-2:-3 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:-2:-3",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/shop_row/building_neg2_neg3-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/shop_row/building_neg2_neg3-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/shop_row/building_neg2_neg3-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg2_neg4",
+      "label": "building:-2:-4 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:-2:-4",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/office_midrise/building_neg2_neg4-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/office_midrise/building_neg2_neg4-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/office_midrise/building_neg2_neg4-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg2_0",
+      "label": "building:-2:0 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-2:0",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_neg2_0-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_neg2_0-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_neg2_0-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg2_1",
+      "label": "building:-2:1 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:-2:1",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/shop_row/building_neg2_1-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/shop_row/building_neg2_1-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/shop_row/building_neg2_1-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg2_2",
+      "label": "building:-2:2 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:-2:2",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/shop_row/building_neg2_2-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/shop_row/building_neg2_2-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/shop_row/building_neg2_2-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg2_4",
+      "label": "building:-2:4 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:-2:4",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/office_midrise/building_neg2_4-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/office_midrise/building_neg2_4-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/office_midrise/building_neg2_4-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg3_neg1",
+      "label": "building:-3:-1 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-3:-1",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_neg3_neg1-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_neg3_neg1-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_neg3_neg1-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg3_neg2",
+      "label": "building:-3:-2 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-3:-2",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_neg3_neg2-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_neg3_neg2-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_neg3_neg2-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg3_neg3",
+      "label": "building:-3:-3 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-3:-3",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_neg3_neg3-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_neg3_neg3-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_neg3_neg3-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg3_neg4",
+      "label": "building:-3:-4 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-3:-4",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_neg3_neg4-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_neg3_neg4-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_neg3_neg4-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg3_0",
+      "label": "building:-3:0 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-3:0",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_neg3_0-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_neg3_0-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_neg3_0-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg3_1",
+      "label": "building:-3:1 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-3:1",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_neg3_1-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_neg3_1-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_neg3_1-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg3_2",
+      "label": "building:-3:2 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:-3:2",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/shop_row/building_neg3_2-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/shop_row/building_neg3_2-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/shop_row/building_neg3_2-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg3_3",
+      "label": "building:-3:3 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:-3:3",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/shop_row/building_neg3_3-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/shop_row/building_neg3_3-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/shop_row/building_neg3_3-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg3_4",
+      "label": "building:-3:4 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:-3:4",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/office_midrise/building_neg3_4-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/office_midrise/building_neg3_4-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/office_midrise/building_neg3_4-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg4_neg1",
+      "label": "building:-4:-1 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:-4:-1",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/office_midrise/building_neg4_neg1-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/office_midrise/building_neg4_neg1-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/office_midrise/building_neg4_neg1-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg4_neg2",
+      "label": "building:-4:-2 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-4:-2",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_neg4_neg2-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_neg4_neg2-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_neg4_neg2-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg4_neg4",
+      "label": "building:-4:-4 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:-4:-4",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/office_midrise/building_neg4_neg4-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/office_midrise/building_neg4_neg4-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/office_midrise/building_neg4_neg4-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg4_0",
+      "label": "building:-4:0 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:-4:0",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/office_midrise/building_neg4_0-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/office_midrise/building_neg4_0-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/office_midrise/building_neg4_0-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg4_1",
+      "label": "building:-4:1 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-4:1",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_neg4_1-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_neg4_1-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_neg4_1-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg4_2",
+      "label": "building:-4:2 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-4:2",
+      "tags": [
+        "apartment_midrise",
+        "residential",
+        "vacant"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_neg4_2-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_neg4_2-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_neg4_2-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg4_3",
+      "label": "building:-4:3 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-4:3",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_neg4_3-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_neg4_3-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_neg4_3-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_neg4_4",
+      "label": "building:-4:4 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:-4:4",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/office_midrise/building_neg4_4-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/office_midrise/building_neg4_4-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/office_midrise/building_neg4_4-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_0_neg1",
+      "label": "building:0:-1 [mixed_use_midrise, downtown]",
+      "type": "mixed_use_midrise",
+      "source_object_id": "building:0:-1",
+      "tags": [
+        "mixed_use_midrise",
+        "downtown",
+        "landmark"
+      ],
+      "description": "Real generated mixed_use_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/mixed_use_midrise/building_0_neg1-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/mixed_use_midrise/building_0_neg1-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/mixed_use_midrise/building_0_neg1-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_0_neg3",
+      "label": "building:0:-3 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:0:-3",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_0_neg3-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_0_neg3-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_0_neg3-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_0_0",
+      "label": "building:0:0 [mixed_use_midrise, downtown]",
+      "type": "mixed_use_midrise",
+      "source_object_id": "building:0:0",
+      "tags": [
+        "mixed_use_midrise",
+        "downtown",
+        "landmark"
+      ],
+      "description": "Real generated mixed_use_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/mixed_use_midrise/building_0_0-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/mixed_use_midrise/building_0_0-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/mixed_use_midrise/building_0_0-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_0_1",
+      "label": "building:0:1 [mixed_use_midrise, downtown]",
+      "type": "mixed_use_midrise",
+      "source_object_id": "building:0:1",
+      "tags": [
+        "mixed_use_midrise",
+        "downtown",
+        "landmark"
+      ],
+      "description": "Real generated mixed_use_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/mixed_use_midrise/building_0_1-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/mixed_use_midrise/building_0_1-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/mixed_use_midrise/building_0_1-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_0_3",
+      "label": "building:0:3 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:0:3",
+      "tags": [
+        "shop_row",
+        "mixed_use",
+        "landmark"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/shop_row/building_0_3-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/shop_row/building_0_3-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/shop_row/building_0_3-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_0_4",
+      "label": "building:0:4 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:0:4",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_0_4-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_0_4-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_0_4-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_1_neg1",
+      "label": "building:1:-1 [office_tower, downtown]",
+      "type": "office_tower",
+      "source_object_id": "building:1:-1",
+      "tags": [
+        "office_tower",
+        "downtown",
+        "landmark"
+      ],
+      "description": "Real generated office_tower specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/office_tower/building_1_neg1-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/office_tower/building_1_neg1-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/office_tower/building_1_neg1-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_1_neg2",
+      "label": "building:1:-2 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:1:-2",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use",
+        "landmark"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_1_neg2-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_1_neg2-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_1_neg2-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_1_neg3",
+      "label": "building:1:-3 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:1:-3",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_1_neg3-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_1_neg3-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_1_neg3-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_1_neg4",
+      "label": "building:1:-4 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:1:-4",
+      "tags": [
+        "office_midrise",
+        "office",
+        "vacant"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/office_midrise/building_1_neg4-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/office_midrise/building_1_neg4-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/office_midrise/building_1_neg4-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_1_0",
+      "label": "building:1:0 [office_tower, downtown]",
+      "type": "office_tower",
+      "source_object_id": "building:1:0",
+      "tags": [
+        "office_tower",
+        "downtown",
+        "landmark"
+      ],
+      "description": "Real generated office_tower specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/office_tower/building_1_0-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/office_tower/building_1_0-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/office_tower/building_1_0-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_1_1",
+      "label": "building:1:1 [mixed_use_midrise, downtown]",
+      "type": "mixed_use_midrise",
+      "source_object_id": "building:1:1",
+      "tags": [
+        "mixed_use_midrise",
+        "downtown",
+        "landmark"
+      ],
+      "description": "Real generated mixed_use_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/mixed_use_midrise/building_1_1-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/mixed_use_midrise/building_1_1-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/mixed_use_midrise/building_1_1-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_1_2",
+      "label": "building:1:2 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:1:2",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_1_2-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_1_2-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_1_2-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_1_3",
+      "label": "building:1:3 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:1:3",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/shop_row/building_1_3-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/shop_row/building_1_3-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/shop_row/building_1_3-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_1_4",
+      "label": "building:1:4 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:1:4",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/office_midrise/building_1_4-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/office_midrise/building_1_4-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/office_midrise/building_1_4-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_2_neg1",
+      "label": "building:2:-1 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:2:-1",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_2_neg1-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_2_neg1-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_2_neg1-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_2_neg2",
+      "label": "building:2:-2 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:2:-2",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/shop_row/building_2_neg2-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/shop_row/building_2_neg2-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/shop_row/building_2_neg2-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_2_neg3",
+      "label": "building:2:-3 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:2:-3",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_2_neg3-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_2_neg3-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_2_neg3-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_2_neg4",
+      "label": "building:2:-4 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:2:-4",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/office_midrise/building_2_neg4-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/office_midrise/building_2_neg4-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/office_midrise/building_2_neg4-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_2_0",
+      "label": "building:2:0 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:2:0",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use",
+        "landmark"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_2_0-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_2_0-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_2_0-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_2_1",
+      "label": "building:2:1 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:2:1",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_2_1-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_2_1-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_2_1-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_2_2",
+      "label": "building:2:2 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:2:2",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/shop_row/building_2_2-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/shop_row/building_2_2-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/shop_row/building_2_2-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_2_3",
+      "label": "building:2:3 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:2:3",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use",
+        "vacant"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_2_3-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_2_3-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_2_3-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_2_4",
+      "label": "building:2:4 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:2:4",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_2_4-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_2_4-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_2_4-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_3_neg1",
+      "label": "building:3:-1 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:3:-1",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_3_neg1-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_3_neg1-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_3_neg1-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_3_neg2",
+      "label": "building:3:-2 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:3:-2",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/shop_row/building_3_neg2-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/shop_row/building_3_neg2-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/shop_row/building_3_neg2-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_3_neg3",
+      "label": "building:3:-3 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:3:-3",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/shop_row/building_3_neg3-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/shop_row/building_3_neg3-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/shop_row/building_3_neg3-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_3_neg4",
+      "label": "building:3:-4 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:3:-4",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/office_midrise/building_3_neg4-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/office_midrise/building_3_neg4-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/office_midrise/building_3_neg4-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_3_0",
+      "label": "building:3:0 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:3:0",
+      "tags": [
+        "shop_row",
+        "mixed_use",
+        "vacant"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/shop_row/building_3_0-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/shop_row/building_3_0-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/shop_row/building_3_0-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_3_1",
+      "label": "building:3:1 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:3:1",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_3_1-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_3_1-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_3_1-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_3_2",
+      "label": "building:3:2 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:3:2",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_3_2-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_3_2-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_3_2-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_3_3",
+      "label": "building:3:3 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:3:3",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_3_3-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_3_3-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_3_3-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_3_4",
+      "label": "building:3:4 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:3:4",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_3_4-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_3_4-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_3_4-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_4_neg1",
+      "label": "building:4:-1 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:4:-1",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_4_neg1-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_4_neg1-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_4_neg1-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_4_neg2",
+      "label": "building:4:-2 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:4:-2",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_4_neg2-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_4_neg2-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_4_neg2-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_4_neg3",
+      "label": "building:4:-3 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:4:-3",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/office_midrise/building_4_neg3-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/office_midrise/building_4_neg3-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/office_midrise/building_4_neg3-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_4_neg4",
+      "label": "building:4:-4 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:4:-4",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/office_midrise/building_4_neg4-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/office_midrise/building_4_neg4-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/office_midrise/building_4_neg4-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_4_0",
+      "label": "building:4:0 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:4:0",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/office_midrise/building_4_0-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/office_midrise/building_4_0-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/office_midrise/building_4_0-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_4_1",
+      "label": "building:4:1 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:4:1",
+      "tags": [
+        "office_midrise",
+        "office",
+        "landmark",
+        "vacant"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/office_midrise/building_4_1-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/office_midrise/building_4_1-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/office_midrise/building_4_1-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_4_2",
+      "label": "building:4:2 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:4:2",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/apartment_midrise/building_4_2-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/apartment_midrise/building_4_2-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/apartment_midrise/building_4_2-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_4_3",
+      "label": "building:4:3 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:4:3",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/office_midrise/building_4_3-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/office_midrise/building_4_3-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/office_midrise/building_4_3-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "building_4_4",
+      "label": "building:4:4 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:4:4",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/office_midrise/building_4_4-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/office_midrise/building_4_4-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/office_midrise/building_4_4-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "station_neg4_0",
+      "label": "station:-4:0 [station]",
+      "type": "station",
+      "source_object_id": "station:-4:0",
+      "tags": [
+        "status:planned",
+        "planned",
+        "subway",
+        "station"
+      ],
+      "description": "Real generated station specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/station/station_neg4_0-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/station/station_neg4_0-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/station/station_neg4_0-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "station_0_0",
+      "label": "station:0:0 [station]",
+      "type": "station",
+      "source_object_id": "station:0:0",
+      "tags": [
+        "status:planned",
+        "planned",
+        "subway",
+        "station"
+      ],
+      "description": "Real generated station specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/station/station_0_0-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/station/station_0_0-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/station/station_0_0-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "station_0_4",
+      "label": "station:0:4 [station]",
+      "type": "station",
+      "source_object_id": "station:0:4",
+      "tags": [
+        "status:planned",
+        "planned",
+        "subway",
+        "station"
+      ],
+      "description": "Real generated station specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/station/station_0_4-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/station/station_0_4-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/station/station_0_4-reverse.png"
+        }
+      ]
+    },
+    {
+      "id": "station_4_0",
+      "label": "station:4:0 [station]",
+      "type": "station",
+      "source_object_id": "station:4:0",
+      "tags": [
+        "status:planned",
+        "planned",
+        "subway",
+        "station"
+      ],
+      "description": "Real generated station specimen from the city world.",
+      "views": [
+        {
+          "name": "hero",
+          "image": "asset-previews/station/station_4_0-hero.png"
+        },
+        {
+          "name": "corner",
+          "image": "asset-previews/station/station_4_0-corner.png"
+        },
+        {
+          "name": "reverse",
+          "image": "asset-previews/station/station_4_0-reverse.png"
         }
       ]
     }

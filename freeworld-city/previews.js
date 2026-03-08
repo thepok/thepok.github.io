@@ -39,6 +39,12 @@ function buildCard(item) {
     copy.textContent = item.description;
     card.appendChild(copy);
   }
+  if (item.source_object_id) {
+    const meta = document.createElement("p");
+    meta.className = "asset-card-copy";
+    meta.textContent = `Source: ${item.source_object_id}`;
+    card.appendChild(meta);
+  }
   card.appendChild(strip);
   return card;
 }
@@ -48,7 +54,7 @@ async function bootstrap() {
     const response = await fetch("./asset-previews/manifest.json");
     if (!response.ok) throw new Error(`manifest fetch failed: ${response.status}`);
     const manifest = await response.json();
-    metaEl.textContent = `${manifest.count || 0} isolated assets · generated ${manifest.generated_at || "-"}`;
+    metaEl.textContent = `${manifest.count || 0} isolated city elements · generated ${manifest.generated_at || "-"}`;
     galleryEl.innerHTML = "";
     for (const item of (manifest.items || [])) {
       galleryEl.appendChild(buildCard(item));

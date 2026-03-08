@@ -1,60 +1,6036 @@
 {
+  "generated_at": "2026-03-08T12:58:29Z",
+  "world": "leonardos-world",
+  "preset": "city",
+  "count": 80,
   "assets": [
     {
-      "id": "office_tower",
-      "label": "Office Tower",
-      "type": "building",
-      "tags": ["downtown", "glass", "crown"],
-      "description": "Tall Manhattan-style office slab with a retail podium and lit crown."
+      "id": "building_neg1_neg1",
+      "label": "building:-1:-1 [mixed_use_midrise, downtown]",
+      "type": "mixed_use_midrise",
+      "source_object_id": "building:-1:-1",
+      "preset": "city",
+      "tags": [
+        "mixed_use_midrise",
+        "downtown",
+        "landmark"
+      ],
+      "description": "Real generated mixed_use_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -108,
+          5,
+          -100
+        ],
+        [
+          -9,
+          425,
+          -6
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -4,
+          0,
+          -4
+        ],
+        "max": [
+          -1,
+          5,
+          -1
+        ]
+      },
+      "baseAzimuthDeg": 41.52,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 2.186,
+            "y": 6.665,
+            "z": 5.738
+          },
+          "target": {
+            "x": -14.625,
+            "y": 4.0,
+            "z": -13.25
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 6.984,
+            "y": 9.09,
+            "z": -23.566
+          },
+          "target": {
+            "x": -14.625,
+            "y": 4.0,
+            "z": -13.25
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -32.369,
+            "y": 7.762,
+            "z": -33.291
+          },
+          "target": {
+            "x": -14.625,
+            "y": 4.0,
+            "z": -13.25
+          }
+        }
+      }
     },
     {
-      "id": "mixed_use_midrise",
-      "label": "Mixed-Use Midrise",
-      "type": "building",
-      "tags": ["downtown", "retail", "midrise"],
-      "description": "Brick-and-stone midrise with storefronts, repetitive bays, and rooftop utility bulk."
+      "id": "building_neg1_neg2",
+      "label": "building:-1:-2 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-1:-2",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -121,
+          10,
+          -280
+        ],
+        [
+          -22,
+          310,
+          -206
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -4,
+          0,
+          -9
+        ],
+        "max": [
+          -1,
+          5,
+          -7
+        ]
+      },
+      "baseAzimuthDeg": 21.28,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -8.672,
+            "y": 6.665,
+            "z": -37.119
+          },
+          "target": {
+            "x": -17.875,
+            "y": 4.0,
+            "z": -60.75
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 5.968,
+            "y": 9.09,
+            "z": -62.953
+          },
+          "target": {
+            "x": -17.875,
+            "y": 4.0,
+            "z": -60.75
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -27.589,
+            "y": 7.762,
+            "z": -85.692
+          },
+          "target": {
+            "x": -17.875,
+            "y": 4.0,
+            "z": -60.75
+          }
+        }
+      }
     },
     {
-      "id": "apartment_midrise",
-      "label": "Apartment Midrise",
-      "type": "building",
-      "tags": ["residential", "balconies", "courtyard"],
-      "description": "Residential slab with balcony bands, inset lobby, and a calmer facade rhythm."
+      "id": "building_neg1_neg3",
+      "label": "building:-1:-3 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:-1:-3",
+      "preset": "city",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "bbox": [
+        [
+          -125,
+          5,
+          -485
+        ],
+        [
+          -26,
+          295,
+          -386
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -4,
+          0,
+          -16
+        ],
+        "max": [
+          -1,
+          5,
+          -13
+        ]
+      },
+      "baseAzimuthDeg": 13.99,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -12.746,
+            "y": 6.665,
+            "z": -84.266
+          },
+          "target": {
+            "x": -18.875,
+            "y": 4.0,
+            "z": -108.875
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 5.055,
+            "y": 9.09,
+            "z": -108.033
+          },
+          "target": {
+            "x": -18.875,
+            "y": 4.0,
+            "z": -108.875
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -25.344,
+            "y": 7.762,
+            "z": -134.848
+          },
+          "target": {
+            "x": -18.875,
+            "y": 4.0,
+            "z": -108.875
+          }
+        }
+      }
     },
     {
-      "id": "shop_row",
-      "label": "Shop Row",
-      "type": "building",
-      "tags": ["retail", "blockfront", "awning"],
-      "description": "Attached storefront sequence with signage strips, awnings, and upper rental floors."
+      "id": "building_neg1_neg4",
+      "label": "building:-1:-4 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-1:-4",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "residential",
+        "vacant"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -136,
+          5,
+          -658
+        ],
+        [
+          -52,
+          240,
+          -564
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -5,
+          0,
+          -21
+        ],
+        "max": [
+          -2,
+          5,
+          -18
+        ]
+      },
+      "baseAzimuthDeg": 11.97,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -18.503,
+            "y": 6.532,
+            "z": -129.182
+          },
+          "target": {
+            "x": -23.5,
+            "y": 4.0,
+            "z": -152.75
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -0.808,
+            "y": 8.835,
+            "z": -151.152
+          },
+          "target": {
+            "x": -23.5,
+            "y": 4.0,
+            "z": -152.75
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -28.775,
+            "y": 7.574,
+            "z": -177.626
+          },
+          "target": {
+            "x": -23.5,
+            "y": 4.0,
+            "z": -152.75
+          }
+        }
+      }
     },
     {
-      "id": "warehouse",
-      "label": "Warehouse",
-      "type": "industrial",
-      "tags": ["industrial", "loading", "backlot"],
-      "description": "Low industrial shed with loading docks, rooftop kit, and yard barriers."
+      "id": "building_neg1_0",
+      "label": "building:-1:0 [mixed_use_midrise, downtown]",
+      "type": "mixed_use_midrise",
+      "source_object_id": "building:-1:0",
+      "preset": "city",
+      "tags": [
+        "mixed_use_midrise",
+        "downtown",
+        "landmark"
+      ],
+      "description": "Real generated mixed_use_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -131,
+          5,
+          57
+        ],
+        [
+          -57,
+          480,
+          146
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -5,
+          0,
+          1
+        ],
+        "max": [
+          -2,
+          5,
+          4
+        ]
+      },
+      "baseAzimuthDeg": 102.31,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -1.2,
+            "y": 6.399,
+            "z": 20.51
+          },
+          "target": {
+            "x": -23.5,
+            "y": 4.0,
+            "z": 25.375
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -22.112,
+            "y": 8.581,
+            "z": 3.869
+          },
+          "target": {
+            "x": -23.5,
+            "y": 4.0,
+            "z": 25.375
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -47.037,
+            "y": 7.386,
+            "z": 30.509
+          },
+          "target": {
+            "x": -23.5,
+            "y": 4.0,
+            "z": 25.375
+          }
+        }
+      }
     },
     {
-      "id": "townhouse_row",
-      "label": "Townhouse Row",
-      "type": "residential",
-      "tags": ["rowhouse", "stoops", "brownstone"],
-      "description": "Attached townhouse frontage with stoops, cornices, and narrow rhythm."
+      "id": "building_neg1_1",
+      "label": "building:-1:1 [office_tower, downtown]",
+      "type": "office_tower",
+      "source_object_id": "building:-1:1",
+      "preset": "city",
+      "tags": [
+        "office_tower",
+        "downtown",
+        "landmark"
+      ],
+      "description": "Real generated office_tower specimen from the city world.",
+      "bbox": [
+        [
+          -105,
+          15,
+          247
+        ],
+        [
+          -6,
+          525,
+          336
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -4,
+          0,
+          7
+        ],
+        "max": [
+          -1,
+          5,
+          10
+        ]
+      },
+      "baseAzimuthDeg": 154.45,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -2.936,
+            "y": 6.665,
+            "z": 49.995
+          },
+          "target": {
+            "x": -13.875,
+            "y": 4.0,
+            "z": 72.875
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -31.794,
+            "y": 9.09,
+            "z": 56.992
+          },
+          "target": {
+            "x": -13.875,
+            "y": 4.0,
+            "z": 72.875
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -25.421,
+            "y": 7.762,
+            "z": 97.024
+          },
+          "target": {
+            "x": -13.875,
+            "y": 4.0,
+            "z": 72.875
+          }
+        }
+      }
     },
     {
-      "id": "transit_station",
-      "label": "Transit Station",
-      "type": "transit",
-      "tags": ["station", "entrance", "plaza"],
-      "description": "Surface station entrance composition with railings, stairs, kiosks, and signage."
+      "id": "building_neg1_2",
+      "label": "building:-1:2 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-1:2",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -75,
+          25,
+          455
+        ],
+        [
+          -6,
+          420,
+          529
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -3,
+          0,
+          14
+        ],
+        "max": [
+          -1,
+          5,
+          16
+        ]
+      },
+      "baseAzimuthDeg": 167.84,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -6.12,
+            "y": 5.999,
+            "z": 104.406
+          },
+          "target": {
+            "x": -10.125,
+            "y": 4.0,
+            "z": 123.0
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -25.959,
+            "y": 7.817,
+            "z": 114.526
+          },
+          "target": {
+            "x": -10.125,
+            "y": 4.0,
+            "z": 123.0
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -14.352,
+            "y": 6.821,
+            "z": 142.625
+          },
+          "target": {
+            "x": -10.125,
+            "y": 4.0,
+            "z": 123.0
+          }
+        }
+      }
     },
     {
-      "id": "civic_hall",
-      "label": "Civic Hall",
-      "type": "public",
-      "tags": ["civic", "plaza", "columns"],
-      "description": "Public building mass with stepped forecourt, civic doorway, and lantern roofline."
+      "id": "building_neg1_3",
+      "label": "building:-1:3 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-1:3",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -130,
+          15,
+          638
+        ],
+        [
+          -51,
+          320,
+          707
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -5,
+          0,
+          19
+        ],
+        "max": [
+          -2,
+          5,
+          22
+        ]
+      },
+      "baseAzimuthDeg": 166.84,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -18.005,
+            "y": 6.132,
+            "z": 148.37
+          },
+          "target": {
+            "x": -22.625,
+            "y": 4.0,
+            "z": 168.125
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -39.353,
+            "y": 8.072,
+            "z": 158.79
+          },
+          "target": {
+            "x": -22.625,
+            "y": 4.0,
+            "z": 168.125
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -27.501,
+            "y": 7.009,
+            "z": 188.976
+          },
+          "target": {
+            "x": -22.625,
+            "y": 4.0,
+            "z": 168.125
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg1_4",
+      "label": "building:-1:4 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-1:4",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "residential",
+        "landmark"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -138,
+          10,
+          792
+        ],
+        [
+          -39,
+          440,
+          861
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -5,
+          0,
+          24
+        ],
+        "max": [
+          -2,
+          5,
+          26
+        ]
+      },
+      "baseAzimuthDeg": 169.6,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -17.545,
+            "y": 6.665,
+            "z": 181.682
+          },
+          "target": {
+            "x": -22.125,
+            "y": 4.0,
+            "z": 206.625
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -43.572,
+            "y": 9.09,
+            "z": 195.977
+          },
+          "target": {
+            "x": -22.125,
+            "y": 4.0,
+            "z": 206.625
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -26.959,
+            "y": 7.762,
+            "z": 232.952
+          },
+          "target": {
+            "x": -22.125,
+            "y": 4.0,
+            "z": 206.625
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg2_neg1",
+      "label": "building:-2:-1 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-2:-1",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -300,
+          10,
+          -133
+        ],
+        [
+          -231,
+          360,
+          -44
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -10,
+          0,
+          -5
+        ],
+        "max": [
+          -8,
+          5,
+          -2
+        ]
+      },
+      "baseAzimuthDeg": 63.36,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -45.975,
+            "y": 6.399,
+            "z": -11.889
+          },
+          "target": {
+            "x": -66.375,
+            "y": 4.0,
+            "z": -22.125
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -51.776,
+            "y": 8.581,
+            "z": -37.977
+          },
+          "target": {
+            "x": -66.375,
+            "y": 4.0,
+            "z": -22.125
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -87.907,
+            "y": 7.386,
+            "z": -32.928
+          },
+          "target": {
+            "x": -66.375,
+            "y": 4.0,
+            "z": -22.125
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg2_neg2",
+      "label": "building:-2:-2 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:-2:-2",
+      "preset": "city",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "bbox": [
+        [
+          -316,
+          10,
+          -281
+        ],
+        [
+          -227,
+          345,
+          -202
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -10,
+          0,
+          -9
+        ],
+        "max": [
+          -8,
+          5,
+          -7
+        ]
+      },
+      "baseAzimuthDeg": 45.94,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -51.473,
+            "y": 6.399,
+            "z": -44.503
+          },
+          "target": {
+            "x": -67.875,
+            "y": 4.0,
+            "z": -60.375
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -49.201,
+            "y": 8.581,
+            "z": -71.131
+          },
+          "target": {
+            "x": -67.875,
+            "y": 4.0,
+            "z": -60.375
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -85.187,
+            "y": 7.386,
+            "z": -77.127
+          },
+          "target": {
+            "x": -67.875,
+            "y": 4.0,
+            "z": -60.375
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg2_neg3",
+      "label": "building:-2:-3 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:-2:-3",
+      "preset": "city",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "bbox": [
+        [
+          -295,
+          15,
+          -454
+        ],
+        [
+          -206,
+          400,
+          -365
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -10,
+          0,
+          -15
+        ],
+        "max": [
+          -7,
+          5,
+          -12
+        ]
+      },
+      "baseAzimuthDeg": 32.11,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -50.493,
+            "y": 6.399,
+            "z": -83.042
+          },
+          "target": {
+            "x": -62.625,
+            "y": 4.0,
+            "z": -102.375
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -41.921,
+            "y": 8.581,
+            "z": -108.355
+          },
+          "target": {
+            "x": -62.625,
+            "y": 4.0,
+            "z": -102.375
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -75.43,
+            "y": 7.386,
+            "z": -122.78
+          },
+          "target": {
+            "x": -62.625,
+            "y": 4.0,
+            "z": -102.375
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg2_neg4",
+      "label": "building:-2:-4 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:-2:-4",
+      "preset": "city",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -300,
+          10,
+          -649
+        ],
+        [
+          -206,
+          290,
+          -550
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -10,
+          0,
+          -21
+        ],
+        "max": [
+          -7,
+          5,
+          -18
+        ]
+      },
+      "baseAzimuthDeg": 24.38,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -52.782,
+            "y": 6.665,
+            "z": -126.776
+          },
+          "target": {
+            "x": -63.25,
+            "y": 4.0,
+            "z": -149.875
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -39.561,
+            "y": 9.09,
+            "z": -153.364
+          },
+          "target": {
+            "x": -63.25,
+            "y": 4.0,
+            "z": -149.875
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -74.299,
+            "y": 7.762,
+            "z": -174.255
+          },
+          "target": {
+            "x": -63.25,
+            "y": 4.0,
+            "z": -149.875
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg2_0",
+      "label": "building:-2:0 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-2:0",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -293,
+          10,
+          40
+        ],
+        [
+          -194,
+          405,
+          109
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -10,
+          0,
+          1
+        ],
+        "max": [
+          -7,
+          5,
+          3
+        ]
+      },
+      "baseAzimuthDeg": 90.88,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -35.518,
+            "y": 6.665,
+            "z": 18.237
+          },
+          "target": {
+            "x": -60.875,
+            "y": 4.0,
+            "z": 18.625
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -54.628,
+            "y": 9.09,
+            "z": -4.491
+          },
+          "target": {
+            "x": -60.875,
+            "y": 4.0,
+            "z": 18.625
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -87.639,
+            "y": 7.762,
+            "z": 19.035
+          },
+          "target": {
+            "x": -60.875,
+            "y": 4.0,
+            "z": 18.625
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg2_1",
+      "label": "building:-2:1 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:-2:1",
+      "preset": "city",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "bbox": [
+        [
+          -283,
+          15,
+          247
+        ],
+        [
+          -184,
+          385,
+          336
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -9,
+          0,
+          7
+        ],
+        "max": [
+          -6,
+          5,
+          10
+        ]
+      },
+      "baseAzimuthDeg": 127.96,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -38.38,
+            "y": 6.665,
+            "z": 57.275
+          },
+          "target": {
+            "x": -58.375,
+            "y": 4.0,
+            "z": 72.875
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -67.33,
+            "y": 9.09,
+            "z": 50.668
+          },
+          "target": {
+            "x": -58.375,
+            "y": 4.0,
+            "z": 72.875
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -79.479,
+            "y": 7.762,
+            "z": 89.34
+          },
+          "target": {
+            "x": -58.375,
+            "y": 4.0,
+            "z": 72.875
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg2_2",
+      "label": "building:-2:2 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:-2:2",
+      "preset": "city",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "bbox": [
+        [
+          -268,
+          15,
+          403
+        ],
+        [
+          -194,
+          400,
+          492
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -9,
+          0,
+          12
+        ],
+        "max": [
+          -7,
+          5,
+          15
+        ]
+      },
+      "baseAzimuthDeg": 143.3,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -44.109,
+            "y": 6.399,
+            "z": 93.576
+          },
+          "target": {
+            "x": -57.75,
+            "y": 4.0,
+            "z": 111.875
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -70.809,
+            "y": 8.581,
+            "z": 94.732
+          },
+          "target": {
+            "x": -57.75,
+            "y": 4.0,
+            "z": 111.875
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -72.148,
+            "y": 7.386,
+            "z": 131.189
+          },
+          "target": {
+            "x": -57.75,
+            "y": 4.0,
+            "z": 111.875
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg2_4",
+      "label": "building:-2:4 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:-2:4",
+      "preset": "city",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -274,
+          10,
+          784
+        ],
+        [
+          -195,
+          365,
+          858
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -9,
+          0,
+          24
+        ],
+        "max": [
+          -7,
+          5,
+          26
+        ]
+      },
+      "baseAzimuthDeg": 159.23,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -51.429,
+            "y": 6.132,
+            "z": 186.281
+          },
+          "target": {
+            "x": -58.625,
+            "y": 4.0,
+            "z": 205.25
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -73.969,
+            "y": 8.072,
+            "z": 193.782
+          },
+          "target": {
+            "x": -58.625,
+            "y": 4.0,
+            "z": 205.25
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -66.22,
+            "y": 7.009,
+            "z": 225.271
+          },
+          "target": {
+            "x": -58.625,
+            "y": 4.0,
+            "z": 205.25
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg3_neg1",
+      "label": "building:-3:-1 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-3:-1",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -481,
+          15,
+          -104
+        ],
+        [
+          -402,
+          315,
+          -30
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -16,
+          0,
+          -4
+        ],
+        "max": [
+          -13,
+          5,
+          -1
+        ]
+      },
+      "baseAzimuthDeg": 74.44,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -90.831,
+            "y": 6.132,
+            "z": -11.307
+          },
+          "target": {
+            "x": -110.375,
+            "y": 4.0,
+            "z": -16.75
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -100.348,
+            "y": 8.072,
+            "z": -33.072
+          },
+          "target": {
+            "x": -110.375,
+            "y": 4.0,
+            "z": -16.75
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -131.003,
+            "y": 7.009,
+            "z": -22.495
+          },
+          "target": {
+            "x": -110.375,
+            "y": 4.0,
+            "z": -16.75
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg3_neg2",
+      "label": "building:-3:-2 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-3:-2",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -473,
+          15,
+          -308
+        ],
+        [
+          -374,
+          385,
+          -229
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -15,
+          0,
+          -10
+        ],
+        "max": [
+          -12,
+          5,
+          -8
+        ]
+      },
+      "baseAzimuthDeg": 54.46,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -85.238,
+            "y": 6.665,
+            "z": -52.385
+          },
+          "target": {
+            "x": -105.875,
+            "y": 4.0,
+            "z": -67.125
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -87.126,
+            "y": 9.09,
+            "z": -82.019
+          },
+          "target": {
+            "x": -105.875,
+            "y": 4.0,
+            "z": -67.125
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -127.656,
+            "y": 7.762,
+            "z": -82.683
+          },
+          "target": {
+            "x": -105.875,
+            "y": 4.0,
+            "z": -67.125
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg3_neg3",
+      "label": "building:-3:-3 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-3:-3",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -472,
+          20,
+          -439
+        ],
+        [
+          -383,
+          370,
+          -370
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -15,
+          0,
+          -14
+        ],
+        "max": [
+          -12,
+          5,
+          -12
+        ]
+      },
+      "baseAzimuthDeg": 45.2,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -90.678,
+            "y": 6.399,
+            "z": -85.044
+          },
+          "target": {
+            "x": -106.875,
+            "y": 4.0,
+            "z": -101.125
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -88.064,
+            "y": 8.581,
+            "z": -111.64
+          },
+          "target": {
+            "x": -106.875,
+            "y": 4.0,
+            "z": -101.125
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -123.97,
+            "y": 7.386,
+            "z": -118.098
+          },
+          "target": {
+            "x": -106.875,
+            "y": 4.0,
+            "z": -101.125
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg3_neg4",
+      "label": "building:-3:-4 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-3:-4",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -475,
+          15,
+          -619
+        ],
+        [
+          -406,
+          325,
+          -550
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -15,
+          0,
+          -20
+        ],
+        "max": [
+          -13,
+          5,
+          -18
+        ]
+      },
+      "baseAzimuthDeg": 36.87,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -99.473,
+            "y": 5.866,
+            "z": -131.923
+          },
+          "target": {
+            "x": -110.125,
+            "y": 4.0,
+            "z": -146.125
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -94.463,
+            "y": 7.563,
+            "z": -152.097
+          },
+          "target": {
+            "x": -110.125,
+            "y": 4.0,
+            "z": -146.125
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -121.367,
+            "y": 6.633,
+            "z": -161.114
+          },
+          "target": {
+            "x": -110.125,
+            "y": 4.0,
+            "z": -146.125
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg3_0",
+      "label": "building:-3:0 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-3:0",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -461,
+          10,
+          92
+        ],
+        [
+          -372,
+          350,
+          171
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -15,
+          0,
+          2
+        ],
+        "max": [
+          -12,
+          5,
+          5
+        ]
+      },
+      "baseAzimuthDeg": 97.5,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -81.496,
+            "y": 6.399,
+            "z": 29.894
+          },
+          "target": {
+            "x": -104.125,
+            "y": 4.0,
+            "z": 32.875
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -100.941,
+            "y": 8.581,
+            "z": 11.561
+          },
+          "target": {
+            "x": -104.125,
+            "y": 4.0,
+            "z": 32.875
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -128.009,
+            "y": 7.386,
+            "z": 36.021
+          },
+          "target": {
+            "x": -104.125,
+            "y": 4.0,
+            "z": 32.875
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg3_1",
+      "label": "building:-3:1 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-3:1",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -455,
+          25,
+          267
+        ],
+        [
+          -376,
+          290,
+          336
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -15,
+          0,
+          8
+        ],
+        "max": [
+          -12,
+          5,
+          10
+        ]
+      },
+      "baseAzimuthDeg": 116.42,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -85.706,
+            "y": 6.132,
+            "z": 66.347
+          },
+          "target": {
+            "x": -103.875,
+            "y": 4.0,
+            "z": 75.375
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -107.34,
+            "y": 8.072,
+            "z": 56.535
+          },
+          "target": {
+            "x": -103.875,
+            "y": 4.0,
+            "z": 75.375
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -123.052,
+            "y": 7.009,
+            "z": 84.904
+          },
+          "target": {
+            "x": -103.875,
+            "y": 4.0,
+            "z": 75.375
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg3_2",
+      "label": "building:-3:2 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:-3:2",
+      "preset": "city",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "bbox": [
+        [
+          -486,
+          20,
+          449
+        ],
+        [
+          -402,
+          330,
+          518
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -16,
+          0,
+          14
+        ],
+        "max": [
+          -13,
+          5,
+          16
+        ]
+      },
+      "baseAzimuthDeg": 129.91,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -94.465,
+            "y": 6.266,
+            "z": 107.045
+          },
+          "target": {
+            "x": -111.0,
+            "y": 4.0,
+            "z": 120.875
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -119.249,
+            "y": 8.326,
+            "z": 102.268
+          },
+          "target": {
+            "x": -111.0,
+            "y": 4.0,
+            "z": 120.875
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -128.452,
+            "y": 7.198,
+            "z": 135.472
+          },
+          "target": {
+            "x": -111.0,
+            "y": 4.0,
+            "z": 120.875
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg3_3",
+      "label": "building:-3:3 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:-3:3",
+      "preset": "city",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "bbox": [
+        [
+          -473,
+          15,
+          580
+        ],
+        [
+          -389,
+          275,
+          654
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -15,
+          0,
+          18
+        ],
+        "max": [
+          -13,
+          5,
+          20
+        ]
+      },
+      "baseAzimuthDeg": 138.65,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -93.509,
+            "y": 6.266,
+            "z": 138.068
+          },
+          "target": {
+            "x": -107.75,
+            "y": 4.0,
+            "z": 154.25
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -118.731,
+            "y": 8.326,
+            "z": 137.113
+          },
+          "target": {
+            "x": -107.75,
+            "y": 4.0,
+            "z": 154.25
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -122.781,
+            "y": 7.198,
+            "z": 171.33
+          },
+          "target": {
+            "x": -107.75,
+            "y": 4.0,
+            "z": 154.25
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg3_4",
+      "label": "building:-3:4 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:-3:4",
+      "preset": "city",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -491,
+          10,
+          767
+        ],
+        [
+          -392,
+          355,
+          866
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -16,
+          0,
+          23
+        ],
+        "max": [
+          -13,
+          5,
+          27
+        ]
+      },
+      "baseAzimuthDeg": 146.62,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -96.421,
+            "y": 6.665,
+            "z": 182.949
+          },
+          "target": {
+            "x": -110.375,
+            "y": 4.0,
+            "z": 204.125
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -125.963,
+            "y": 9.09,
+            "z": 185.949
+          },
+          "target": {
+            "x": -110.375,
+            "y": 4.0,
+            "z": 204.125
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -125.103,
+            "y": 7.762,
+            "z": 226.476
+          },
+          "target": {
+            "x": -110.375,
+            "y": 4.0,
+            "z": 204.125
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg4_neg1",
+      "label": "building:-4:-1 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:-4:-1",
+      "preset": "city",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -659,
+          10,
+          -124
+        ],
+        [
+          -590,
+          250,
+          -50
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -21,
+          0,
+          -4
+        ],
+        "max": [
+          -19,
+          5,
+          -2
+        ]
+      },
+      "baseAzimuthDeg": 76.9,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -137.599,
+            "y": 5.999,
+            "z": -17.44
+          },
+          "target": {
+            "x": -156.125,
+            "y": 4.0,
+            "z": -21.75
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -147.392,
+            "y": 7.817,
+            "z": -37.443
+          },
+          "target": {
+            "x": -156.125,
+            "y": 4.0,
+            "z": -21.75
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -175.678,
+            "y": 6.821,
+            "z": -26.299
+          },
+          "target": {
+            "x": -156.125,
+            "y": 4.0,
+            "z": -21.75
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg4_neg2",
+      "label": "building:-4:-2 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-4:-2",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -632,
+          15,
+          -292
+        ],
+        [
+          -553,
+          340,
+          -203
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -20,
+          0,
+          -10
+        ],
+        "max": [
+          -18,
+          5,
+          -7
+        ]
+      },
+      "baseAzimuthDeg": 63.72,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -127.66,
+            "y": 6.399,
+            "z": -51.768
+          },
+          "target": {
+            "x": -148.125,
+            "y": 4.0,
+            "z": -61.875
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -133.626,
+            "y": 8.581,
+            "z": -77.819
+          },
+          "target": {
+            "x": -148.125,
+            "y": 4.0,
+            "z": -61.875
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -169.725,
+            "y": 7.386,
+            "z": -72.542
+          },
+          "target": {
+            "x": -148.125,
+            "y": 4.0,
+            "z": -61.875
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg4_neg4",
+      "label": "building:-4:-4 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:-4:-4",
+      "preset": "city",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -662,
+          10,
+          -646
+        ],
+        [
+          -578,
+          330,
+          -562
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -21,
+          0,
+          -21
+        ],
+        "max": [
+          -19,
+          5,
+          -18
+        ]
+      },
+      "baseAzimuthDeg": 44.85,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -139.798,
+            "y": 6.266,
+            "z": -135.717
+          },
+          "target": {
+            "x": -155.0,
+            "y": 4.0,
+            "z": -151.0
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -137.172,
+            "y": 8.326,
+            "z": -160.82
+          },
+          "target": {
+            "x": -155.0,
+            "y": 4.0,
+            "z": -151.0
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -171.045,
+            "y": 7.198,
+            "z": -167.131
+          },
+          "target": {
+            "x": -155.0,
+            "y": 4.0,
+            "z": -151.0
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg4_0",
+      "label": "building:-4:0 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:-4:0",
+      "preset": "city",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -656,
+          15,
+          78
+        ],
+        [
+          -567,
+          245,
+          172
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -21,
+          0,
+          2
+        ],
+        "max": [
+          -18,
+          5,
+          5
+        ]
+      },
+      "baseAzimuthDeg": 94.75,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -128.865,
+            "y": 6.532,
+            "z": 29.255
+          },
+          "target": {
+            "x": -152.875,
+            "y": 4.0,
+            "z": 31.25
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -148.437,
+            "y": 8.835,
+            "z": 8.939
+          },
+          "target": {
+            "x": -152.875,
+            "y": 4.0,
+            "z": 31.25
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -178.216,
+            "y": 7.574,
+            "z": 33.356
+          },
+          "target": {
+            "x": -152.875,
+            "y": 4.0,
+            "z": 31.25
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg4_1",
+      "label": "building:-4:1 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-4:1",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -638,
+          15,
+          285
+        ],
+        [
+          -549,
+          365,
+          354
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -20,
+          0,
+          8
+        ],
+        "max": [
+          -18,
+          5,
+          11
+        ]
+      },
+      "baseAzimuthDeg": 111.18,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -127.093,
+            "y": 6.399,
+            "z": 71.628
+          },
+          "target": {
+            "x": -148.375,
+            "y": 4.0,
+            "z": 79.875
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -150.321,
+            "y": 8.581,
+            "z": 58.412
+          },
+          "target": {
+            "x": -148.375,
+            "y": 4.0,
+            "z": 79.875
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -170.838,
+            "y": 7.386,
+            "z": 88.579
+          },
+          "target": {
+            "x": -148.375,
+            "y": 4.0,
+            "z": 79.875
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg4_2",
+      "label": "building:-4:2 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-4:2",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "residential",
+        "vacant"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -676,
+          10,
+          433
+        ],
+        [
+          -582,
+          295,
+          502
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -22,
+          0,
+          13
+        ],
+        "max": [
+          -19,
+          5,
+          15
+        ]
+      },
+      "baseAzimuthDeg": 120.33,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -136.455,
+            "y": 6.532,
+            "z": 104.709
+          },
+          "target": {
+            "x": -157.25,
+            "y": 4.0,
+            "z": 116.875
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -162.881,
+            "y": 8.835,
+            "z": 94.835
+          },
+          "target": {
+            "x": -157.25,
+            "y": 4.0,
+            "z": 116.875
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -179.198,
+            "y": 7.574,
+            "z": 129.716
+          },
+          "target": {
+            "x": -157.25,
+            "y": 4.0,
+            "z": 116.875
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg4_3",
+      "label": "building:-4:3 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:-4:3",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -673,
+          15,
+          634
+        ],
+        [
+          -574,
+          335,
+          708
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -22,
+          0,
+          19
+        ],
+        "max": [
+          -18,
+          5,
+          22
+        ]
+      },
+      "baseAzimuthDeg": 131.73,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -136.948,
+            "y": 6.665,
+            "z": 150.871
+          },
+          "target": {
+            "x": -155.875,
+            "y": 4.0,
+            "z": 167.75
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -166.269,
+            "y": 9.09,
+            "z": 146.179
+          },
+          "target": {
+            "x": -155.875,
+            "y": 4.0,
+            "z": 167.75
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -175.852,
+            "y": 7.762,
+            "z": 185.566
+          },
+          "target": {
+            "x": -155.875,
+            "y": 4.0,
+            "z": 167.75
+          }
+        }
+      }
+    },
+    {
+      "id": "building_neg4_4",
+      "label": "building:-4:4 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:-4:4",
+      "preset": "city",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "bbox": [
+        [
+          -634,
+          10,
+          769
+        ],
+        [
+          -565,
+          365,
+          863
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -20,
+          0,
+          24
+        ],
+        "max": [
+          -18,
+          5,
+          26
+        ]
+      },
+      "baseAzimuthDeg": 138.94,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -134.049,
+            "y": 6.532,
+            "z": 185.834
+          },
+          "target": {
+            "x": -149.875,
+            "y": 4.0,
+            "z": 204.0
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -162.244,
+            "y": 8.835,
+            "z": 184.909
+          },
+          "target": {
+            "x": -149.875,
+            "y": 4.0,
+            "z": 204.0
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -166.578,
+            "y": 7.574,
+            "z": 223.173
+          },
+          "target": {
+            "x": -149.875,
+            "y": 4.0,
+            "z": 204.0
+          }
+        }
+      }
+    },
+    {
+      "id": "building_0_neg1",
+      "label": "building:0:-1 [mixed_use_midrise, downtown]",
+      "type": "mixed_use_midrise",
+      "source_object_id": "building:0:-1",
+      "preset": "city",
+      "tags": [
+        "mixed_use_midrise",
+        "downtown",
+        "landmark"
+      ],
+      "description": "Real generated mixed_use_midrise specimen from the city world.",
+      "bbox": [
+        [
+          67,
+          5,
+          -121
+        ],
+        [
+          161,
+          465,
+          -52
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          2,
+          0,
+          -4
+        ],
+        "max": [
+          5,
+          5,
+          -2
+        ]
+      },
+      "baseAzimuthDeg": -22.12,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 19.43,
+            "y": 6.532,
+            "z": 0.695
+          },
+          "target": {
+            "x": 28.5,
+            "y": 4.0,
+            "z": -21.625
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 46.397,
+            "y": 8.835,
+            "z": -7.584
+          },
+          "target": {
+            "x": 28.5,
+            "y": 4.0,
+            "z": -21.625
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 38.074,
+            "y": 7.574,
+            "z": -45.183
+          },
+          "target": {
+            "x": 28.5,
+            "y": 4.0,
+            "z": -21.625
+          }
+        }
+      }
+    },
+    {
+      "id": "building_0_neg3",
+      "label": "building:0:-3 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:0:-3",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          56,
+          10,
+          -481
+        ],
+        [
+          135,
+          275,
+          -402
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          1,
+          0,
+          -16
+        ],
+        "max": [
+          4,
+          5,
+          -13
+        ]
+      },
+      "baseAzimuthDeg": -5.04,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 22.093,
+            "y": 6.132,
+            "z": -90.165
+          },
+          "target": {
+            "x": 23.875,
+            "y": 4.0,
+            "z": -110.375
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 41.754,
+            "y": 8.072,
+            "z": -103.498
+          },
+          "target": {
+            "x": 23.875,
+            "y": 4.0,
+            "z": -110.375
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 25.756,
+            "y": 7.009,
+            "z": -131.706
+          },
+          "target": {
+            "x": 23.875,
+            "y": 4.0,
+            "z": -110.375
+          }
+        }
+      }
+    },
+    {
+      "id": "building_0_0",
+      "label": "building:0:0 [mixed_use_midrise, downtown]",
+      "type": "mixed_use_midrise",
+      "source_object_id": "building:0:0",
+      "preset": "city",
+      "tags": [
+        "mixed_use_midrise",
+        "downtown",
+        "landmark"
+      ],
+      "description": "Real generated mixed_use_midrise specimen from the city world.",
+      "bbox": [
+        [
+          40,
+          15,
+          67
+        ],
+        [
+          124,
+          485,
+          136
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          1,
+          0,
+          2
+        ],
+        "max": [
+          3,
+          5,
+          4
+        ]
+      },
+      "baseAzimuthDeg": -134.91,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 5.233,
+            "y": 6.266,
+            "z": 10.157
+          },
+          "target": {
+            "x": 20.5,
+            "y": 4.0,
+            "z": 25.375
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 2.714,
+            "y": 8.326,
+            "z": 35.271
+          },
+          "target": {
+            "x": 20.5,
+            "y": 4.0,
+            "z": 25.375
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 36.614,
+            "y": 7.198,
+            "z": 41.438
+          },
+          "target": {
+            "x": 20.5,
+            "y": 4.0,
+            "z": 25.375
+          }
+        }
+      }
+    },
+    {
+      "id": "building_0_1",
+      "label": "building:0:1 [mixed_use_midrise, downtown]",
+      "type": "mixed_use_midrise",
+      "source_object_id": "building:0:1",
+      "preset": "city",
+      "tags": [
+        "mixed_use_midrise",
+        "downtown",
+        "landmark"
+      ],
+      "description": "Real generated mixed_use_midrise specimen from the city world.",
+      "bbox": [
+        [
+          73,
+          10,
+          255
+        ],
+        [
+          152,
+          505,
+          344
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          2,
+          0,
+          7
+        ],
+        "max": [
+          4,
+          5,
+          10
+        ]
+      },
+      "baseAzimuthDeg": -164.86,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 22.163,
+            "y": 6.399,
+            "z": 52.843
+          },
+          "target": {
+            "x": 28.125,
+            "y": 4.0,
+            "z": 74.875
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 6.577,
+            "y": 8.581,
+            "z": 74.552
+          },
+          "target": {
+            "x": 28.125,
+            "y": 4.0,
+            "z": 74.875
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 34.417,
+            "y": 7.386,
+            "z": 98.129
+          },
+          "target": {
+            "x": 28.125,
+            "y": 4.0,
+            "z": 74.875
+          }
+        }
+      }
+    },
+    {
+      "id": "building_0_3",
+      "label": "building:0:3 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:0:3",
+      "preset": "city",
+      "tags": [
+        "shop_row",
+        "mixed_use",
+        "landmark"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "bbox": [
+        [
+          93,
+          15,
+          581
+        ],
+        [
+          167,
+          450,
+          680
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          2,
+          0,
+          18
+        ],
+        "max": [
+          5,
+          5,
+          21
+        ]
+      },
+      "baseAzimuthDeg": -171.92,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 28.934,
+            "y": 6.665,
+            "z": 132.517
+          },
+          "target": {
+            "x": 32.5,
+            "y": 4.0,
+            "z": 157.625
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 8.783,
+            "y": 9.09,
+            "z": 154.327
+          },
+          "target": {
+            "x": 32.5,
+            "y": 4.0,
+            "z": 157.625
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 36.264,
+            "y": 7.762,
+            "z": 184.126
+          },
+          "target": {
+            "x": 32.5,
+            "y": 4.0,
+            "z": 157.625
+          }
+        }
+      }
+    },
+    {
+      "id": "building_0_4",
+      "label": "building:0:4 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:0:4",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          91,
+          10,
+          782
+        ],
+        [
+          160,
+          305,
+          866
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          2,
+          0,
+          24
+        ],
+        "max": [
+          5,
+          5,
+          27
+        ]
+      },
+      "baseAzimuthDeg": -174.31,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 29.239,
+            "y": 6.266,
+            "z": 184.55
+          },
+          "target": {
+            "x": 31.375,
+            "y": 4.0,
+            "z": 206.0
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 11.35,
+            "y": 8.326,
+            "z": 202.357
+          },
+          "target": {
+            "x": 31.375,
+            "y": 4.0,
+            "z": 206.0
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 33.63,
+            "y": 7.198,
+            "z": 228.64
+          },
+          "target": {
+            "x": 31.375,
+            "y": 4.0,
+            "z": 206.0
+          }
+        }
+      }
+    },
+    {
+      "id": "building_1_neg1",
+      "label": "building:1:-1 [office_tower, downtown]",
+      "type": "office_tower",
+      "source_object_id": "building:1:-1",
+      "preset": "city",
+      "tags": [
+        "office_tower",
+        "downtown",
+        "landmark"
+      ],
+      "description": "Real generated office_tower specimen from the city world.",
+      "bbox": [
+        [
+          255,
+          10,
+          -113
+        ],
+        [
+          354,
+          520,
+          -24
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          7,
+          0,
+          -4
+        ],
+        "max": [
+          11,
+          5,
+          -1
+        ]
+      },
+      "baseAzimuthDeg": -61.41,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 53.858,
+            "y": 6.665,
+            "z": -4.988
+          },
+          "target": {
+            "x": 76.125,
+            "y": 4.0,
+            "z": -17.125
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 81.346,
+            "y": 9.09,
+            "z": 6.244
+          },
+          "target": {
+            "x": 76.125,
+            "y": 4.0,
+            "z": -17.125
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 99.627,
+            "y": 7.762,
+            "z": -29.935
+          },
+          "target": {
+            "x": 76.125,
+            "y": 4.0,
+            "z": -17.125
+          }
+        }
+      }
+    },
+    {
+      "id": "building_1_neg2",
+      "label": "building:1:-2 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:1:-2",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use",
+        "landmark"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          262,
+          10,
+          -290
+        ],
+        [
+          351,
+          520,
+          -211
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          8,
+          0,
+          -10
+        ],
+        "max": [
+          10,
+          5,
+          -7
+        ]
+      },
+      "baseAzimuthDeg": -38.63,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 62.377,
+            "y": 6.399,
+            "z": -44.794
+          },
+          "target": {
+            "x": 76.625,
+            "y": 4.0,
+            "z": -62.625
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 89.101,
+            "y": 8.581,
+            "z": -45.053
+          },
+          "target": {
+            "x": 76.625,
+            "y": 4.0,
+            "z": -62.625
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 91.663,
+            "y": 7.386,
+            "z": -81.445
+          },
+          "target": {
+            "x": 76.625,
+            "y": 4.0,
+            "z": -62.625
+          }
+        }
+      }
+    },
+    {
+      "id": "building_1_neg3",
+      "label": "building:1:-3 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:1:-3",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          230,
+          15,
+          -442
+        ],
+        [
+          309,
+          320,
+          -373
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          7,
+          0,
+          -14
+        ],
+        "max": [
+          9,
+          5,
+          -12
+        ]
+      },
+      "baseAzimuthDeg": -24.65,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 58.914,
+            "y": 6.132,
+            "z": -83.435
+          },
+          "target": {
+            "x": 67.375,
+            "y": 4.0,
+            "z": -101.875
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 81.909,
+            "y": 8.072,
+            "z": -89.397
+          },
+          "target": {
+            "x": 67.375,
+            "y": 4.0,
+            "z": -101.875
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 76.305,
+            "y": 7.009,
+            "z": -121.338
+          },
+          "target": {
+            "x": 67.375,
+            "y": 4.0,
+            "z": -101.875
+          }
+        }
+      }
+    },
+    {
+      "id": "building_1_neg4",
+      "label": "building:1:-4 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:1:-4",
+      "preset": "city",
+      "tags": [
+        "office_midrise",
+        "office",
+        "vacant"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "bbox": [
+        [
+          246,
+          10,
+          -672
+        ],
+        [
+          335,
+          335,
+          -578
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          7,
+          0,
+          -21
+        ],
+        "max": [
+          10,
+          5,
+          -19
+        ]
+      },
+      "baseAzimuthDeg": -19.06,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 64.758,
+            "y": 6.532,
+            "z": -133.478
+          },
+          "target": {
+            "x": 72.625,
+            "y": 4.0,
+            "z": -156.25
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 91.246,
+            "y": 8.835,
+            "z": -143.183
+          },
+          "target": {
+            "x": 72.625,
+            "y": 4.0,
+            "z": -156.25
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 80.928,
+            "y": 7.574,
+            "z": -180.285
+          },
+          "target": {
+            "x": 72.625,
+            "y": 4.0,
+            "z": -156.25
+          }
+        }
+      }
+    },
+    {
+      "id": "building_1_0",
+      "label": "building:1:0 [office_tower, downtown]",
+      "type": "office_tower",
+      "source_object_id": "building:1:0",
+      "preset": "city",
+      "tags": [
+        "office_tower",
+        "downtown",
+        "landmark"
+      ],
+      "description": "Real generated office_tower specimen from the city world.",
+      "bbox": [
+        [
+          221,
+          10,
+          101
+        ],
+        [
+          320,
+          540,
+          175
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          6,
+          0,
+          3
+        ],
+        "max": [
+          10,
+          5,
+          5
+        ]
+      },
+      "baseAzimuthDeg": -107.17,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 43.395,
+            "y": 6.665,
+            "z": 27.014
+          },
+          "target": {
+            "x": 67.625,
+            "y": 4.0,
+            "z": 34.5
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 54.525,
+            "y": 9.09,
+            "z": 54.544
+          },
+          "target": {
+            "x": 67.625,
+            "y": 4.0,
+            "z": 34.5
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 93.199,
+            "y": 7.762,
+            "z": 42.401
+          },
+          "target": {
+            "x": 67.625,
+            "y": 4.0,
+            "z": 34.5
+          }
+        }
+      }
+    },
+    {
+      "id": "building_1_1",
+      "label": "building:1:1 [mixed_use_midrise, downtown]",
+      "type": "mixed_use_midrise",
+      "source_object_id": "building:1:1",
+      "preset": "city",
+      "tags": [
+        "mixed_use_midrise",
+        "downtown",
+        "landmark"
+      ],
+      "description": "Real generated mixed_use_midrise specimen from the city world.",
+      "bbox": [
+        [
+          252,
+          15,
+          260
+        ],
+        [
+          351,
+          435,
+          354
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          7,
+          0,
+          8
+        ],
+        "max": [
+          10,
+          5,
+          11
+        ]
+      },
+      "baseAzimuthDeg": -133.35,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 56.932,
+            "y": 6.665,
+            "z": 59.343
+          },
+          "target": {
+            "x": 75.375,
+            "y": 4.0,
+            "z": 76.75
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 54.776,
+            "y": 9.09,
+            "z": 88.959
+          },
+          "target": {
+            "x": 75.375,
+            "y": 4.0,
+            "z": 76.75
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 94.841,
+            "y": 7.762,
+            "z": 95.123
+          },
+          "target": {
+            "x": 75.375,
+            "y": 4.0,
+            "z": 76.75
+          }
+        }
+      }
+    },
+    {
+      "id": "building_1_2",
+      "label": "building:1:2 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:1:2",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          237,
+          25,
+          407
+        ],
+        [
+          336,
+          435,
+          491
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          7,
+          0,
+          12
+        ],
+        "max": [
+          10,
+          5,
+          15
+        ]
+      },
+      "baseAzimuthDeg": -148.08,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 58.216,
+            "y": 6.665,
+            "z": 90.725
+          },
+          "target": {
+            "x": 71.625,
+            "y": 4.0,
+            "z": 112.25
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 48.598,
+            "y": 9.09,
+            "z": 118.818
+          },
+          "target": {
+            "x": 71.625,
+            "y": 4.0,
+            "z": 112.25
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 85.778,
+            "y": 7.762,
+            "z": 134.969
+          },
+          "target": {
+            "x": 71.625,
+            "y": 4.0,
+            "z": 112.25
+          }
+        }
+      }
+    },
+    {
+      "id": "building_1_3",
+      "label": "building:1:3 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:1:3",
+      "preset": "city",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "bbox": [
+        [
+          235,
+          15,
+          595
+        ],
+        [
+          334,
+          305,
+          694
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          7,
+          0,
+          18
+        ],
+        "max": [
+          10,
+          5,
+          21
+        ]
+      },
+      "baseAzimuthDeg": -157.83,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 61.555,
+            "y": 6.665,
+            "z": 137.64
+          },
+          "target": {
+            "x": 71.125,
+            "y": 4.0,
+            "z": 161.125
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 47.319,
+            "y": 9.09,
+            "z": 163.699
+          },
+          "target": {
+            "x": 71.125,
+            "y": 4.0,
+            "z": 161.125
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 81.226,
+            "y": 7.762,
+            "z": 185.913
+          },
+          "target": {
+            "x": 71.125,
+            "y": 4.0,
+            "z": 161.125
+          }
+        }
+      }
+    },
+    {
+      "id": "building_1_4",
+      "label": "building:1:4 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:1:4",
+      "preset": "city",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "bbox": [
+        [
+          270,
+          15,
+          763
+        ],
+        [
+          349,
+          255,
+          842
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          8,
+          0,
+          23
+        ],
+        "max": [
+          10,
+          5,
+          26
+        ]
+      },
+      "baseAzimuthDeg": -160.52,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 70.609,
+            "y": 6.132,
+            "z": 181.498
+          },
+          "target": {
+            "x": 77.375,
+            "y": 4.0,
+            "z": 200.625
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 58.254,
+            "y": 8.072,
+            "z": 201.788
+          },
+          "target": {
+            "x": 77.375,
+            "y": 4.0,
+            "z": 200.625
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 84.516,
+            "y": 7.009,
+            "z": 220.813
+          },
+          "target": {
+            "x": 77.375,
+            "y": 4.0,
+            "z": 200.625
+          }
+        }
+      }
+    },
+    {
+      "id": "building_2_neg1",
+      "label": "building:2:-1 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:2:-1",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          446,
+          15,
+          -97
+        ],
+        [
+          525,
+          425,
+          -23
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          13,
+          0,
+          -4
+        ],
+        "max": [
+          16,
+          5,
+          -1
+        ]
+      },
+      "baseAzimuthDeg": -73.36,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 101.936,
+            "y": 6.132,
+            "z": -9.192
+          },
+          "target": {
+            "x": 121.375,
+            "y": 4.0,
+            "z": -15.0
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 121.587,
+            "y": 8.072,
+            "z": 4.155
+          },
+          "target": {
+            "x": 121.375,
+            "y": 4.0,
+            "z": -15.0
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 141.892,
+            "y": 7.009,
+            "z": -21.13
+          },
+          "target": {
+            "x": 121.375,
+            "y": 4.0,
+            "z": -15.0
+          }
+        }
+      }
+    },
+    {
+      "id": "building_2_neg2",
+      "label": "building:2:-2 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:2:-2",
+      "preset": "city",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "bbox": [
+        [
+          452,
+          20,
+          -317
+        ],
+        [
+          526,
+          405,
+          -228
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          14,
+          0,
+          -10
+        ],
+        "max": [
+          16,
+          5,
+          -8
+        ]
+      },
+      "baseAzimuthDeg": -52.01,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 104.261,
+            "y": 6.399,
+            "z": -54.077
+          },
+          "target": {
+            "x": 122.25,
+            "y": 4.0,
+            "z": -68.125
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 130.318,
+            "y": 8.581,
+            "z": -48.142
+          },
+          "target": {
+            "x": 122.25,
+            "y": 4.0,
+            "z": -68.125
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 141.237,
+            "y": 7.386,
+            "z": -82.952
+          },
+          "target": {
+            "x": 122.25,
+            "y": 4.0,
+            "z": -68.125
+          }
+        }
+      }
+    },
+    {
+      "id": "building_2_neg3",
+      "label": "building:2:-3 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:2:-3",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          449,
+          20,
+          -495
+        ],
+        [
+          528,
+          395,
+          -421
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          14,
+          0,
+          -16
+        ],
+        "max": [
+          16,
+          5,
+          -14
+        ]
+      },
+      "baseAzimuthDeg": -39.68,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 109.17,
+            "y": 6.132,
+            "z": -98.887
+          },
+          "target": {
+            "x": 122.125,
+            "y": 4.0,
+            "z": -114.5
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 132.924,
+            "y": 8.072,
+            "z": -98.678
+          },
+          "target": {
+            "x": 122.125,
+            "y": 4.0,
+            "z": -114.5
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 135.799,
+            "y": 7.009,
+            "z": -130.979
+          },
+          "target": {
+            "x": 122.125,
+            "y": 4.0,
+            "z": -114.5
+          }
+        }
+      }
+    },
+    {
+      "id": "building_2_neg4",
+      "label": "building:2:-4 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:2:-4",
+      "preset": "city",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "bbox": [
+        [
+          439,
+          15,
+          -636
+        ],
+        [
+          533,
+          305,
+          -567
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          13,
+          0,
+          -20
+        ],
+        "max": [
+          16,
+          5,
+          -18
+        ]
+      },
+      "baseAzimuthDeg": -32.97,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 108.389,
+            "y": 6.532,
+            "z": -130.163
+          },
+          "target": {
+            "x": 121.5,
+            "y": 4.0,
+            "z": -150.375
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 136.432,
+            "y": 8.835,
+            "z": -133.214
+          },
+          "target": {
+            "x": 121.5,
+            "y": 4.0,
+            "z": -150.375
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 135.339,
+            "y": 7.574,
+            "z": -171.708
+          },
+          "target": {
+            "x": 121.5,
+            "y": 4.0,
+            "z": -150.375
+          }
+        }
+      }
+    },
+    {
+      "id": "building_2_0",
+      "label": "building:2:0 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:2:0",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use",
+        "landmark"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          432,
+          15,
+          70
+        ],
+        [
+          521,
+          405,
+          154
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          13,
+          0,
+          2
+        ],
+        "max": [
+          16,
+          5,
+          4
+        ]
+      },
+      "baseAzimuthDeg": -95.63,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 96.411,
+            "y": 6.399,
+            "z": 25.761
+          },
+          "target": {
+            "x": 119.125,
+            "y": 4.0,
+            "z": 28.0
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 111.181,
+            "y": 8.581,
+            "z": 48.033
+          },
+          "target": {
+            "x": 119.125,
+            "y": 4.0,
+            "z": 28.0
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 143.099,
+            "y": 7.386,
+            "z": 30.363
+          },
+          "target": {
+            "x": 119.125,
+            "y": 4.0,
+            "z": 28.0
+          }
+        }
+      }
+    },
+    {
+      "id": "building_2_1",
+      "label": "building:2:1 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:2:1",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          439,
+          10,
+          250
+        ],
+        [
+          533,
+          305,
+          329
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          13,
+          0,
+          7
+        ],
+        "max": [
+          16,
+          5,
+          10
+        ]
+      },
+      "baseAzimuthDeg": -116.74,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 99.985,
+            "y": 6.532,
+            "z": 61.533
+          },
+          "target": {
+            "x": 121.5,
+            "y": 4.0,
+            "z": 72.375
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 106.061,
+            "y": 8.835,
+            "z": 89.081
+          },
+          "target": {
+            "x": 121.5,
+            "y": 4.0,
+            "z": 72.375
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 144.208,
+            "y": 7.574,
+            "z": 83.818
+          },
+          "target": {
+            "x": 121.5,
+            "y": 4.0,
+            "z": 72.375
+          }
+        }
+      }
+    },
+    {
+      "id": "building_2_2",
+      "label": "building:2:2 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:2:2",
+      "preset": "city",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "bbox": [
+        [
+          404,
+          25,
+          439
+        ],
+        [
+          493,
+          360,
+          518
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          12,
+          0,
+          13
+        ],
+        "max": [
+          15,
+          5,
+          16
+        ]
+      },
+      "baseAzimuthDeg": -135.74,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 96.195,
+            "y": 6.399,
+            "z": 103.279
+          },
+          "target": {
+            "x": 112.125,
+            "y": 4.0,
+            "z": 119.625
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 93.143,
+            "y": 8.581,
+            "z": 129.829
+          },
+          "target": {
+            "x": 112.125,
+            "y": 4.0,
+            "z": 119.625
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 128.938,
+            "y": 7.386,
+            "z": 136.878
+          },
+          "target": {
+            "x": 112.125,
+            "y": 4.0,
+            "z": 119.625
+          }
+        }
+      }
+    },
+    {
+      "id": "building_2_3",
+      "label": "building:2:3 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:2:3",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use",
+        "vacant"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          405,
+          25,
+          599
+        ],
+        [
+          494,
+          285,
+          678
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          12,
+          0,
+          18
+        ],
+        "max": [
+          15,
+          5,
+          21
+        ]
+      },
+      "baseAzimuthDeg": -144.93,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 99.261,
+            "y": 6.399,
+            "z": 140.944
+          },
+          "target": {
+            "x": 112.375,
+            "y": 4.0,
+            "z": 159.625
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 92.007,
+            "y": 8.581,
+            "z": 166.666
+          },
+          "target": {
+            "x": 112.375,
+            "y": 4.0,
+            "z": 159.625
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 126.217,
+            "y": 7.386,
+            "z": 179.342
+          },
+          "target": {
+            "x": 112.375,
+            "y": 4.0,
+            "z": 159.625
+          }
+        }
+      }
+    },
+    {
+      "id": "building_2_4",
+      "label": "building:2:4 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:2:4",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          405,
+          15,
+          806
+        ],
+        [
+          489,
+          340,
+          890
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          12,
+          0,
+          25
+        ],
+        "max": [
+          15,
+          5,
+          27
+        ]
+      },
+      "baseAzimuthDeg": -152.99,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 101.96,
+            "y": 6.266,
+            "z": 192.795
+          },
+          "target": {
+            "x": 111.75,
+            "y": 4.0,
+            "z": 212.0
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 91.771,
+            "y": 8.326,
+            "z": 215.887
+          },
+          "target": {
+            "x": 111.75,
+            "y": 4.0,
+            "z": 212.0
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 122.083,
+            "y": 7.198,
+            "z": 232.27
+          },
+          "target": {
+            "x": 111.75,
+            "y": 4.0,
+            "z": 212.0
+          }
+        }
+      }
+    },
+    {
+      "id": "building_3_neg1",
+      "label": "building:3:-1 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:3:-1",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          625,
+          20,
+          -93
+        ],
+        [
+          704,
+          285,
+          -24
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          19,
+          0,
+          -3
+        ],
+        "max": [
+          22,
+          5,
+          -1
+        ]
+      },
+      "baseAzimuthDeg": -78.18,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 146.267,
+            "y": 6.132,
+            "z": -10.47
+          },
+          "target": {
+            "x": 166.125,
+            "y": 4.0,
+            "z": -14.625
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 164.728,
+            "y": 8.072,
+            "z": 4.48
+          },
+          "target": {
+            "x": 166.125,
+            "y": 4.0,
+            "z": -14.625
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 187.085,
+            "y": 7.009,
+            "z": -19.011
+          },
+          "target": {
+            "x": 166.125,
+            "y": 4.0,
+            "z": -14.625
+          }
+        }
+      }
+    },
+    {
+      "id": "building_3_neg2",
+      "label": "building:3:-2 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:3:-2",
+      "preset": "city",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "bbox": [
+        [
+          625,
+          15,
+          -313
+        ],
+        [
+          704,
+          345,
+          -219
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          19,
+          0,
+          -10
+        ],
+        "max": [
+          22,
+          5,
+          -7
+        ]
+      },
+      "baseAzimuthDeg": -61.32,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 144.989,
+            "y": 6.532,
+            "z": -54.936
+          },
+          "target": {
+            "x": 166.125,
+            "y": 4.0,
+            "z": -66.5
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 171.12,
+            "y": 8.835,
+            "z": -44.307
+          },
+          "target": {
+            "x": 166.125,
+            "y": 4.0,
+            "z": -66.5
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 188.433,
+            "y": 7.574,
+            "z": -78.706
+          },
+          "target": {
+            "x": 166.125,
+            "y": 4.0,
+            "z": -66.5
+          }
+        }
+      }
+    },
+    {
+      "id": "building_3_neg3",
+      "label": "building:3:-3 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:3:-3",
+      "preset": "city",
+      "tags": [
+        "shop_row",
+        "mixed_use"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "bbox": [
+        [
+          607,
+          10,
+          -500
+        ],
+        [
+          691,
+          270,
+          -426
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          18,
+          0,
+          -16
+        ],
+        "max": [
+          21,
+          5,
+          -14
+        ]
+      },
+      "baseAzimuthDeg": -48.32,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 146.151,
+            "y": 6.266,
+            "z": -101.415
+          },
+          "target": {
+            "x": 162.25,
+            "y": 4.0,
+            "z": -115.75
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 171.071,
+            "y": 8.326,
+            "z": -97.407
+          },
+          "target": {
+            "x": 162.25,
+            "y": 4.0,
+            "z": -115.75
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 179.242,
+            "y": 7.198,
+            "z": -130.88
+          },
+          "target": {
+            "x": 162.25,
+            "y": 4.0,
+            "z": -115.75
+          }
+        }
+      }
+    },
+    {
+      "id": "building_3_neg4",
+      "label": "building:3:-4 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:3:-4",
+      "preset": "city",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "bbox": [
+        [
+          631,
+          15,
+          -613
+        ],
+        [
+          715,
+          275,
+          -544
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          19,
+          0,
+          -20
+        ],
+        "max": [
+          22,
+          5,
+          -17
+        ]
+      },
+      "baseAzimuthDeg": -43.83,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 153.321,
+            "y": 6.266,
+            "z": -129.075
+          },
+          "target": {
+            "x": 168.25,
+            "y": 4.0,
+            "z": -144.625
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 178.478,
+            "y": 8.326,
+            "z": -127.028
+          },
+          "target": {
+            "x": 168.25,
+            "y": 4.0,
+            "z": -144.625
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 184.007,
+            "y": 7.198,
+            "z": -161.037
+          },
+          "target": {
+            "x": 168.25,
+            "y": 4.0,
+            "z": -144.625
+          }
+        }
+      }
+    },
+    {
+      "id": "building_3_0",
+      "label": "building:3:0 [shop_row, mixed_use]",
+      "type": "shop_row",
+      "source_object_id": "building:3:0",
+      "preset": "city",
+      "tags": [
+        "shop_row",
+        "mixed_use",
+        "vacant"
+      ],
+      "description": "Real generated shop_row specimen from the city world.",
+      "bbox": [
+        [
+          600,
+          15,
+          75
+        ],
+        [
+          684,
+          400,
+          169
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          18,
+          0,
+          2
+        ],
+        "max": [
+          21,
+          5,
+          5
+        ]
+      },
+      "baseAzimuthDeg": -95.02,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 136.5,
+            "y": 6.532,
+            "z": 28.39
+          },
+          "target": {
+            "x": 160.5,
+            "y": 4.0,
+            "z": 30.5
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 152.339,
+            "y": 8.835,
+            "z": 51.734
+          },
+          "target": {
+            "x": 160.5,
+            "y": 4.0,
+            "z": 30.5
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 185.831,
+            "y": 7.574,
+            "z": 32.727
+          },
+          "target": {
+            "x": 160.5,
+            "y": 4.0,
+            "z": 30.5
+          }
+        }
+      }
+    },
+    {
+      "id": "building_3_1",
+      "label": "building:3:1 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:3:1",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          599,
+          20,
+          256
+        ],
+        [
+          678,
+          320,
+          330
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          18,
+          0,
+          8
+        ],
+        "max": [
+          21,
+          5,
+          10
+        ]
+      },
+      "baseAzimuthDeg": -110.77,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 140.655,
+            "y": 6.132,
+            "z": 66.057
+          },
+          "target": {
+            "x": 159.625,
+            "y": 4.0,
+            "z": 73.25
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 148.159,
+            "y": 8.072,
+            "z": 88.596
+          },
+          "target": {
+            "x": 159.625,
+            "y": 4.0,
+            "z": 73.25
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 179.647,
+            "y": 7.009,
+            "z": 80.842
+          },
+          "target": {
+            "x": 159.625,
+            "y": 4.0,
+            "z": 73.25
+          }
+        }
+      }
+    },
+    {
+      "id": "building_3_2",
+      "label": "building:3:2 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:3:2",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          589,
+          20,
+          424
+        ],
+        [
+          683,
+          335,
+          518
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          18,
+          0,
+          13
+        ],
+        "max": [
+          21,
+          5,
+          16
+        ]
+      },
+      "baseAzimuthDeg": -124.4,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 139.122,
+            "y": 6.532,
+            "z": 104.138
+          },
+          "target": {
+            "x": 159.0,
+            "y": 4.0,
+            "z": 117.75
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 141.472,
+            "y": 8.835,
+            "z": 132.249
+          },
+          "target": {
+            "x": 159.0,
+            "y": 4.0,
+            "z": 117.75
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 179.981,
+            "y": 7.574,
+            "z": 132.117
+          },
+          "target": {
+            "x": 159.0,
+            "y": 4.0,
+            "z": 117.75
+          }
+        }
+      }
+    },
+    {
+      "id": "building_3_3",
+      "label": "building:3:3 [apartment_midrise, mixed_use]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:3:3",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "mixed_use"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          608,
+          15,
+          641
+        ],
+        [
+          697,
+          365,
+          710
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          19,
+          0,
+          20
+        ],
+        "max": [
+          21,
+          5,
+          22
+        ]
+      },
+      "baseAzimuthDeg": -135.16,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 147.031,
+            "y": 6.399,
+            "z": 152.69
+          },
+          "target": {
+            "x": 163.125,
+            "y": 4.0,
+            "z": 168.875
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 144.247,
+            "y": 8.581,
+            "z": 179.27
+          },
+          "target": {
+            "x": 163.125,
+            "y": 4.0,
+            "z": 168.875
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 180.111,
+            "y": 7.386,
+            "z": 185.957
+          },
+          "target": {
+            "x": 163.125,
+            "y": 4.0,
+            "z": 168.875
+          }
+        }
+      }
+    },
+    {
+      "id": "building_3_4",
+      "label": "building:3:4 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:3:4",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          611,
+          5,
+          764
+        ],
+        [
+          700,
+          265,
+          853
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          19,
+          0,
+          23
+        ],
+        "max": [
+          21,
+          5,
+          26
+        ]
+      },
+      "baseAzimuthDeg": -140.67,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 149.409,
+            "y": 6.399,
+            "z": 184.47
+          },
+          "target": {
+            "x": 163.875,
+            "y": 4.0,
+            "z": 202.125
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 144.086,
+            "y": 8.581,
+            "z": 210.66
+          },
+          "target": {
+            "x": 163.875,
+            "y": 4.0,
+            "z": 202.125
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 179.143,
+            "y": 7.386,
+            "z": 220.759
+          },
+          "target": {
+            "x": 163.875,
+            "y": 4.0,
+            "z": 202.125
+          }
+        }
+      }
+    },
+    {
+      "id": "building_4_neg1",
+      "label": "building:4:-1 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:4:-1",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          762,
+          15,
+          -135
+        ],
+        [
+          851,
+          370,
+          -41
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          23,
+          0,
+          -5
+        ],
+        "max": [
+          26,
+          5,
+          -2
+        ]
+      },
+      "baseAzimuthDeg": -78.2,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 178.042,
+            "y": 6.532,
+            "z": -17.072
+          },
+          "target": {
+            "x": 201.625,
+            "y": 4.0,
+            "z": -22.0
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 199.96,
+            "y": 8.835,
+            "z": 0.687
+          },
+          "target": {
+            "x": 201.625,
+            "y": 4.0,
+            "z": -22.0
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 226.516,
+            "y": 7.574,
+            "z": -27.201
+          },
+          "target": {
+            "x": 201.625,
+            "y": 4.0,
+            "z": -22.0
+          }
+        }
+      }
+    },
+    {
+      "id": "building_4_neg2",
+      "label": "building:4:-2 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:4:-2",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          766,
+          5,
+          -284
+        ],
+        [
+          850,
+          285,
+          -215
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          23,
+          0,
+          -9
+        ],
+        "max": [
+          26,
+          5,
+          -7
+        ]
+      },
+      "baseAzimuthDeg": -67.13,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 182.138,
+            "y": 6.266,
+            "z": -53.999
+          },
+          "target": {
+            "x": 202.0,
+            "y": 4.0,
+            "z": -62.375
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 204.433,
+            "y": 8.326,
+            "z": -42.168
+          },
+          "target": {
+            "x": 202.0,
+            "y": 4.0,
+            "z": -62.375
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 222.964,
+            "y": 7.198,
+            "z": -71.216
+          },
+          "target": {
+            "x": 202.0,
+            "y": 4.0,
+            "z": -62.375
+          }
+        }
+      }
+    },
+    {
+      "id": "building_4_neg3",
+      "label": "building:4:-3 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:4:-3",
+      "preset": "city",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "bbox": [
+        [
+          780,
+          10,
+          -487
+        ],
+        [
+          854,
+          330,
+          -413
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          24,
+          0,
+          -16
+        ],
+        "max": [
+          26,
+          5,
+          -13
+        ]
+      },
+      "baseAzimuthDeg": -55.85,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 188.509,
+            "y": 5.999,
+            "z": -101.823
+          },
+          "target": {
+            "x": 204.25,
+            "y": 4.0,
+            "z": -112.5
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 209.844,
+            "y": 7.817,
+            "z": -95.435
+          },
+          "target": {
+            "x": 204.25,
+            "y": 4.0,
+            "z": -112.5
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 220.864,
+            "y": 6.821,
+            "z": -123.769
+          },
+          "target": {
+            "x": 204.25,
+            "y": 4.0,
+            "z": -112.5
+          }
+        }
+      }
+    },
+    {
+      "id": "building_4_neg4",
+      "label": "building:4:-4 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:4:-4",
+      "preset": "city",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "bbox": [
+        [
+          806,
+          10,
+          -671
+        ],
+        [
+          875,
+          365,
+          -577
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          25,
+          0,
+          -21
+        ],
+        "max": [
+          27,
+          5,
+          -19
+        ]
+      },
+      "baseAzimuthDeg": -48.7,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 192.024,
+            "y": 6.532,
+            "z": -140.101
+          },
+          "target": {
+            "x": 210.125,
+            "y": 4.0,
+            "z": -156.0
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 219.845,
+            "y": 8.835,
+            "z": -135.433
+          },
+          "target": {
+            "x": 210.125,
+            "y": 4.0,
+            "z": -156.0
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 229.23,
+            "y": 7.574,
+            "z": -172.781
+          },
+          "target": {
+            "x": 210.125,
+            "y": 4.0,
+            "z": -156.0
+          }
+        }
+      }
+    },
+    {
+      "id": "building_4_0",
+      "label": "building:4:0 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:4:0",
+      "preset": "city",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "bbox": [
+        [
+          784,
+          15,
+          80
+        ],
+        [
+          878,
+          275,
+          159
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          24,
+          0,
+          2
+        ],
+        "max": [
+          27,
+          5,
+          4
+        ]
+      },
+      "baseAzimuthDeg": -93.63,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 183.706,
+            "y": 6.532,
+            "z": 28.35
+          },
+          "target": {
+            "x": 207.75,
+            "y": 4.0,
+            "z": 29.875
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 200.109,
+            "y": 8.835,
+            "z": 51.301
+          },
+          "target": {
+            "x": 207.75,
+            "y": 4.0,
+            "z": 29.875
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 233.128,
+            "y": 7.574,
+            "z": 31.484
+          },
+          "target": {
+            "x": 207.75,
+            "y": 4.0,
+            "z": 29.875
+          }
+        }
+      }
+    },
+    {
+      "id": "building_4_1",
+      "label": "building:4:1 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:4:1",
+      "preset": "city",
+      "tags": [
+        "office_midrise",
+        "office",
+        "landmark",
+        "vacant"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "bbox": [
+        [
+          789,
+          5,
+          268
+        ],
+        [
+          858,
+          405,
+          342
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          24,
+          0,
+          8
+        ],
+        "max": [
+          26,
+          5,
+          10
+        ]
+      },
+      "baseAzimuthDeg": -106.91,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 187.677,
+            "y": 5.999,
+            "z": 70.718
+          },
+          "target": {
+            "x": 205.875,
+            "y": 4.0,
+            "z": 76.25
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 196.118,
+            "y": 7.817,
+            "z": 91.327
+          },
+          "target": {
+            "x": 205.875,
+            "y": 4.0,
+            "z": 76.25
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 225.082,
+            "y": 6.821,
+            "z": 82.089
+          },
+          "target": {
+            "x": 205.875,
+            "y": 4.0,
+            "z": 76.25
+          }
+        }
+      }
+    },
+    {
+      "id": "building_4_2",
+      "label": "building:4:2 [apartment_midrise]",
+      "type": "apartment_midrise",
+      "source_object_id": "building:4:2",
+      "preset": "city",
+      "tags": [
+        "apartment_midrise",
+        "residential"
+      ],
+      "description": "Real generated apartment_midrise specimen from the city world.",
+      "bbox": [
+        [
+          761,
+          10,
+          417
+        ],
+        [
+          845,
+          240,
+          516
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          23,
+          0,
+          13
+        ],
+        "max": [
+          26,
+          5,
+          16
+        ]
+      },
+      "baseAzimuthDeg": -117.78,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 178.313,
+            "y": 6.665,
+            "z": 104.804
+          },
+          "target": {
+            "x": 200.75,
+            "y": 4.0,
+            "z": 116.625
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 184.182,
+            "y": 9.09,
+            "z": 133.913
+          },
+          "target": {
+            "x": 200.75,
+            "y": 4.0,
+            "z": 116.625
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 224.431,
+            "y": 7.762,
+            "z": 129.101
+          },
+          "target": {
+            "x": 200.75,
+            "y": 4.0,
+            "z": 116.625
+          }
+        }
+      }
+    },
+    {
+      "id": "building_4_3",
+      "label": "building:4:3 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:4:3",
+      "preset": "city",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "bbox": [
+        [
+          790,
+          5,
+          614
+        ],
+        [
+          884,
+          300,
+          683
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          24,
+          0,
+          19
+        ],
+        "max": [
+          27,
+          5,
+          21
+        ]
+      },
+      "baseAzimuthDeg": -126.33,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 189.841,
+            "y": 6.532,
+            "z": 147.851
+          },
+          "target": {
+            "x": 209.25,
+            "y": 4.0,
+            "z": 162.125
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 191.244,
+            "y": 8.835,
+            "z": 176.026
+          },
+          "target": {
+            "x": 209.25,
+            "y": 4.0,
+            "z": 162.125
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 229.735,
+            "y": 7.574,
+            "z": 177.191
+          },
+          "target": {
+            "x": 209.25,
+            "y": 4.0,
+            "z": 162.125
+          }
+        }
+      }
+    },
+    {
+      "id": "building_4_4",
+      "label": "building:4:4 [building, office]",
+      "type": "office_midrise",
+      "source_object_id": "building:4:4",
+      "preset": "city",
+      "tags": [
+        "office_midrise",
+        "office"
+      ],
+      "description": "Real generated office_midrise specimen from the city world.",
+      "bbox": [
+        [
+          778,
+          10,
+          794
+        ],
+        [
+          862,
+          330,
+          878
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          24,
+          0,
+          24
+        ],
+        "max": [
+          26,
+          5,
+          27
+        ]
+      },
+      "baseAzimuthDeg": -134.87,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 189.722,
+            "y": 6.266,
+            "z": 193.793
+          },
+          "target": {
+            "x": 205.0,
+            "y": 4.0,
+            "z": 209.0
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 187.222,
+            "y": 8.326,
+            "z": 218.909
+          },
+          "target": {
+            "x": 205.0,
+            "y": 4.0,
+            "z": 209.0
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 221.126,
+            "y": 7.198,
+            "z": 225.05
+          },
+          "target": {
+            "x": 205.0,
+            "y": 4.0,
+            "z": 209.0
+          }
+        }
+      }
+    },
+    {
+      "id": "station_neg4_0",
+      "label": "station:-4:0 [station]",
+      "type": "station",
+      "source_object_id": "station:-4:0",
+      "preset": "city",
+      "tags": [
+        "status:planned",
+        "planned",
+        "subway",
+        "station"
+      ],
+      "description": "Real generated station specimen from the city world.",
+      "bbox": [
+        [
+          -736,
+          -24,
+          -12
+        ],
+        [
+          -704,
+          8,
+          12
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -23,
+          -1,
+          -1
+        ],
+        "max": [
+          -22,
+          0,
+          0
+        ]
+      },
+      "baseAzimuthDeg": 84.81,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": -170.096,
+            "y": -4.075,
+            "z": 0.9
+          },
+          "target": {
+            "x": -180.0,
+            "y": -5.12,
+            "z": 0.0
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -176.606,
+            "y": -3.124,
+            "z": -8.755
+          },
+          "target": {
+            "x": -180.0,
+            "y": -5.12,
+            "z": 0.0
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -190.454,
+            "y": -3.645,
+            "z": -0.95
+          },
+          "target": {
+            "x": -180.0,
+            "y": -5.12,
+            "z": 0.0
+          }
+        }
+      }
+    },
+    {
+      "id": "station_0_0",
+      "label": "station:0:0 [station]",
+      "type": "station",
+      "source_object_id": "station:0:0",
+      "preset": "city",
+      "tags": [
+        "status:planned",
+        "planned",
+        "subway",
+        "station"
+      ],
+      "description": "Real generated station specimen from the city world.",
+      "bbox": [
+        [
+          -16,
+          -24,
+          -12
+        ],
+        [
+          16,
+          8,
+          12
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -1,
+          -1,
+          -1
+        ],
+        "max": [
+          0,
+          0,
+          0
+        ]
+      },
+      "baseAzimuthDeg": 35.75,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 5.811,
+            "y": -4.075,
+            "z": 8.071
+          },
+          "target": {
+            "x": 0.0,
+            "y": -5.12,
+            "z": 0.0
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 8.838,
+            "y": -3.124,
+            "z": -3.174
+          },
+          "target": {
+            "x": 0.0,
+            "y": -5.12,
+            "z": 0.0
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -6.133,
+            "y": -3.645,
+            "z": -8.519
+          },
+          "target": {
+            "x": 0.0,
+            "y": -5.12,
+            "z": 0.0
+          }
+        }
+      }
+    },
+    {
+      "id": "station_0_4",
+      "label": "station:0:4 [station]",
+      "type": "station",
+      "source_object_id": "station:0:4",
+      "preset": "city",
+      "tags": [
+        "status:planned",
+        "planned",
+        "subway",
+        "station"
+      ],
+      "description": "Real generated station specimen from the city world.",
+      "bbox": [
+        [
+          -16,
+          -24,
+          708
+        ],
+        [
+          16,
+          8,
+          732
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          -1,
+          -1,
+          22
+        ],
+        "max": [
+          0,
+          0,
+          22
+        ]
+      },
+      "baseAzimuthDeg": 175.57,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 0.769,
+            "y": -4.075,
+            "z": 170.085
+          },
+          "target": {
+            "x": 0.0,
+            "y": -5.12,
+            "z": 180.0
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": -8.799,
+            "y": -3.124,
+            "z": 176.722
+          },
+          "target": {
+            "x": 0.0,
+            "y": -5.12,
+            "z": 180.0
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": -0.811,
+            "y": -3.645,
+            "z": 190.465
+          },
+          "target": {
+            "x": 0.0,
+            "y": -5.12,
+            "z": 180.0
+          }
+        }
+      }
+    },
+    {
+      "id": "station_4_0",
+      "label": "station:4:0 [station]",
+      "type": "station",
+      "source_object_id": "station:4:0",
+      "preset": "city",
+      "tags": [
+        "status:planned",
+        "planned",
+        "subway",
+        "station"
+      ],
+      "description": "Real generated station specimen from the city world.",
+      "bbox": [
+        [
+          704,
+          -24,
+          -12
+        ],
+        [
+          736,
+          8,
+          12
+        ]
+      ],
+      "chunkBounds": {
+        "min": [
+          22,
+          -1,
+          -1
+        ],
+        "max": [
+          23,
+          0,
+          0
+        ]
+      },
+      "baseAzimuthDeg": -84.03,
+      "views": {
+        "hero": {
+          "camera": {
+            "x": 170.109,
+            "y": -4.075,
+            "z": 1.034
+          },
+          "target": {
+            "x": 180.0,
+            "y": -5.12,
+            "z": 0.0
+          }
+        },
+        "corner": {
+          "camera": {
+            "x": 178.364,
+            "y": -3.124,
+            "z": 9.247
+          },
+          "target": {
+            "x": 180.0,
+            "y": -5.12,
+            "z": 0.0
+          }
+        },
+        "reverse": {
+          "camera": {
+            "x": 190.44,
+            "y": -3.645,
+            "z": -1.091
+          },
+          "target": {
+            "x": 180.0,
+            "y": -5.12,
+            "z": 0.0
+          }
+        }
+      }
     }
   ]
 }
