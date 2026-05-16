@@ -521,7 +521,7 @@
       new StaveConnector(trebleStave, bassStave).setType(StaveConnector.type.BRACE).setContext(ctx).draw();
       new StaveConnector(trebleStave, bassStave).setType(StaveConnector.type.SINGLE_LEFT).setContext(ctx).draw();
 
-      function toStaveNote(note, clef) {
+      function toStaveNote(note, clef, accidentalState = new Map()) {
         const m = note.match(/^([A-G])(#?)(\d)$/);
         if (!m) {
           return new StaveNote({ clef, keys: ["c/4"], duration: "q" });
@@ -531,17 +531,22 @@
         const octave = m[3];
 
         const sn = new StaveNote({ clef, keys: [`${letter}/${octave}`], duration: "q" });
-        const sharpIsInKeySignature = keySignature.sharps.includes(m[1]);
-        if (accidental === "#" && !sharpIsInKeySignature) {
-          sn.addModifier(new Accidental("#"), 0);
-        } else if (accidental === "" && sharpIsInKeySignature) {
-          sn.addModifier(new Accidental("n"), 0);
+        const stateKey = `${m[1]}${octave}`;
+        const keySignatureSharp = keySignature.sharps.includes(m[1]);
+        const currentSharp = accidentalState.has(stateKey) ? accidentalState.get(stateKey) : keySignatureSharp;
+        const noteSharp = accidental === "#";
+
+        if (noteSharp !== currentSharp) {
+          sn.addModifier(new Accidental(noteSharp ? "#" : "n"), 0);
+          accidentalState.set(stateKey, noteSharp);
         }
         return sn;
       }
 
-      const trebleNotes = state.training.trebleQueue.map(n => toStaveNote(n, "treble"));
-      const bassNotes = state.training.bassQueue.map(n => toStaveNote(n, "bass"));
+      const trebleAccidentalState = new Map();
+      const bassAccidentalState = new Map();
+      const trebleNotes = state.training.trebleQueue.map(n => toStaveNote(n, "treble", trebleAccidentalState));
+      const bassNotes = state.training.bassQueue.map(n => toStaveNote(n, "bass", bassAccidentalState));
 
       const trebleVoice = new Voice({ num_beats: 4, beat_value: 4 }).addTickables(trebleNotes);
       const bassVoice = new Voice({ num_beats: 4, beat_value: 4 }).addTickables(bassNotes);
