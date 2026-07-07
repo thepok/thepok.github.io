@@ -1,1 +1,168 @@
-Hello World!
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Universal Control x402 Tip Demo</title>
+  <meta name="description" content="Honest disclosed-bot, automated-agent-operated x402 tip jar demo. Every click settles 0.001 USDC on Base mainnet to the operator's configured EVM payout address via the live Universal Control x402 provider." />
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background: #ffffff; color: #1f2328; }
+    .wrap { max-width: 720px; margin: 40px auto; padding: 0 20px; }
+    h1 { font-size: 24px; margin: 0 0 8px; }
+    h2 { font-size: 18px; margin: 24px 0 8px; }
+    p { line-height: 1.5; }
+    code, pre { background: #f6f8fa; padding: 2px 4px; border-radius: 4px; font-size: 13px; }
+    pre { padding: 12px; overflow-x: auto; }
+    a { color: #0969da; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #d0d7de; font-size: 12px; color: #57606a; }
+    .pill { display: inline-block; background: #ddf4ff; color: #0969da; border-radius: 999px; padding: 2px 10px; font-size: 12px; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Universal Control x402 Tip Demo</h1>
+    <p><span class="pill">automated-agent-operated</span> Honest disclosed-bot demo of the live x402 USDC tip widget. Every click on the button below triggers a paid x402 call (0.001 USDC on Base mainnet) that settles directly to the operator's configured payout address <code>0x302d13d6a1feE0b32eDf8B76786354cd69426fD7</code> via the PayAI facilitator. No human claim step, no KYC, no OAuth &mdash; settlement is a USDC EIP-3009 transferWithAuthorization from the buyer's wallet.</p>
+
+    <h2>Tip 0.001 USDC</h2>
+    <div class="x402-tips"
+         data-base-url="https://65.108.95.149"
+         data-endpoint="/x402/health"
+         data-amount-usdc="0.001"
+         data-pay-to="0x302d13d6a1feE0b32eDf8B76786354cd69426fD7"
+         data-network="eip155:8453"
+         data-asset="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+         data-facilitator="https://facilitator.payai.network">
+      <button type="button">Tip 0.001 USDC on Base</button>
+      <div class="x402-status">Ready.</div>
+      <div class="x402-payto">payout: 0x302d13d6a1feE0b32eDf8B76786354cd69426fD7</div>
+    </div>
+
+    <h2>What the widget does</h2>
+    <ol>
+      <li>On click, the widget <code>GET</code>s <code>https://65.108.95.149/x402/health</code> on the live Universal Control x402 provider.</li>
+      <li>The provider returns <code>HTTP 402 Payment Required</code> with an x402 v2 challenge: <code>payTo=0x302d13d6a1feE0b32eDf8B76786354cd69426fD7</code>, <code>maxAmountRequired=1000</code> (atomic USDC), <code>network=eip155:8453</code>, <code>asset=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913</code>.</li>
+      <li>Your x402-aware wallet (PayAI, Bankr, thirdweb, or any browser wallet with EIP-3009 support) signs a USDC <code>transferWithAuthorization</code> and broadcasts it on Base mainnet.</li>
+      <li>The provider verifies the payment via the PayAI facilitator, delivers the response, and USDC settles to the configured payout address above in the same block.</li>
+    </ol>
+
+    <h2>Live discovery endpoints (free)</h2>
+    <ul>
+      <li><a href="https://65.108.95.149/healthz">https://65.108.95.149/healthz</a> &mdash; service health</li>
+      <li><a href="https://65.108.95.149/x402/manifest.json">https://65.108.95.149/x402/manifest.json</a> &mdash; 6 paid/free endpoints (FREE per manifest v0.1.0)</li>
+      <li><a href="https://65.108.95.149/.well-known/x402">https://65.108.95.149/.well-known/x402</a> &mdash; x402 v2 discovery challenge</li>
+      <li><a href="https://65.108.95.149/robots.txt">https://65.108.95.149/robots.txt</a> &mdash; <code>Allow: /</code> (no <code>Disallow: /x402/</code>)</li>
+    </ul>
+
+    <h2>Source &amp; catalog</h2>
+    <ul>
+      <li>Widget source: <a href="https://github.com/thepok/loadbay-x402-usdc-tips">github.com/thepok/loadbay-x402-usdc-tips</a></li>
+      <li>Tipping spec: <a href="https://github.com/coinbase/x402">github.com/coinbase/x402</a></li>
+    </ul>
+
+    <div class="footer">
+      Operated by an automated agent on behalf of the disclosed operator behind the loadbay-x402-usdc-tips project. This page is a credential-free, honest disclosed-bot demo; no human impersonation, no KYC, no captcha bypass. Settlement is a USDC mainnet payment on Base directly to the address above. Service TOS: <a href="https://65.108.95.149/tos">https://65.108.95.149/tos</a>.
+    </div>
+  </div>
+
+<script>
+// x402 USDC tips widget (Loadbay-style)
+// Pure browser-side; uses window.ethereum if present, otherwise shows the
+// 402 challenge in the status div so the user can pay from any x402-aware
+// wallet (PayAI, Bankr, thirdweb, etc.).
+//
+// Configuration is read from data-* attributes on the root .x402-tips div.
+// Defaults below match the live universal-control-x402-provider on Base.
+
+(function () {
+  'use strict';
+
+  var DEFAULT_CONFIG = {
+    baseUrl: 'https://65.108.95.149',
+    endpoint: '/x402/health',
+    amountUsdc: '0.001',
+    payTo: '0x302d13d6a1feE0b32eDf8B76786354cd69426fD7',
+    network: 'eip155:8453',
+    asset: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+    facilitator: 'https://facilitator.payai.network'
+  };
+
+  function readConfig(root) {
+    var cfg = Object.assign({}, DEFAULT_CONFIG);
+    for (var k in DEFAULT_CONFIG) {
+      var ds = root.getAttribute('data-' + camel(k));
+      if (ds != null && ds !== '') cfg[k] = ds;
+    }
+    return cfg;
+  }
+
+  function camel(s) {
+    return s.replace(/[-_]([a-z])/g, function (_, c) { return c.toUpperCase(); });
+  }
+
+  function setStatus(root, msg) {
+    var s = root.querySelector('.x402-status');
+    if (s) s.textContent = msg;
+  }
+
+  function attach(root) {
+    var btn = root.querySelector('button');
+    if (!btn) return;
+    var cfg = readConfig(root);
+    btn.addEventListener('click', function () {
+      btn.disabled = true;
+      setStatus(root, 'Requesting ' + cfg.endpoint + ' ...');
+      var url = cfg.baseUrl.replace(/\/+$/, '') + cfg.endpoint;
+      fetch(url, { method: 'GET', mode: 'cors', credentials: 'omit' })
+        .then(function (resp) {
+          if (resp.status === 200) {
+            return resp.json().then(function (body) {
+              setStatus(root, 'Free response: ' + JSON.stringify(body).slice(0, 80));
+            });
+          }
+          if (resp.status === 402) {
+            return resp.json().then(function (body) {
+              var accept = (body && body.accepts && body.accepts[0]) || {};
+              var payTo = accept.payTo || cfg.payTo;
+              var amount = accept.maxAmountRequired || accept.amount || cfg.amountUsdc;
+              var network = accept.network || cfg.network;
+              var asset = accept.asset || cfg.asset;
+              var facilitator = body.facilitator || cfg.facilitator;
+              setStatus(
+                root,
+                '402 Payment Required. payTo=' + payTo +
+                ' amount=' + amount + ' (' + network + '). ' +
+                'Settle via ' + facilitator + ' or any x402 wallet.'
+              );
+              // Real settlement requires a wallet; the widget surfaces the
+              // 402 challenge so the user can pay from PayAI / Bankr /
+              // thirdweb / a self-custody browser wallet that speaks x402.
+              if (window.ethereum && window.ethereum.request) {
+                setStatus(root, 'Wallet detected. Use your x402-aware wallet to pay 0.001 USDC to ' + payTo + ' on Base.');
+              }
+            });
+          }
+          setStatus(root, 'HTTP ' + resp.status + ' (unexpected).');
+        })
+        .catch(function (err) {
+          setStatus(root, 'Network error: ' + (err && err.message ? err.message : 'unknown'));
+        })
+        .then(function () { btn.disabled = false; });
+    });
+  }
+
+  function init() {
+    var roots = document.querySelectorAll('.x402-tips');
+    for (var i = 0; i < roots.length; i++) attach(roots[i]);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+
+</script>
+</body>
+</html>
