@@ -35,3 +35,5 @@ Naturkräfte now includes an autonomous attack car: it circles the building and 
 On foot, 1 selects the demolition hammer and 2 the shoulder ball cannon. F or captured left-click attacks; hold to repeat. Touch devices have an attack button. Short taps survive worker timing, and world reset does not replay old shots. In ordinary Sandbox view, WASD moves the free camera relative to its view.
 
 The catalog now includes a hollow reinforced concrete core with stronger connections and impact resistance. Large Art deco, Brutalist and Skybridge generators build continuous core stacks; reload or generate a new building to use them. Existing saved blueprints remain unchanged. Cores remain locally destructible.
+
+Public Chrome checks cover desktop and Android-style touch controls, quick taps, held fire, weapon switching, world reset, camera focus isolation, autonomous driving and combined hazards. Source archives include these checks; camera comparisons allow normal floating-point rounding.
