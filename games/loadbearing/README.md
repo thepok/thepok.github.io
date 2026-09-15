@@ -39,3 +39,5 @@ The catalog now includes a hollow reinforced concrete core with stronger connect
 Public Chrome checks cover desktop and Android-style touch controls, quick taps, held fire, weapon switching, world reset, camera focus isolation, autonomous driving and combined hazards. Source archives include these checks; camera comparisons allow normal floating-point rounding.
 
 Free look reaches almost vertically upward independently of weapon limits. The hammer stops at its maximum elevation while the camera continues; mouse and touch use the same limits.
+
+Held-fire regression checks follow simulation ticks rather than wall-clock delays, including under browser rendering load.
