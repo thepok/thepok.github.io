@@ -19,3 +19,11 @@ Node.js 22 or newer, run `npm ci` and `npm run build`, and publish the contents 
 All game asset paths are relative so subfolder hosting works.
 
 Third-party notices are in THIRD-PARTY-LICENSES.txt.
+
+## Explore on foot
+
+Sandbox → Bauwerke → Gebäude erkunden starts the Jolt walking character. Newly loaded showcases and generated houses have destructible doorways, open stairwells and switchback stairs. Old custom blueprints are preserved.
+
+WASD moves, Shift runs, Space jumps, V switches shoulder/first-person views, and R restores the whole world while remaining in walking mode. Click the view for mouse look; Escape releases it. Touch devices have a movement stick, drag look, jump and world-reset buttons. Beenden returns to the free Sandbox camera and projectile controls.
+
+This is the exploration foundation for an interior bombardment survival mode. Health, hostile bombardment and survival scoring are future work.
