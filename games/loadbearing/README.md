@@ -41,3 +41,10 @@ Public Chrome checks cover desktop and Android-style touch controls, quick taps,
 Free look reaches almost vertically upward independently of weapon limits. The hammer stops at its maximum elevation while the camera continues; mouse and touch use the same limits.
 
 Held-fire regression checks follow simulation ticks rather than wall-clock delays, including under browser rendering load.
+
+
+## Frame-aware glass and uninterrupted exploration
+
+Glass shatters when its surrounding frame fractures, loses its mounts, or deforms at the corners. Low-energy projectiles can break glass without breaking concrete. Sleeping frames skip transform checks, and shattering is bounded per update. Regression checks cover quiet startup of a 1,000-part building, rigid frame movement, distorted frames, falling panes and material-specific impacts.
+
+Gebäude erkunden now enters the existing running world without resetting damage, debris, hazards or the player vehicle. The vehicle parks when switching to walking. Opening world controls releases mouse capture; returning to Sandbox and entering walking again preserve the same physics worker. Desktop browser checks verify these transitions.
