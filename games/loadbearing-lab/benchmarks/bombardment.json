@@ -1,0 +1,199 @@
+{
+  "config": {
+    "parts": 1000,
+    "seed": 72000,
+    "style": "art-deco",
+    "fragmentLimit": 3000,
+    "shots": 120,
+    "shotInterval": 0.15,
+    "firstShot": 1,
+    "duration": 25,
+    "dt": 0.016666666666666666,
+    "mass": 10000,
+    "speed": 100,
+    "radius": 0.75
+  },
+  "building": {
+    "name": "Art déco",
+    "parts": 1000,
+    "height": 64
+  },
+  "metadata": {
+    "runtime": "v24.18.0",
+    "engine": "1.1.0",
+    "execution": "single-thread WASM in Node; no rendering or worker transport",
+    "cpu": "Intel(R) Core(TM) i7-9850H CPU @ 2.60GHz",
+    "sourceHash": "d2ab33ad987a682af3caf6049b47790622d3a9b76035813f50a924f1b913cd9f",
+    "created": "2026-09-15T20:30:35.827Z"
+  },
+  "runs": [
+    {
+      "enabled": false,
+      "startup": {
+        "steps": 120,
+        "quiet": true,
+        "maxSpeed": 0.004642332438379526,
+        "milliseconds": 12410.954800000001
+      },
+      "completed": false,
+      "failure": {
+        "message": "null function or function signature mismatch",
+        "elapsed": 16.683333333333668,
+        "shots": 105,
+        "allocatedBodies": 8367,
+        "fragments": 3000
+      },
+      "cleanupFailure": "RuntimeError: memory access out of bounds",
+      "allocatedAtEnd": 8367,
+      "phases": {
+        "idle": {
+          "steps": 59,
+          "medianMs": 57.839899999999034,
+          "p95Ms": 80.00410000000011,
+          "maxMs": 103.1231000000007,
+          "physicsThroughput": 0.26779071228099266,
+          "joltShare": 0.9415475147778266,
+          "meanJoltMs": 58.599711864406835,
+          "meanDamageMs": 3.4244491525423038,
+          "meanRebarCheckMs": 0.008101694915147442,
+          "meanProjectileDamageMs": 0.006101694915202442
+        },
+        "structure fire": {
+          "steps": 630,
+          "medianMs": 176.3142000000007,
+          "p95Ms": 378.8234999999986,
+          "maxMs": 684.2158000000054,
+          "physicsThroughput": 0.08641425088125373,
+          "joltShare": 0.8734992027610501,
+          "meanJoltMs": 168.47128682539687,
+          "meanDamageMs": 23.791362222222446,
+          "meanRebarCheckMs": 0.26845126984155776,
+          "meanProjectileDamageMs": 20.41277158730148
+        },
+        "rubble fire": {
+          "steps": 311,
+          "medianMs": 353.1912000000011,
+          "p95Ms": 515.7210999999952,
+          "maxMs": 616.6557999999786,
+          "physicsThroughput": 0.046168829461218815,
+          "joltShare": 0.7637620098074223,
+          "meanJoltMs": 275.7134408360125,
+          "meanDamageMs": 83.59276527331248,
+          "meanRebarCheckMs": 0.729287781351743,
+          "meanProjectileDamageMs": 79.00035016077094
+        }
+      },
+      "peakDebris": 3000,
+      "peakActiveBodies": 3620,
+      "peakRebars": 3257,
+      "maxSavedBodies": 0,
+      "final": {
+        "t": 16.666666666667002,
+        "phase": "rubble fire",
+        "jolt": 344.25659999999334,
+        "damage": 149.48969999997644,
+        "other": 1.9853000000293832,
+        "clusters": 0.0005999999993946403,
+        "total": 495.73219999999856,
+        "updateRebars": 2.7305000000051223,
+        "fractureProjectileImpacts": 141.65220000001136,
+        "fractureGroundImpacts": 0.00829999998677522,
+        "updateGlassDamage": 0.004899999999906868,
+        "allocatedBodies": 8330,
+        "debris": 3000,
+        "awake": 3438,
+        "bodies": 3474,
+        "broken": 2171,
+        "fractured": 591,
+        "rebars": 3180,
+        "groups": 0,
+        "saved": 0,
+        "shots": 105
+      }
+    },
+    {
+      "enabled": true,
+      "startup": {
+        "steps": 120,
+        "quiet": true,
+        "maxSpeed": 0.004642332438379526,
+        "milliseconds": 23508.1251
+      },
+      "completed": false,
+      "failure": {
+        "message": "null function or function signature mismatch",
+        "elapsed": 16.683333333333668,
+        "shots": 105,
+        "allocatedBodies": 8367,
+        "fragments": 3000
+      },
+      "cleanupFailure": "RuntimeError: memory access out of bounds",
+      "allocatedAtEnd": 8367,
+      "phases": {
+        "idle": {
+          "steps": 59,
+          "medianMs": 94.5653999999995,
+          "p95Ms": 140.75800000000163,
+          "maxMs": 147.0541000000012,
+          "physicsThroughput": 0.17330222987156726,
+          "joltShare": 0.9396085906279601,
+          "meanJoltMs": 90.36319491525445,
+          "meanDamageMs": 5.0636796610171775,
+          "meanRebarCheckMs": 0.008422033898460864,
+          "meanProjectileDamageMs": 0.009306779660835025
+        },
+        "structure fire": {
+          "steps": 630,
+          "medianMs": 291.76299999999173,
+          "p95Ms": 435.1122000000032,
+          "maxMs": 537.3175999999949,
+          "physicsThroughput": 0.061535625688311134,
+          "joltShare": 0.8795705070252844,
+          "meanJoltMs": 238.22799047619046,
+          "meanDamageMs": 31.66083269841277,
+          "meanRebarCheckMs": 0.29661539682570687,
+          "meanProjectileDamageMs": 27.0917806349208
+        },
+        "rubble fire": {
+          "steps": 311,
+          "medianMs": 302.8047999999835,
+          "p95Ms": 410.80550000001676,
+          "maxMs": 527.7154000000446,
+          "physicsThroughput": 0.052203828498121024,
+          "joltShare": 0.7760280936712509,
+          "meanJoltMs": 247.7558051446944,
+          "meanDamageMs": 70.01032636656007,
+          "meanRebarCheckMs": 0.5570710610928294,
+          "meanProjectileDamageMs": 66.05257395498393
+        }
+      },
+      "peakDebris": 3000,
+      "peakActiveBodies": 3620,
+      "peakRebars": 3257,
+      "maxSavedBodies": 0,
+      "final": {
+        "t": 16.666666666667002,
+        "phase": "rubble fire",
+        "jolt": 315.11149999999907,
+        "damage": 93.99150000000373,
+        "other": 2.4011000000755303,
+        "clusters": 0.011499999964144081,
+        "total": 411.51560000004247,
+        "updateRebars": 0.7286999999778345,
+        "fractureProjectileImpacts": 90.12069999997038,
+        "fractureGroundImpacts": 0.005300000018905848,
+        "updateGlassDamage": 0.002999999967869371,
+        "allocatedBodies": 8330,
+        "debris": 3000,
+        "awake": 3438,
+        "bodies": 3474,
+        "broken": 2171,
+        "fractured": 591,
+        "rebars": 3180,
+        "groups": 0,
+        "saved": 0,
+        "shots": 105
+      }
+    }
+  ]
+}
