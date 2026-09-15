@@ -26,4 +26,12 @@ Sandbox → Bauwerke → Gebäude erkunden starts the Jolt walking character. Ne
 
 WASD moves, Shift runs, Space jumps, V switches shoulder/first-person views, and R restores the whole world while remaining in walking mode. Click the view for mouse look; Escape releases it. Touch devices have a movement stick, drag look, jump and world-reset buttons. Beenden returns to the free Sandbox camera and projectile controls.
 
-This is the exploration foundation for an interior bombardment survival mode. Health, hostile bombardment and survival scoring are future work.
+This is the exploration foundation for an interior bombardment survival mode. Health and survival scoring are future work.
+
+## Attacks, equipment and reinforced cores
+
+Naturkräfte now includes an autonomous attack car: it circles the building and fires while you walk inside or drive your own vehicle. It can be combined with other hazards and switched off. Meteorites strike from varied compass directions and slopes with 50% more mass.
+
+On foot, 1 selects the demolition hammer and 2 the shoulder ball cannon. F or captured left-click attacks; hold to repeat. Touch devices have an attack button. Short taps survive worker timing, and world reset does not replay old shots. In ordinary Sandbox view, WASD moves the free camera relative to its view.
+
+The catalog now includes a hollow reinforced concrete core with stronger connections and impact resistance. Large Art deco, Brutalist and Skybridge generators build continuous core stacks; reload or generate a new building to use them. Existing saved blueprints remain unchanged. Cores remain locally destructible.
