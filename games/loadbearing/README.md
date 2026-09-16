@@ -48,3 +48,7 @@ Held-fire regression checks follow simulation ticks rather than wall-clock delay
 Glass shatters when its surrounding frame fractures, loses its mounts, or deforms at the corners. Low-energy projectiles can break glass without breaking concrete. Sleeping frames skip transform checks, and shattering is bounded per update. Regression checks cover quiet startup of a 1,000-part building, rigid frame movement, distorted frames, falling panes and material-specific impacts.
 
 Gebäude erkunden now enters the existing running world without resetting damage, debris, hazards or the player vehicle. The vehicle parks when switching to walking. Opening world controls releases mouse capture; returning to Sandbox and entering walking again preserve the same physics worker. Desktop browser checks verify these transitions.
+
+## Art deco podium cores
+
+New Art deco buildings requested with more than 750 pieces have three reinforced core columns through their broad base. The two side columns rise continuously from the foundation to the first setback; the central core continues through the upper tower. Structural cores count toward the requested piece budget. Generate a new building to use the layout; existing saved blueprints are preserved. The same layout is available in the structural lab.
