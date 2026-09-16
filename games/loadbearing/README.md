@@ -52,3 +52,5 @@ Gebäude erkunden now enters the existing running world without resetting damage
 ## Art deco podium cores
 
 New Art deco buildings requested with more than 750 pieces have three reinforced core columns through their broad base. The two side columns rise continuously from the foundation to the first setback; the central core continues through the upper tower. Structural cores count toward the requested piece budget. Generate a new building to use the layout; existing saved blueprints are preserved. The same layout is available in the structural lab.
+
+Free Sandbox camera aiming now reaches approximately 87 degrees above the horizon, allowing high arcing ball shots. Orbiting upward keeps the camera above ground. Mouse/right-drag and touch orbit share the same limit; vehicle and walking aiming keep their existing controls.
