@@ -2,6 +2,9 @@
 // on static hosts such as GitHub Pages. No caches or user data are stored here.
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
+self.addEventListener('message', event => {
+  if (event.data?.type === 'loadbearing-claim') event.waitUntil(self.clients.claim());
+});
 self.addEventListener('fetch', event => {
   if (event.request.cache === 'only-if-cached' && event.request.mode !== 'same-origin') return;
   event.respondWith((async () => {
