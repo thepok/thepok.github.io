@@ -54,3 +54,9 @@ Gebäude erkunden now enters the existing running world without resetting damage
 New Art deco buildings requested with more than 750 pieces have three reinforced core columns through their broad base. The two side columns rise continuously from the foundation to the first setback; the central core continues through the upper tower. Structural cores count toward the requested piece budget. Generate a new building to use the layout; existing saved blueprints are preserved. The same layout is available in the structural lab.
 
 Free Sandbox camera aiming now reaches approximately 87 degrees above the horizon, allowing high arcing ball shots. Orbiting upward keeps the camera above ground. Mouse/right-drag and touch orbit share the same limit; vehicle and walking aiming keep their existing controls.
+
+## Concrete materials and large demolition balls
+
+Concrete strength and reinforcement are adjustable for new parts, selected parts or the whole building. New generated buildings use style-specific material profiles. Stronger concrete is darker; subtle stripes and steel dots indicate reinforcement. Existing saves retain their default properties unless edited. These material settings add no physics bodies.
+
+The Sandbox ball diameter selector now reaches 20 metres (10 metre physics radius). Mass remains separately adjustable. The development build also preserves Jolt's relative worker paths so multithread simulation starts correctly.
