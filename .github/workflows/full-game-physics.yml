@@ -1,0 +1,45 @@
+name: Full game physics optimization
+on:
+  push:
+    branches: [chatgpt-full-game-physics]
+    paths:
+      - tools/full-game-physics/**
+      - .github/workflows/full-game-physics.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: full-game-physics-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  profile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Extract exact stable game source, not the tower prototype
+        run: |
+          mkdir -p work/original evidence
+          unzip -q games/loadbearing/source.zip -d work/original
+          sha256sum games/loadbearing/source.zip > evidence/source-sha256.txt
+      - name: Install locked original dependencies
+        working-directory: work/original
+        run: npm ci
+      - name: Profile original full game and report native API
+        working-directory: work/original
+        run: node ../../tools/full-game-physics/profile.mjs
+      - name: Save profile and exact source for reproduction
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-game-profile
+          path: |
+            evidence/
+            work/original/src/
+            work/original/tests/
+            work/original/package*.json
+            work/original/node_modules/jolt-physics/
+          retention-days: 14
