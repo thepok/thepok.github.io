@@ -1,0 +1,34 @@
+import{chromium}from'@playwright/test';import assert from'node:assert/strict';import{mkdir,writeFile}from'node:fs/promises';
+await mkdir('artifacts/browser',{recursive:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--enable-unsafe-swiftshader','--disable-dev-shm-usage']});
+const requests=[],errors=[],report={};
+try{
+ const page=await browser.newPage({viewport:{width:1440,height:1000}});page.on('pageerror',e=>{errors.push(e.message);console.log('PAGE_ERROR',e.message);});page.context().on('request',r=>requests.push(r.url()));page.on('console',m=>{if(m.type()==='error')console.log('CONSOLE_ERROR',m.text());});
+ await page.addInitScript(()=>{localStorage.setItem('loadbearing-own.demo-seen','1');localStorage.setItem('loadbearing-own.last-mode',JSON.stringify({challengeId:'sandbox-demolition-yard'}));localStorage.setItem('loadbearing-own.fragment-limit','1000');});
+ await page.goto(process.env.TEST_URL||'http://127.0.0.1:5174/');await page.waitForFunction(()=>window.__loadBearing?.ready,{},{timeout:120000});
+ await page.evaluate(()=>{document.getElementById('workshop-mode').click();document.getElementById('sandbox-mode').click();document.getElementById('clear').click();document.getElementById('procedural-style').value='art-deco';document.getElementById('procedural-count-number').value='1000';const old=Date.now;Date.now=()=>0x51a7;try{document.getElementById('generate-building').click();}finally{Date.now=old;}__loadBearing.scene.onPick([0,0,0],null);__loadBearing.scene.fitStructure();document.getElementById('run').click();});
+ await page.waitForFunction(()=>__loadBearing.simulation?.elapsed>2,{},{timeout:180000});
+ const info=await page.evaluate(()=>({mode:__loadBearing.simulation.mode,threads:__loadBearing.simulation.threads,parts:__loadBearing.pieces.length,broken:__loadBearing.simulation.broken,fragments:__loadBearing.simulation.fragments,renderer:__loadBearing.scene.rendererBackend}));report.info=info;assert.equal(info.mode,'own-wasm');assert.equal(info.threads,0);assert.equal(info.parts,1000);assert.equal(info.fragments,0);assert.equal(info.broken,0);
+ await page.screenshot({path:'artifacts/browser/own-full-game-before.png'});
+ // Full original walking system, preserving the same physics worker.
+ await page.evaluate(()=>{window.beforeWorker=__loadBearing.simulation.worker;document.querySelector('[data-sandbox-tab=buildings]').click();document.getElementById('walk-mode').click();});
+ await page.waitForFunction(()=>__loadBearing.walkerMode.active&&__loadBearing.simulation.walker,{},{timeout:30000});assert.equal(await page.evaluate(()=>__loadBearing.simulation.worker===window.beforeWorker),true);
+ const foot=await page.evaluate(()=>__loadBearing.simulation.walker.position);await page.evaluate(()=>__loadBearing.simulation.walkerInput({forward:1,right:0,yaw:0,run:false,jump:false,fire:false,weapon:'hammer',pitch:0}));let at=await page.evaluate(()=>__loadBearing.simulation.elapsed);await page.waitForFunction(t=>__loadBearing.simulation.elapsed>=t+1,at,{timeout:60000});
+ await page.evaluate(()=>{__loadBearing.simulation.walkerInput({forward:0,right:0,yaw:0,run:false,jump:false,fire:false});document.getElementById('leave-walk').click();});await page.waitForFunction(()=>!__loadBearing.walkerMode.active);
+ // Original workshop vehicle placement and real drive/motor constraints.
+ await page.evaluate(()=>{document.querySelector('[data-sandbox-tab=vehicles]').click();document.querySelector('[data-vehicle-preset=cannon-truck]').click();__loadBearing.scene.onPick([60,0,60],null);});
+ await page.waitForFunction(()=>__loadBearing.simulation.worldVehicles.length===1,{},{timeout:30000});
+ await page.evaluate(()=>{const s=__loadBearing.simulation;window.car=s.worldVehicles[0].id;s.setWorldVehicleMode(window.car,'drive');s.worldVehicleInput(window.car,{throttle:1,steer:.2,brake:0,yaw:0,pitch:0,fire:true});});at=await page.evaluate(()=>__loadBearing.simulation.elapsed);await page.waitForFunction(t=>__loadBearing.simulation.elapsed>=t+1.5,at,{timeout:60000});
+ await page.evaluate(()=>{const s=__loadBearing.simulation;s.worldVehicleInput(window.car,{throttle:0,steer:0,brake:1,yaw:0,pitch:0,fire:false});s.setWorldVehicleMode(window.car,'parked');});
+ await page.screenshot({path:'artifacts/browser/own-vehicle-and-walker.png'});report.walkerVehicle=true;
+ // Restart exercises native state restoration while retaining the original scene.
+ await page.evaluate(()=>__loadBearing.simulation.restart());await page.waitForFunction(()=>__loadBearing.simulation.elapsed>1,{},{timeout:120000});
+ const plan=await page.evaluate(()=>{const p=__loadBearing.pieces,x=p.map(p=>p.p[0]),y=p.map(p=>p.p[1]),z=p.map(p=>p.p[2]),a=Math.min(...x),b=Math.max(...x),c=Math.min(...z),d=Math.max(...z),h=Math.max(...y),cx=(a+b)/2,cz=(c+d)/2;return [{at:0,p:[a-20,5,cz],v:[70,0,0]},{at:2,p:[b+20,5,cz],v:[-70,0,0]},{at:4,p:[cx,5,c-20],v:[0,0,70]},{at:6,p:[cx,5,d+20],v:[0,0,-70]},{at:9,p:[cx,h+20,cz],v:[0,-80,0]}];});
+ const start=await page.evaluate(()=>__loadBearing.simulation.elapsed);
+ for(const shot of plan){await page.waitForFunction(t=>__loadBearing.simulation.elapsed>=t,start+shot.at,{timeout:180000});await page.evaluate(shot=>__loadBearing.simulation.launchProjectile(shot.p,shot.v,500000,5),shot);if(shot.at===6)await page.screenshot({path:'artifacts/browser/own-full-game-during.png'});}
+ await page.waitForFunction(t=>__loadBearing.simulation.elapsed>=t,start+25,{timeout:300000});
+ report.collapse=await page.evaluate(()=>{const s=__loadBearing.simulation,alive=s.items.filter(p=>p.id>0&&!p.fractured);return {broken:s.broken,fragments:s.fragments,physicsMs:s.physicsMs,rate:s.rate,meanHeight:alive.reduce((v,p)=>v+p.body.GetPosition().GetY(),0)/Math.max(1,alive.length),finite:s.items.every(p=>[p.body.GetPosition().GetX(),p.body.GetPosition().GetY(),p.body.GetPosition().GetZ()].every(Number.isFinite)),stableKeys:Object.keys(localStorage).filter(k=>k.startsWith('loadbearing.'))};});
+ assert.ok(report.collapse.finite);assert.ok(report.collapse.broken>1000);assert.ok(report.collapse.fragments>400);assert.ok(report.collapse.meanHeight<12,'The original building must actually collapse');assert.deepEqual(report.collapse.stableKeys,[]);
+ await page.evaluate(()=>__loadBearing.simulation.pause(true));await page.screenshot({path:'artifacts/browser/own-full-game-after.png'});await page.setViewportSize({width:390,height:844});await page.waitForTimeout(200);await page.screenshot({path:'artifacts/browser/own-mobile.png'});
+ assert.ok(requests.some(u=>/kernel-.*\.wasm/.test(u)));assert.ok(!requests.some(u=>/jolt|rapier|ammo|cannon-es/i.test(u)),'No third-party physics may load');assert.deepEqual(errors,[]);report.browser=browser.version();console.log('OWN_BROWSER_PASS '+JSON.stringify(report));
+}finally{await writeFile('artifacts/browser/verification.json',JSON.stringify({...report,errors,requests},null,2));await browser.close();}

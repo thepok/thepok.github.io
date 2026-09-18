@@ -1,0 +1,88 @@
+name: Validate original KINETIC physics in complete game
+on:
+  push:
+    branches: [chatgpt-own-physics]
+    paths:
+      - tools/kinetic-engine/**
+      - .github/workflows/kinetic-engine.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  full-game:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check independently tested source integrity
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          expected={'constraints.hpp':'1a01f161b5e4cd9ce563c8d031fc0f9ab3f3325afc12e2da0ed15593c7c02e7e','compatibility.mjs':'be8aa86fc1b6011dca1a8c743b0f70349c380bec3acb13529841191ce9038632','projection.hpp':'7a36eb0c9049cc20f0d20e58cdfda5b09938fc913725734cedd11eaec76a98d3','math.hpp':'da771f4a8f90cbec893ddb0424502cc5e55209fa49ab4a07d3ba884c4487842a','interface.hpp':'cb5def9bf43612a8746eb1ba85446f72639f079bc40fe222908798140d799527','bodies.hpp':'f1aaf998928d214956ee1d2ea1194485b412b5a780ad204bdd31bdc3998b66a5','collisions.hpp':'acdf0e3ac5cd7272c410c3d07e10084b12189e471d8b1b2f3b1117f4dd57ddd0'}
+          for name,digest in expected.items():
+              actual=hashlib.sha256((Path('tools/kinetic-engine/engine')/name).read_bytes()).hexdigest()
+              assert actual==digest,(name,actual,digest)
+          assert hashlib.sha256(Path('games/loadbearing/source.zip').read_bytes()).hexdigest()=='8840453a1426cd8d00ecf4a30892cfa4a896fdf7baf71d139fbb2d010e341a5e'
+          PY
+      - name: Compile our C++ kernel with no physics libraries
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y clang-18 lld-18
+          clang++-18 --version
+          clang++-18 --target=wasm32 -std=c++17 -O3 -msimd128 -mbulk-memory -ffreestanding -nostdlib -fno-exceptions -fno-rtti -Wl,--no-entry -Wl,--export-all -Wl,--export-memory -Wl,--initial-memory=134217728 -Wl,--max-memory=134217728 -Wl,-z,stack-size=2097152 tools/kinetic-engine/engine/kernel.cpp -o tools/kinetic-engine/engine/kernel.wasm
+      - name: Integrate into exact original game and remove Jolt completely
+        run: |
+          mkdir -p game
+          unzip -q games/loadbearing/source.zip -d game
+          python3 tools/kinetic-engine/integration/patch.py game tools/kinetic-engine/engine
+          cp tools/kinetic-engine/integration/audit.mjs game/tests/own-audit.mjs
+          cp tools/kinetic-engine/integration/browser.mjs game/tests/own-browser.mjs
+          cd game
+          npm ci
+          npm run build
+          node tests/own-audit.mjs
+      - name: Original physics regression gates with the own backend
+        working-directory: game
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/regressions
+          npm test | tee artifacts/regressions/physics.log
+          for name in glass-breakage concrete-materials-physics concrete-update local-fracture rebar-connections walker-physics walker-weapons world-vehicles world-pieces-edit projectile-compound-flight projectile-debris-budget snapshot-render-client vehicle-physics physics-body-capacity startup-settling art-deco-cores core-building slab-impact-regressions glass-projectile-pose; do
+            node --import ./tests/own-env.mjs tests/$name.mjs | tee artifacts/regressions/$name.log
+          done
+      - name: Real browser original GUI, walking, vehicles, reset and complete collapse
+        working-directory: game
+        run: |
+          npm run preview -- --port 5174 > /tmp/kinetic-preview.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID"' EXIT
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:5174/ > /dev/null; then break; fi
+            sleep 1
+          done
+          node tests/own-browser.mjs
+      - name: Preserve exact binaries, source and browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kinetic-full-game-validation
+          path: |
+            game/dist/
+            game/src/
+            game/tests/
+            game/public/
+            game/package*.json
+            game/tsconfig.json
+            game/vite.config.ts
+            game/index.html
+            game/artifacts/engine-audit.json
+            game/artifacts/regressions/
+            game/artifacts/browser/
+          retention-days: 14
