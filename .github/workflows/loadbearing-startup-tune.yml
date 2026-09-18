@@ -1,0 +1,56 @@
+name: Loadbearing startup tuning
+
+on:
+  push:
+    branches:
+      - chatgpt-unpack-loadbearing
+    paths:
+      - .github/workflows/loadbearing-startup-tune.yml
+
+permissions:
+  contents: read
+
+jobs:
+  tune:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: games/loadbearing/source-unpacked/package-lock.json
+      - name: Install dependencies
+        working-directory: games/loadbearing/source-unpacked
+        run: npm ci
+      - name: Compare startup solver caps
+        working-directory: games/loadbearing/source-unpacked
+        run: |
+          cat > startup-tune.mjs <<'EOF'
+          import {readFile,writeFile,mkdir} from 'node:fs/promises';
+          import {performance} from 'node:perf_hooks';
+          import {build} from 'esbuild';
+          import {pathToFileURL} from 'node:url';
+          import {resolve} from 'node:path';
+          import initJolt from 'jolt-physics';
+          await mkdir('artifacts',{recursive:true});
+          const source=await readFile('src/physics.ts','utf8');
+          const J=await initJolt();
+          for(const [velocityCap,positionCap] of [[32,8],[20,5],[16,4],[12,3]]){
+            let variant=source
+              .replace('Math.max(32,velocitySteps)',`Math.max(${velocityCap},velocitySteps)`)
+              .replace('Math.max(8,positionSteps)',`Math.max(${positionCap},positionSteps)`);
+            await writeFile('src/physics-startup-variant.ts',variant);
+            const out=`artifacts/startup-${velocityCap}-${positionCap}.mjs`;
+            await build({stdin:{contents:"export {Simulation} from './src/physics-startup-variant.ts';export {generateDemolitionBuilding} from './src/procedural-buildings.ts';",resolveDir:process.cwd()},bundle:true,platform:'node',format:'esm',external:['jolt-physics'],outfile:out});
+            const {Simulation,generateDemolitionBuilding}=await import(pathToFileURL(resolve(out)).href+'?'+Date.now());
+            const pieces=generateDemolitionBuilding(1000,0x51a7,'brutalist').pieces;
+            const at=performance.now(),sim=new Simulation(J,structuredClone(pieces),'sandbox',1,{sandbox:true,fragmentLimit:156},0);
+            const initMs=performance.now()-at,settle=await sim.settleStartup(),status=sim.buildingStatus();
+            let maxDrift=0;
+            for(const item of sim.items)if(item.id>0&&!item.fractured){const p=item.body.GetPosition();maxDrift=Math.max(maxDrift,Math.hypot(p.GetX()-item.initial[0],p.GetY()-item.initial[1],p.GetZ()-item.initial[2]));}
+            console.log('STARTUP '+JSON.stringify({velocityCap,positionCap,initMs:+initMs.toFixed(2),...settle,milliseconds:+settle.milliseconds.toFixed(2),maxSpeed:+settle.maxSpeed.toFixed(5),passed:status.passed,completedFloors:status.completedFloors,broken:sim.broken,fragments:sim.fragments,maxDrift:+maxDrift.toFixed(5),bodies:sim.bodyList.length,joints:sim.joints.length}));
+            sim.dispose();
+          }
+          EOF
+          node startup-tune.mjs
