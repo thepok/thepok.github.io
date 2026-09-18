@@ -22,7 +22,7 @@ static void solveJoint(Joint&j,float dt){if(!j.active||j.active==2)return;Body&A
   float alpha=j.angularInv[0];impulse=(impulse-j.impulse*alpha)/(1+alpha);angular=(angular-j.angularImpulse*alpha)/(1+alpha);
   j.impulse+=impulse;j.angularImpulse+=angular;applyImpulse(A,-impulse,j.ra);applyImpulse(B,impulse,j.rb);applyAngular(A,-angular);applyAngular(B,angular);return;
  }
- V rv=pointV(B,j.rb)-pointV(A,j.ra);if(j.kind==2){if(!j.limited)return;float old=j.distanceImpulse,delta=-(dot(rv,j.n)+dot(j.bias,j.n))*j.distanceMass;j.distanceImpulse=j.limited>0?minf(0,old+delta):maxf(0,old+delta);V imp=j.n*(j.distanceImpulse-old);applyImpulse(A,-imp,j.ra);applyImpulse(B,impulse,j.rb);return;}
+ V rv=pointV(B,j.rb)-pointV(A,j.ra);if(j.kind==2){if(!j.limited)return;float old=j.distanceImpulse,delta=-(dot(rv,j.n)+dot(j.bias,j.n))*j.distanceMass;j.distanceImpulse=j.limited>0?minf(0,old+delta):maxf(0,old+delta);V imp=j.n*(j.distanceImpulse-old);applyImpulse(A,-imp,j.ra);applyImpulse(B,imp,j.rb);return;}
  V impulse=mv(j.linearMass,-rv-j.bias);j.impulse+=impulse;applyImpulse(A,-impulse,j.ra);applyImpulse(B,impulse,j.rb);
  if(j.kind==1)return;V wr=B.w-A.w,angular;
  if(j.kind==3){V target=-wr-j.angularBias;target-=j.n*dot(target,j.n);angular=mv(j.angularMass,target);angular-=j.n*dot(angular,j.n);j.angularImpulse+=angular;applyAngular(A,-angular);applyAngular(B,angular);if(j.motorState){float den=dot(j.n,mv(A.invI+B.invI,j.n));float d=den>1e-12f?(j.motorTarget-dot(B.w-A.w,j.n))/den:0,old=j.motorImpulse;j.motorImpulse=clampf(old+d,j.motorMin*dt,j.motorMax*dt);V t=j.n*(j.motorImpulse-old);applyAngular(A,-t);applyAngular(B,t);}return;}
