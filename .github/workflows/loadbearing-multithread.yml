@@ -33,6 +33,7 @@ jobs:
           import {resolve} from 'node:path';
           await build({stdin:{contents:"export {Simulation} from './src/physics.ts';export {generateDemolitionBuilding} from './src/procedural-buildings.ts';",resolveDir:process.cwd()},bundle:true,platform:'node',format:'esm',external:['jolt-physics','jolt-physics/wasm-compat-multithread'],outfile:'artifacts/multithread-bench.mjs'});
           const {Simulation,generateDemolitionBuilding}=await import(pathToFileURL(resolve('artifacts/multithread-bench.mjs')).href+'?'+Date.now());
+          const hold=setInterval(()=>{},1000);
           const init=(await import('jolt-physics/wasm-compat-multithread')).default;
           const J=await init(),pieces=generateDemolitionBuilding(1000,0x51a7,'brutalist').pieces;
           const pct=(a,p)=>[...a].sort((x,y)=>x-y)[Math.floor((a.length-1)*p)];
@@ -46,6 +47,7 @@ jobs:
             console.log('MT '+JSON.stringify({threads,velocity,position,meanMs:+mean.toFixed(3),medianMs:+pct(samples,.5).toFixed(3),p95Ms:+pct(samples,.95).toFixed(3),broken:sim.broken,fragments:sim.fragments,passed:status.passed,peakStress:+sim.peakStress.toFixed(4)}));
             sim.dispose();
           }
+          clearInterval(hold);
           process.exit(0);
           EOF
           node multithread-bench.mjs
