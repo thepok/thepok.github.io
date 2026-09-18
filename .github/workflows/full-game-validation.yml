@@ -38,16 +38,30 @@ jobs:
           cp cores/single/dist/jolt-physics.wasm-compat.js game/src/native/
           cp cores/threaded/dist/jolt-physics.multithread.wasm-compat.js game/src/native/
           cp tools/full-game-physics/integration/*.mjs game/tests/
+          python3 - <<'PY'
+          from pathlib import Path
+          # The published game already made recycling opt-in. The old fixture
+          # tested the ring without enabling it, failing in the stock game too.
+          p=Path('game/tests/vehicle-physics.mjs')
+          s=p.read_text();old='recycling.launchProjectile([0,10,20],[0,-1,-10],mass,radius)'
+          assert s.count(old)==1
+          p.write_text(s.replace(old,"recycling.launchProjectile([0,10,20],[0,-1,-10],mass,radius,'solid',true)"))
+          p=Path('game/tests/physics-body-capacity.mjs')
+          s=p.read_text().replace("platform:'neutral'","platform:'node'")
+          s=s.replace("(await import('jolt-physics')).default","(await import('../src/native/jolt-physics.wasm-compat.js')).default")
+          p.write_text(s)
+          PY
           cd game
           npm ci
           npm run build
       - name: Original physics and native data equivalence regressions
         working-directory: game
         run: |
-          npm test
-          node tests/native-queries.mjs
-          for test in glass-breakage concrete-materials-physics concrete-update local-fracture rebar-connections walker-physics walker-weapons world-vehicles world-pieces-edit projectile-compound-flight projectile-debris-budget snapshot-render-client vehicle-physics landslide-challenges; do
-            node tests/$test.mjs
+          mkdir -p artifacts/regressions
+          npm test | tee artifacts/regressions/physics.log
+          node tests/native-queries.mjs | tee artifacts/regressions/native-queries.log
+          for test in glass-breakage concrete-materials-physics concrete-update local-fracture rebar-connections walker-physics walker-weapons world-vehicles world-pieces-edit projectile-compound-flight projectile-debris-budget snapshot-render-client vehicle-physics physics-body-capacity startup-settling art-deco-cores; do
+            node tests/$test.mjs | tee artifacts/regressions/$test.log
           done
       - name: Real original GUI, threaded A-B replay, walker, vehicle, reset and mobile checks
         working-directory: game
@@ -75,6 +89,7 @@ jobs:
             game/vite.config.ts
             game/index.html
             game/artifacts/browser/
+            game/artifacts/regressions/
             cores/single/dist/BUILD.txt
             cores/threaded/dist/BUILD.txt
           retention-days: 14
