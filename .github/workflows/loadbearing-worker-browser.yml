@@ -1,0 +1,41 @@
+name: Loadbearing worker browser check
+
+on:
+  push:
+    branches:
+      - chatgpt-unpack-loadbearing
+    paths:
+      - .github/workflows/loadbearing-worker-browser.yml
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: games/loadbearing/source-unpacked
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: games/loadbearing/source-unpacked/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Run worker backpressure regression
+        run: |
+          mkdir -p artifacts
+          cp tests/worker-backpressure.mjs artifacts/worker-backpressure-ci.mjs
+          sed -i "s/{channel:'chrome',headless:true}/{headless:true}/" artifacts/worker-backpressure-ci.mjs
+          sed -i "s/await p.click('#workshop-mode')/await p.locator('#workshop-mode').click({force:true})/; s/await p.click('#sandbox-mode')/await p.locator('#sandbox-mode').click({force:true})/; s/await p.click('#load-showcase')/await p.locator('#load-showcase').click({force:true})/; s/await p.click('#vehicle-mode')/await p.locator('#vehicle-mode').click({force:true})/; s/await p.click('#vehicle-drive')/await p.locator('#vehicle-drive').click({force:true})/; s/await p.click('#restart')/await p.locator('#restart').click({force:true})/" artifacts/worker-backpressure-ci.mjs
+          npm run dev -- --port 5174 > /tmp/loadbearing-vite.log 2>&1 &
+          server=$!
+          trap 'kill $server || true' EXIT
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:5174 >/dev/null; then break; fi
+            sleep 1
+          done
+          TEST_URL=http://127.0.0.1:5174 node artifacts/worker-backpressure-ci.mjs
