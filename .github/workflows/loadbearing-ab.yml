@@ -1,0 +1,56 @@
+name: Loadbearing A-B benchmark
+
+on:
+  push:
+    branches:
+      - chatgpt-unpack-loadbearing
+    paths:
+      - .github/workflows/loadbearing-ab.yml
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: games/loadbearing/source-unpacked/package-lock.json
+      - name: Install dependencies
+        working-directory: games/loadbearing/source-unpacked
+        run: npm ci
+      - name: Write comparison runner
+        run: |
+          cat > games/loadbearing/source-unpacked/compare-runner.mjs <<'EOF'
+          import {performance} from 'node:perf_hooks';
+          import {pathToFileURL} from 'node:url';
+          import {resolve} from 'node:path';
+          import {build} from 'esbuild';
+          const label=process.argv[2];
+          await build({stdin:{contents:"export {Simulation,loadPhysics} from './src/physics.ts';export {generateDemolitionBuilding} from './src/procedural-buildings.ts';",resolveDir:process.cwd()},bundle:true,platform:'node',format:'esm',external:['jolt-physics'],outfile:'artifacts/ab-physics.mjs'});
+          const {Simulation,loadPhysics,generateDemolitionBuilding}=await import(pathToFileURL(resolve('artifacts/ab-physics.mjs')).href+'?'+Date.now());
+          const J=await loadPhysics(),pieces=generateDemolitionBuilding(1000,0x51a7,'brutalist').pieces;
+          const sim=new Simulation(J,pieces,'sandbox',1,{sandbox:true,fragmentLimit:156},0);
+          const stat=(mode,samples)=>{const a=[...samples].sort((x,y)=>x-y),mean=samples.reduce((x,y)=>x+y,0)/samples.length,p95=a[Math.floor((a.length-1)*.95)];console.log('COMPARE '+JSON.stringify({label,mode,meanMs:+mean.toFixed(3),medianMs:+a[Math.floor((a.length-1)*.5)].toFixed(3),p95Ms:+p95.toFixed(3),lastPhysicsMs:+sim.physicsMs.toFixed(3),bodies:sim.bodyList.length,joints:sim.joints.length,rebars:sim.rebars.length}))};
+          for(let i=0;i<120;i++)sim.step(1/60);
+          let samples=[];for(let i=0;i<180;i++){const t=performance.now();sim.step(1/60);samples.push(performance.now()-t)}stat('quiet',samples);
+          sim.setSandboxHazard('wind',true);for(let i=0;i<60;i++)sim.step(1/60);
+          samples=[];for(let i=0;i<180;i++){const t=performance.now();sim.step(1/60);samples.push(performance.now()-t)}stat('wind',samples);
+          sim.dispose();
+          EOF
+      - name: Baseline
+        run: |
+          git checkout 8bc87031b91afe6bfb2cd87a6eafeaee3a1de0ea -- games/loadbearing/source-unpacked
+          cd games/loadbearing/source-unpacked
+          node compare-runner.mjs baseline
+      - name: Optimized
+        run: |
+          git checkout 54703a49a51f0469375a001d608ae02840320441 -- games/loadbearing/source-unpacked
+          cd games/loadbearing/source-unpacked
+          node compare-runner.mjs optimized
