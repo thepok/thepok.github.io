@@ -34,7 +34,7 @@ jobs:
           import initJolt from 'jolt-physics';
           await mkdir('artifacts',{recursive:true});
           const original=await readFile('src/physics.ts','utf8'),J=await initJolt();
-          for(const [velocityCap,positionCap] of [[32,8],[12,3]]){
+          for(const [velocityCap,positionCap] of [[32,8],[20,5],[16,4],[12,3]]){
             const source=original.replace('Math.max(32,velocitySteps)',`Math.max(${velocityCap},velocitySteps)`).replace('Math.max(8,positionSteps)',`Math.max(${positionCap},positionSteps)`);
             await writeFile('src/physics-refinery.ts',source);
             const out=`artifacts/refinery-${velocityCap}.mjs`;
