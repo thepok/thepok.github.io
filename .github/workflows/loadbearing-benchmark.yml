@@ -1,0 +1,30 @@
+name: Loadbearing benchmark
+
+on:
+  push:
+    branches:
+      - chatgpt-unpack-loadbearing
+    paths:
+      - games/loadbearing/source-unpacked/**
+      - .github/workflows/loadbearing-benchmark.yml
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: games/loadbearing/source-unpacked
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: games/loadbearing/source-unpacked/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - run: node tests/physics-performance.mjs
