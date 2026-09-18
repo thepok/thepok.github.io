@@ -1,0 +1,33 @@
+name: Loadbearing local benchmark kit
+
+on:
+  push:
+    branches:
+      - chatgpt-physics-bombardment-bench
+    paths:
+      - .github/workflows/loadbearing-local-kit.yml
+
+permissions:
+  contents: read
+
+jobs:
+  kit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: games/loadbearing/source-unpacked/package-lock.json
+      - name: Install benchmark dependencies
+        working-directory: games/loadbearing/source-unpacked
+        run: npm ci
+      - name: Pack local benchmark kit
+        run: tar -czf /tmp/loadbearing-local-kit.tar.gz -C games/loadbearing source-unpacked
+      - uses: actions/upload-artifact@v4
+        with:
+          name: loadbearing-local-kit
+          path: /tmp/loadbearing-local-kit.tar.gz
+          compression-level: 0
+          retention-days: 1
