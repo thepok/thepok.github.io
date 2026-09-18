@@ -1,0 +1,85 @@
+name: Publish verified own-physics full game
+on:
+  push:
+    branches: [chatgpt-own-physics]
+    paths:
+      - tools/kinetic-publication/**
+      - .github/workflows/kinetic-publish.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: write
+      actions: read
+    env:
+      VALIDATED_RUN: 35391219718
+      VALIDATED_SHA: 68ee24badf3eeb770051c8388faa69996ab66867
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Require the pinned complete-game check to pass before any publication
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run watch "$VALIDATED_RUN" --repo thepok/thepok.github.io --exit-status
+          test "$(gh api repos/thepok/thepok.github.io/actions/runs/$VALIDATED_RUN --jq '.conclusion')" = success
+          test "$(gh api repos/thepok/thepok.github.io/actions/runs/$VALIDATED_RUN --jq '.head_sha')" = "$VALIDATED_SHA"
+      - uses: actions/download-artifact@v4
+        with:
+          name: kinetic-full-game-validation
+          run-id: 35391219718
+          github-token: ${{ github.token }}
+          path: validated
+      - name: Package only tested original-game bytes, evidence and own engine source
+        run: python3 tools/kinetic-publication/prepare.py
+      - name: Publish isolated games/loadbearing-own directory, preserving every other game
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin main
+          git switch -C main origin/main
+          mkdir -p games/loadbearing-own
+          cp -a /tmp/loadbearing-own/. games/loadbearing-own/
+          git add games/loadbearing-own
+          if git diff --cached --quiet; then echo 'Already published'; else
+            test -z "$(git diff --cached --name-only | grep -v '^games/loadbearing-own/' || true)"
+            git commit -m 'preview: publish original KINETIC physics in the complete LOAD BEARING game'
+            git push origin main
+          fi
+      - name: Verify exact tested bytes on public GitHub Pages
+        run: |
+          ready=0
+          for i in $(seq 1 60); do
+            ready=1
+            for file in index.html BUILD.json; do
+              if ! curl -fsS --max-time 15 "https://thepok.github.io/games/loadbearing-own/$file?verified=$VALIDATED_SHA" -o /tmp/live-own-file || ! cmp -s /tmp/live-own-file "/tmp/loadbearing-own/$file"; then ready=0; break; fi
+            done
+            if [ "$ready" = 1 ]; then break; fi
+            sleep 5
+          done
+          test "$ready" = 1
+      - name: Repeat original GUI, walking, vehicles and full-collapse check on public HTTPS
+        working-directory: validated
+        run: |
+          npm ci
+          mv artifacts/browser artifacts/browser-local
+          TEST_URL=https://thepok.github.io/games/loadbearing-own/ node tests/own-browser.mjs
+      - name: Public deployment evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kinetic-public-verification
+          path: validated/artifacts/browser/
+          retention-days: 14
