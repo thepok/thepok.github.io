@@ -89,7 +89,7 @@ export class Simulation {
   settings.mObjectVsBroadPhaseLayerFilter=new J.ObjectVsBroadPhaseLayerFilterTable(broad,2,pair,2);
   this.world=new J.JoltInterface(settings); J.destroy(settings); J.destroy(b0); J.destroy(b1);
   this.system=this.world.GetPhysicsSystem(); this.bodies=this.system.GetBodyInterface();
-  const ps=this.system.GetPhysicsSettings(),large=pieces.length>=800,medium=pieces.length>=400;ps.mNumVelocitySteps=large?12:medium?16:48;ps.mNumPositionSteps=large?3:medium?4:12;this.system.SetPhysicsSettings(ps);
+  const ps=this.system.GetPhysicsSettings(),large=pieces.length>=800,medium=pieces.length>=400;ps.mNumVelocitySteps=large?8:medium?16:48;ps.mNumPositionSteps=large?2:medium?4:12;this.system.SetPhysicsSettings(ps);
   this.filter=new J.GroupFilterTable(8192); this.filter.AddRef();
   const disable=this.filter.DisableCollision.bind(this.filter),enable=this.filter.EnableCollision.bind(this.filter);
   this.filter.DisableCollision=(a:number,b:number)=>{if(a>=8192||b>=8192)throw new Error('Collision group capacity exceeded');disable(a,b);for(const [x,y] of [[a,b],[b,a]]){const peers=this.collisionPeers.get(x)??new Set<number>();peers.add(y);this.collisionPeers.set(x,peers);}};
