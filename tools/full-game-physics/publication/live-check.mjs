@@ -1,0 +1,19 @@
+import {chromium} from '@playwright/test';import assert from 'node:assert/strict';import {mkdir,writeFile} from 'node:fs/promises';
+await mkdir('artifacts/live',{recursive:true});const browser=await chromium.launch({channel:'chrome',headless:true,args:['--enable-unsafe-swiftshader','--disable-dev-shm-usage']});const errors=[];let evidence={};
+try{
+ const page=await browser.newPage({viewport:{width:1440,height:1000}});page.on('pageerror',e=>errors.push(e.message));
+ await page.addInitScript(()=>{localStorage.setItem('loadbearing-fullfast.demo-seen','1');localStorage.setItem('loadbearing-fullfast.last-mode',JSON.stringify({challengeId:'sandbox-demolition-yard'}));localStorage.setItem('loadbearing-fullfast.fragment-limit','1000');});
+ const url='https://thepok.github.io/games/loadbearing-fast/';await page.goto(url);await page.waitForFunction(()=>window.__loadBearing?.ready,{},{timeout:120000});
+ await page.evaluate(()=>{document.getElementById('workshop-mode').click();document.getElementById('sandbox-mode').click();document.getElementById('clear').click();document.getElementById('procedural-style').value='art-deco';document.getElementById('procedural-count-number').value='1000';const now=Date.now;Date.now=()=>0x51a7;try{document.getElementById('generate-building').click();}finally{Date.now=now;}__loadBearing.scene.onPick([0,0,0],null);__loadBearing.scene.fitStructure();document.getElementById('run').click();});
+ await page.waitForFunction(()=>__loadBearing.simulation?.elapsed>.2,{},{timeout:120000});
+ const info=await page.evaluate(()=>({core:__loadBearing.simulation.core,mode:__loadBearing.simulation.mode,threads:__loadBearing.simulation.threads,isolation:crossOriginIsolated,parts:__loadBearing.pieces.length}));assert.equal(info.core,'specialized-native');assert.equal(info.mode,'multithread');assert.equal(info.parts,1000);assert.equal(info.isolation,true);
+ await page.screenshot({path:'artifacts/live/before.png'});
+ const plan=await page.evaluate(()=>{const p=__loadBearing.pieces,x=p.map(p=>p.p[0]),y=p.map(p=>p.p[1]),z=p.map(p=>p.p[2]),a=Math.min(...x),b=Math.max(...x),c=Math.min(...z),d=Math.max(...z),h=Math.max(...y),cx=(a+b)/2,cz=(c+d)/2;return [{at:0,p:[a-20,5,cz],v:[70,0,0]},{at:2,p:[b+20,5,cz],v:[-70,0,0]},{at:4,p:[cx,5,c-20],v:[0,0,70]},{at:6,p:[cx,5,d+20],v:[0,0,-70]},{at:9,p:[cx,h+20,cz],v:[0,-80,0]}];});
+ const started=await page.evaluate(()=>__loadBearing.simulation.elapsed);
+ for(const shot of plan){await page.waitForFunction(t=>__loadBearing.simulation.elapsed>=t,started+shot.at,{timeout:120000});await page.evaluate(shot=>__loadBearing.simulation.launchProjectile(shot.p,shot.v,500000,5),shot);}
+ await page.waitForFunction(t=>__loadBearing.simulation.elapsed>=t,started+20,{timeout:180000});
+ const result=await page.evaluate(()=>{const s=__loadBearing.simulation,parts=s.items.filter(p=>p.id>0&&!p.fractured);return {broken:s.broken,fragments:s.fragments,meanHeight:parts.reduce((a,p)=>a+p.body.GetPosition().GetY(),0)/parts.length,finite:s.items.every(p=>[p.body.GetPosition().GetX(),p.body.GetPosition().GetY(),p.body.GetPosition().GetZ()].every(Number.isFinite)),stableKeys:Object.keys(localStorage).filter(k=>k.startsWith('loadbearing.'))};});
+ assert(result.finite);assert(result.broken>1500);assert(result.fragments>500);assert(result.meanHeight<10,'The complete building must actually collapse, not only lose a few windows');assert.deepEqual(result.stableKeys,[]);
+ await page.evaluate(()=>__loadBearing.simulation.pause(true));await page.screenshot({path:'artifacts/live/collapse.png'});await page.setViewportSize({width:390,height:844});await page.screenshot({path:'artifacts/live/mobile.png'});
+ evidence={url,info,result,browser:browser.version(),errors};assert.deepEqual(errors,[]);console.log('PUBLIC_GAME_PASS '+JSON.stringify(evidence));
+}finally{await writeFile('artifacts/live/verification.json',JSON.stringify({...evidence,errors},null,2));await browser.close();}

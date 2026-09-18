@@ -1,0 +1,89 @@
+name: Publish verified complete game preview
+on:
+  push:
+    branches: [chatgpt-full-game-physics]
+    paths:
+      - tools/full-game-physics/publication/**
+      - .github/workflows/full-game-publish.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      actions: read
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Require successful pinned full-game verification
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(gh api repos/thepok/thepok.github.io/actions/runs/35369938820 --jq '.conclusion')" = success
+          test "$(gh api repos/thepok/thepok.github.io/actions/runs/35369938820 --jq '.head_sha')" = cc01e982faeb6a87edc134538429e05bcd474300
+      - uses: actions/download-artifact@v4
+        with:
+          name: complete-game-validation
+          run-id: 35369938820
+          github-token: ${{ github.token }}
+          path: validated
+      - name: Re-run strict regression gates against the tested artifact
+        working-directory: validated/game
+        run: |
+          npm ci
+          npm test
+          node tests/native-queries.mjs
+          for name in glass-breakage concrete-materials-physics concrete-update local-fracture rebar-connections walker-physics walker-weapons world-vehicles world-pieces-edit projectile-compound-flight projectile-debris-budget snapshot-render-client vehicle-physics physics-body-capacity startup-settling art-deco-cores; do
+            node tests/$name.mjs
+          done
+      - name: Package exact tested bytes, source and evidence
+        run: |
+          python3 tools/full-game-physics/publication/prepare.py
+          cp tools/full-game-physics/publication/live-check.mjs validated/game/tests/live-check.mjs
+      - name: Publish only games/loadbearing-fast, preserving original game
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin main
+          git switch -C main origin/main
+          mkdir -p games/loadbearing-fast
+          cp -a /tmp/loadbearing-fast/. games/loadbearing-fast/
+          git add games/loadbearing-fast
+          if git diff --cached --quiet; then echo 'Already published'; else
+            test -z "$(git diff --cached --name-only | grep -v '^games/loadbearing-fast/' || true)"
+            git commit -m 'preview: publish complete LOAD BEARING with compatible native physics optimization'
+            git push origin main
+          fi
+      - name: Wait for exact tested files on public GitHub Pages
+        run: |
+          ready=0
+          for i in $(seq 1 60); do
+            ready=1
+            for file in index.html BUILD.json; do
+              if ! curl -fsS --max-time 15 "https://thepok.github.io/games/loadbearing-fast/$file?verified=cc01e982" -o /tmp/live-game-file || ! cmp -s /tmp/live-game-file "/tmp/loadbearing-fast/$file"; then ready=0; break; fi
+            done
+            if [ "$ready" = 1 ]; then break; fi
+            sleep 5
+          done
+          test "$ready" = 1
+      - name: Verify actual public HTTPS game, threads, GUI and full collapse
+        working-directory: validated/game
+        run: node tests/live-check.mjs
+      - name: Keep public verification screenshots and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: complete-game-public-verification
+          path: validated/game/artifacts/live/
+          retention-days: 14
