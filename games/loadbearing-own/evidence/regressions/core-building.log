@@ -1,0 +1,7 @@
+walker climbed art-deco 4.070130348205566
+core startup art-deco { pieces: 1000, cores: 29, stairs: 15, broken: 1 }
+walker climbed brutalist 4.076967239379883
+core startup brutalist { pieces: 1000, cores: 14, stairs: 14, broken: 2 }
+walker climbed skybridge 4.069568634033203
+core startup skybridge { pieces: 1000, cores: 24, stairs: 20, broken: 1 }
+PASS reinforced hollow cores preserve stair access and startup stability

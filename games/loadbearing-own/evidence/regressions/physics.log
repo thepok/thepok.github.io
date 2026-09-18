@@ -1,0 +1,15 @@
+
+> load-bearing@0.1.0 test
+> node --import ./tests/own-env.mjs tests/physics.mjs
+
+PASS: Reference bridge carries the full truck across on motorized wheels
+PASS: Removing the trusses makes the same deck fail under real gravity
+PASS: A physical retaining wall protects the house; the same rockfall hits an unprotected house
+PASS: earthquake applies physical loads for the full challenge
+PASS: wind applies physical loads for the full challenge
+PASS: flood applies physical loads for the full challenge
+PASS: All six occupancy waves add 50.4 tonnes and remain supported
+PASS: An empty frame cannot pass the occupancy objective without floors
+PASS: A launched object collides with a wall, and sandbox does not auto-finish
+PASS: Blueprint validation rejects invalid parts and nonfinite positions
+All physical and blueprint checks passed.

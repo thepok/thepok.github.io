@@ -1,0 +1,52 @@
+{
+  "info": {
+    "mode": "own-wasm",
+    "threads": 0,
+    "parts": 1000,
+    "broken": 0,
+    "fragments": 0,
+    "renderer": "webgl"
+  },
+  "walkerVehicle": true,
+  "collapse": {
+    "broken": 2361,
+    "fragments": 1000,
+    "physicsMs": 56.13500000000931,
+    "rate": 0.29906397275643043,
+    "meanHeight": 1.4446892308050328,
+    "finite": true,
+    "stableKeys": []
+  },
+  "browser": "152.0.7977.82",
+  "errors": [],
+  "requests": [
+    "http://127.0.0.1:5174/",
+    "http://127.0.0.1:5174/assets/index-B4T2GO4S.js?v=mu7epq3f",
+    "http://127.0.0.1:5174/favicon.svg?v=mu7epq3f",
+    "http://127.0.0.1:5174/isolation-sw.js?v=mu7epq3f",
+    "http://127.0.0.1:5174/assets/main-CA0A7WWg.js",
+    "http://127.0.0.1:5174/assets/three-C4T8_r6N.js",
+    "http://127.0.0.1:5174/assets/main-Cz2toHNP.css",
+    "https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap",
+    "http://127.0.0.1:5174/assets/index-B4T2GO4S.js",
+    "http://127.0.0.1:5174/assets/index-B4T2GO4S.js",
+    "https://fonts.gstatic.com/s/barlow/v13/7cHpv4kjgoGqM7E_DMs5.woff2",
+    "https://fonts.gstatic.com/s/barlow/v13/7cHqv4kjgoGqM7E30-8s51os.woff2",
+    "https://fonts.gstatic.com/s/barlowcondensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B4-Lwz3bWuQ.woff2",
+    "https://fonts.gstatic.com/s/barlow/v13/7cHqv4kjgoGqM7E3_-gs51os.woff2",
+    "https://fonts.gstatic.com/s/barlowcondensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B4873z3bWuQ.woff2",
+    "https://fonts.gstatic.com/s/barlow/v13/7cHpv4kjgoGqM7E_DMs5.woff2",
+    "https://fonts.gstatic.com/s/barlow/v13/7cHqv4kjgoGqM7E30-8s51os.woff2",
+    "https://fonts.gstatic.com/s/barlowcondensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B4-Lwz3bWuQ.woff2",
+    "https://fonts.gstatic.com/s/barlow/v13/7cHqv4kjgoGqM7E3_-gs51os.woff2",
+    "https://fonts.gstatic.com/s/barlowcondensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B4873z3bWuQ.woff2",
+    "http://127.0.0.1:5174/assets/physics-worker-Dm-9sboh.js",
+    "http://127.0.0.1:5174/assets/physics-worker-Dm-9sboh.js",
+    "http://127.0.0.1:5174/assets/compatibility-BGLR2fLA.js",
+    "http://127.0.0.1:5174/assets/compatibility-BGLR2fLA.js",
+    "http://127.0.0.1:5174/assets/kernel-Cn_gBlSC.wasm",
+    "http://127.0.0.1:5174/assets/kernel-Cn_gBlSC.wasm",
+    "https://fonts.gstatic.com/s/barlow/v13/7cHqv4kjgoGqM7E3t-4s51os.woff2",
+    "https://fonts.gstatic.com/s/barlow/v13/7cHqv4kjgoGqM7E3t-4s51os.woff2"
+  ]
+}

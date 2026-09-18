@@ -1,0 +1,2 @@
+gravity audit [ 5, 5.013250350952148, 1 ] [ 0, -9.8099946975708, 0 ] false
+walker physics: grounded walk, stair ascent, wall blocking, and jump passed

@@ -1,0 +1,1 @@
+PASS repeated destruction without historic body growth { cycles: 220, slots: 1021, items: 804, fragments: 280, threads: 0 }
