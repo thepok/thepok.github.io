@@ -1,0 +1,51 @@
+name: Loadbearing multithread benchmark
+
+on:
+  push:
+    branches:
+      - chatgpt-unpack-loadbearing
+    paths:
+      - .github/workflows/loadbearing-multithread.yml
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: games/loadbearing/source-unpacked/package-lock.json
+      - name: Install dependencies
+        working-directory: games/loadbearing/source-unpacked
+        run: npm ci
+      - name: Compare solver settings with Jolt multithread
+        working-directory: games/loadbearing/source-unpacked
+        run: |
+          cat > multithread-bench.mjs <<'EOF'
+          import {performance} from 'node:perf_hooks';
+          import {build} from 'esbuild';
+          import {pathToFileURL} from 'node:url';
+          import {resolve} from 'node:path';
+          await build({stdin:{contents:"export {Simulation} from './src/physics.ts';export {generateDemolitionBuilding} from './src/procedural-buildings.ts';",resolveDir:process.cwd()},bundle:true,platform:'node',format:'esm',external:['jolt-physics','jolt-physics/wasm-compat-multithread'],outfile:'artifacts/multithread-bench.mjs'});
+          const {Simulation,generateDemolitionBuilding}=await import(pathToFileURL(resolve('artifacts/multithread-bench.mjs')).href+'?'+Date.now());
+          const init=(await import('jolt-physics/wasm-compat-multithread')).default;
+          const J=await init(),pieces=generateDemolitionBuilding(1000,0x51a7,'brutalist').pieces;
+          const pct=(a,p)=>[...a].sort((x,y)=>x-y)[Math.floor((a.length-1)*p)];
+          for(const threads of [1,2,4,8])for(const [velocity,position] of [[12,3],[8,2],[4,1]]){
+            const sim=new Simulation(J,structuredClone(pieces),'sandbox',1,{sandbox:true,fragmentLimit:156},threads);
+            const settings=sim.system.GetPhysicsSettings();settings.mNumVelocitySteps=velocity;settings.mNumPositionSteps=position;sim.system.SetPhysicsSettings(settings);
+            for(let i=0;i<120;i++)sim.step(1/60);
+            sim.setSandboxHazard('wind',true);for(let i=0;i<60;i++)sim.step(1/60);
+            const samples=[];for(let i=0;i<120;i++){const at=performance.now();sim.step(1/60);samples.push(performance.now()-at)}
+            const status=sim.buildingStatus(),mean=samples.reduce((a,b)=>a+b,0)/samples.length;
+            console.log('MT '+JSON.stringify({threads,velocity,position,meanMs:+mean.toFixed(3),medianMs:+pct(samples,.5).toFixed(3),p95Ms:+pct(samples,.95).toFixed(3),broken:sim.broken,fragments:sim.fragments,passed:status.passed,peakStress:+sim.peakStress.toFixed(4)}));
+            sim.dispose();
+          }
+          process.exit(0);
+          EOF
+          node multithread-bench.mjs
