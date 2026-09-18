@@ -9,7 +9,10 @@ let walker:WalkerPhysics|undefined, walkerSpawn:[number,number,number]|undefined
 let startupState:any, startupInfo:any, preparing=true;
 let sim:Simulation|undefined, paused=false, speed=1, alive=true, last=performance.now(), accumulator=0, seq=0;
 let engine:any, engineThreads=0, initConfig:Extract<WorkerCommand,{type:'init'}>|undefined, treeSpecs:any[]=[];
-let previousRecords='', lastGoalAt=-Infinity, cachedBuildingStatus:any, rate=1, rateWall=performance.now(), rateElapsed=0;
+let lastGoalAt=-Infinity, cachedBuildingStatus:any, rate=1, rateWall=performance.now(), rateElapsed=0;
+type RecordState={item:any;vehicleId:any;initial:any;radius:any;fractured:any;retired:any;structural:any;blockShot:any;concreteStrength:any;reinforcement:any;bornAt:any;remnants:any;remnantCount:number;rebarLinks:any;rebarCount:number;vehicleParts:any;vehiclePart:any};
+let previousRecordState:RecordState[]=[];
+let recycledPoseBuffer:ArrayBuffer|undefined,recycledStressBuffer:ArrayBuffer|undefined;
 // Only one unconsumed snapshot: an overloaded renderer must not accumulate stale poses.
 let snapshotInFlight:number|undefined;
 const pending:WorkerCommand[]=[];
@@ -18,15 +21,31 @@ const worldModes=new Map<number,{mode:WorldVehicleState['mode'];target?:[number,
 const worldInputs=new Map<number,string>();
 const post=(message:any, transfer:ArrayBuffer[]=[])=>(self as any).postMessage(message, transfer);
 
+function recordsChanged(items:any[]){
+ if(previousRecordState.length!==items.length)return true;
+ for(let i=0;i<items.length;i++){
+  const item=items[i],state=previousRecordState[i];
+  if(state.item!==item||state.vehicleId!==(item as any).vehicleId||state.initial!==item.initial||state.radius!==item.radius||state.fractured!==item.fractured||state.retired!==item.retired||state.structural!==item.structural||state.blockShot!==item.blockShot||state.concreteStrength!==item.concreteStrength||state.reinforcement!==item.reinforcement||state.bornAt!==item.bornAt||state.remnants!==item.remnants||state.remnantCount!==(item.remnants?.length??0)||state.rebarLinks!==item.rebarLinks||state.rebarCount!==(item.rebarLinks?.length??0)||state.vehicleParts!==(item as any).vehicleParts||state.vehiclePart!==(item as any).vehiclePart)return true;
+ }
+ return false;
+}
+function rememberRecords(items:any[]){
+ previousRecordState=items.map(item=>({item,vehicleId:(item as any).vehicleId,initial:item.initial,radius:item.radius,fractured:item.fractured,retired:item.retired,structural:item.structural,blockShot:item.blockShot,concreteStrength:item.concreteStrength,reinforcement:item.reinforcement,bornAt:item.bornAt,remnants:item.remnants,remnantCount:item.remnants?.length??0,rebarLinks:item.rebarLinks,rebarCount:item.rebarLinks?.length??0,vehicleParts:(item as any).vehicleParts,vehiclePart:(item as any).vehiclePart}));
+}
 function snapshot(force=false){
  if(!sim||preparing||(!force&&snapshotInFlight!==undefined))return;
- const recordKey=sim.items.map(item=>`${item.id}:${item.fractured?1:0}:${item.retired?1:0}:${item.remnants?.length??0}:${item.bornAt??''}:${item.radius??''}:${item.rebarLinks?.map(link=>link.id).join(',')??''}`).join('|'),records:any[]|undefined=force||recordKey!==previousRecords?[]:undefined;const poses=new Float32Array(sim.items.length*POSE_STRIDE);const stress=new Float32Array(sim.items.length);
-  sim.items.forEach((item,i)=>{
-  const p=item.body.GetPosition(),q=item.body.GetRotation(),v=item.body.GetLinearVelocity(),w=item.body.GetAngularVelocity(),o=i*POSE_STRIDE;
-  poses.set([p.GetX(),p.GetY(),p.GetZ(),q.GetX(),q.GetY(),q.GetZ(),q.GetW(),v.GetX(),v.GetY(),v.GetZ(),(item.flying||item.body.IsActive?.())?1:0,w.GetX(),w.GetY(),w.GetZ()],o);
+ const changed=force||recordsChanged(sim.items),records:any[]|undefined=changed?[]:undefined;
+ const poseBytes=sim.items.length*POSE_STRIDE*Float32Array.BYTES_PER_ELEMENT,stressBytes=sim.items.length*Float32Array.BYTES_PER_ELEMENT;
+ const poseBuffer=recycledPoseBuffer?.byteLength===poseBytes?recycledPoseBuffer:new ArrayBuffer(poseBytes),stressBuffer=recycledStressBuffer?.byteLength===stressBytes?recycledStressBuffer:new ArrayBuffer(stressBytes);
+ recycledPoseBuffer=undefined;recycledStressBuffer=undefined;
+ const poses=new Float32Array(poseBuffer),stress=new Float32Array(stressBuffer);
+ for(let i=0;i<sim.items.length;i++){
+  const item=sim.items[i],p=item.body.GetPosition(),q=item.body.GetRotation(),v=item.body.GetLinearVelocity(),w=item.body.GetAngularVelocity(),o=i*POSE_STRIDE;
+  poses[o]=p.GetX();poses[o+1]=p.GetY();poses[o+2]=p.GetZ();poses[o+3]=q.GetX();poses[o+4]=q.GetY();poses[o+5]=q.GetZ();poses[o+6]=q.GetW();poses[o+7]=v.GetX();poses[o+8]=v.GetY();poses[o+9]=v.GetZ();poses[o+10]=(item.flying||item.body.IsActive?.())?1:0;poses[o+11]=w.GetX();poses[o+12]=w.GetY();poses[o+13]=w.GetZ();
   stress[i]=item.stress;
   records?.push({id:item.id,vehicleId:(item as any).vehicleId,kind:item.kind,initial:item.initial,radius:item.radius,fractured:item.fractured,retired:item.retired,size:item.size,vertices:item.vertices,finish:item.finish,sourceKind:item.sourceKind,structural:item.structural,blockShot:item.blockShot,concreteStrength:item.concreteStrength,reinforcement:item.reinforcement,bornAt:item.bornAt,remnants:item.remnants,rebarLinks:item.rebarLinks,vehicleParts:(item as any).vehicleParts,vehiclePart:(item as any).vehiclePart});
- });
+ }
+ if(changed)rememberRecords(sim.items);
  const now=performance.now(),wallDelta=(now-rateWall)/1000,elapsedDelta=sim.elapsed-rateElapsed;
  if(wallDelta>=.25){rate=rate*.7+(elapsedDelta/wallDelta)*.3;rateWall=now;rateElapsed=sim.elapsed;}
  if(sim.elapsed-lastGoalAt>=.5||!cachedBuildingStatus){cachedBuildingStatus=sim.buildingStatus();lastGoalAt=sim.elapsed;}
@@ -34,7 +53,7 @@ function snapshot(force=false){
  const treeState=sim.trees&&{broken:sim.trees.broken,trees:sim.trees.trees.map(t=>({itemId:t.item.id,spec:t.spec,broken:t.broken}))};
  const attacker=sim.attacker?.vehicle;const attackerState=attacker?{id:attacker.chassisItem.id,yaw:attacker.controls.yaw,pitch:attacker.controls.pitch}:null;
  const meta={worldVehicles:sim.worldVehicleStates??[],attacker:attackerState,walker:walker?.snapshot()??null,elapsed:sim.elapsed,duration:sim.duration,broken:sim.broken,maxStress:sim.maxStress,peakStress:sim.peakStress,physicsMs:sim.physicsMs,rate,paused,water:sim.water,rocks:sim.rocks,meteors:sim.meteors,projectiles:sim.projectiles,fragments:sim.fragments,fragmentLimit:sim.fragmentLimit,result:sim.result,reason:sim.reason,sandboxHazards:sim.sandboxHazards,ages,trees:treeState,buildingStatus:cachedBuildingStatus,occupancy:sim.occupancy&&{tonnes:sim.occupancy.tonnes,wave:sim.occupancy.wave,count:sim.occupancy.count}};
- snapshotInFlight=seq++;post({type:'snapshot',seq:snapshotInFlight,sentAt:performance.timeOrigin+performance.now(),records,poses,stress,meta},[poses.buffer,stress.buffer]);previousRecords=recordKey;
+ snapshotInFlight=seq++;post({type:'snapshot',seq:snapshotInFlight,sentAt:performance.timeOrigin+performance.now(),records,poses,stress,meta},[poses.buffer,stress.buffer]);
 }
 
 async function loadJolt(threads:number){
@@ -70,7 +89,7 @@ async function restart(requestId:number,hazards:Partial<Record<'wind'|'earthquak
   let restored=false;
   if(startupState){startupState.Rewind();restored=sim.system.RestoreState(startupState);if(!restored){sim.dispose();sim=new Simulation(engine,structuredClone(initConfig.pieces),initConfig.scenario,initConfig.intensity,rules,engineThreads);}}
   if(!restored)await prepareStructure();else sim.armStartupDamage();
-  applyWorldState();if(treeSpecs.length)sim.attachTrees(treeSpecs);if(walkerSpawn){walker=new WalkerPhysics(sim,walkerSpawn);if(walkerControls){Object.assign(walker.controls,walkerControls);walker.reset(walkerSpawn);}}for(const kind of ['wind','earthquake','flood','meteors','attack'] as const)if(hazards[kind])sim.setSandboxHazard(kind,true);paused=false;accumulator=0;last=performance.now();rateWall=last;rateElapsed=0;lastGoalAt=-Infinity;cachedBuildingStatus=undefined;previousRecords='';preparing=false;snapshot(true);post({type:'restarted',requestId,startup:{...startupInfo,cached:restored}});drainPending();
+  applyWorldState();if(treeSpecs.length)sim.attachTrees(treeSpecs);if(walkerSpawn){walker=new WalkerPhysics(sim,walkerSpawn);if(walkerControls){Object.assign(walker.controls,walkerControls);walker.reset(walkerSpawn);}}for(const kind of ['wind','earthquake','flood','meteors','attack'] as const)if(hazards[kind])sim.setSandboxHazard(kind,true);paused=false;accumulator=0;last=performance.now();rateWall=last;rateElapsed=0;lastGoalAt=-Infinity;cachedBuildingStatus=undefined;previousRecordState=[];preparing=false;snapshot(true);post({type:'restarted',requestId,startup:{...startupInfo,cached:restored}});drainPending();
  }catch(error){preparing=false;post({type:'error',message:error instanceof Error?error.message:String(error),requestId});}
 }
 function drainPending(){while(!preparing&&pending.length)handle(pending.shift()!);}
@@ -84,7 +103,7 @@ function handleWorld(c:WorkerCommand):boolean{
   if(c.type==='world-vehicle-mode'){sim?.setWorldVehicleMode(c.id,c.mode,c.target);if(c.mode==='drive')for(const [otherId,other] of worldModes)if(otherId!==c.id&&other.mode==='drive')worldModes.set(otherId,{mode:'parked'});worldModes.set(c.id,{mode:c.mode,target:c.target});worldInputs.delete(c.id);return true;}
   if(c.type==='world-vehicle-input'){const key=JSON.stringify(c.input);if(worldInputs.get(c.id)!==key){worldInputs.set(c.id,key);sim?.worldVehicleInput(c.id,c.input);}return true;}
  }catch(error){if('requestId' in c)ack((c as any).requestId,error);return true;} return false;
-}function handle(c:WorkerCommand){if(handleWorld(c))return;if(c.type==='walker'){walker?.dispose();walker=undefined;walkerSpawn=c.spawn??undefined;if(sim&&walkerSpawn)walker=new WalkerPhysics(sim,walkerSpawn);return;}if(c.type==='walker-input'){if(walker)Object.assign(walker.controls,c.input);return;}if(c.type==='snapshot-consumed'){if(c.seq===snapshotInFlight)snapshotInFlight=undefined;return;}if(c.type==='vehicle-input'){if(sim?.vehicle)Object.assign(sim.vehicle.controls,c.input);return;}if(c.type==='pause'){paused=c.value;rateWall=performance.now();rateElapsed=sim?.elapsed??0;post({type:'ack',command:'pause',value:paused});}else if(c.type==='speed')speed=Math.max(.1,Math.min(4,c.value));else if(c.type==='hazard')sim?.setSandboxHazard(c.kind,c.enabled);else if(c.type==='trees'){treeSpecs=structuredClone(c.specs);sim?.attachTrees(c.specs);}else if(c.type==='volley'){
+}function handle(c:WorkerCommand){if(handleWorld(c))return;if(c.type==='walker'){walker?.dispose();walker=undefined;walkerSpawn=c.spawn??undefined;if(sim&&walkerSpawn)walker=new WalkerPhysics(sim,walkerSpawn);return;}if(c.type==='walker-input'){if(walker)Object.assign(walker.controls,c.input);return;}if(c.type==='snapshot-consumed'){if(c.seq===snapshotInFlight){snapshotInFlight=undefined;if(c.poseBuffer instanceof ArrayBuffer)recycledPoseBuffer=c.poseBuffer;if(c.stressBuffer instanceof ArrayBuffer)recycledStressBuffer=c.stressBuffer;}return;}if(c.type==='vehicle-input'){if(sim?.vehicle)Object.assign(sim.vehicle.controls,c.input);return;}if(c.type==='pause'){paused=c.value;rateWall=performance.now();rateElapsed=sim?.elapsed??0;post({type:'ack',command:'pause',value:paused});}else if(c.type==='speed')speed=Math.max(.1,Math.min(4,c.value));else if(c.type==='hazard')sim?.setSandboxHazard(c.kind,c.enabled);else if(c.type==='trees'){treeSpecs=structuredClone(c.specs);sim?.attachTrees(c.specs);}else if(c.type==='volley'){
  // One command: every muzzle fires before the next physics step. Multi-shot
  // salvos use the regular debris budget, not the optional four-shot reuse ring.
  let failed=0;for(const shot of c.shots)if(sim&&!sim.launchProjectile(shot.position,shot.velocity,c.mass,c.radius,c.projectileType,c.recycle&&c.shots.length===1,c.building))failed++;

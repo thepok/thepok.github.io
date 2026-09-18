@@ -21,10 +21,11 @@ let modulePromise: ReturnType<typeof initJolt> | undefined;
 export const loadPhysics = () => modulePromise ??= initJolt();
 export const HOUSE_DISPLACEMENT_LIMIT = .5;
 const REINFORCED_KINDS=new Set(['foundation','column','slab','wall','deck','doorway','stairwell','stair','core']);
+const GROUND_IMPACT_KINDS=new Set(['column','slab','wall','deck','facade','doorway','stairwell','stair','core']);
 // Break points are in the surviving body's local space, matching Joint.localA/localB.
 export interface BreakRemnant { point:V3; sourceKind:string; sourceFinish?:Piece['finish']; concreteStrength?:number; seed:number }
 export interface ConcreteValues { concreteStrength:number; reinforcement:number }
-export interface DynamicItem { body:any; id:number; kind:string; initial:V3; stress:number; vehicleId?:number; vehiclePart?:VehiclePart; concreteStrength?:number; reinforcement?:number; radius?:number; blockShot?:number; protectedProjectile?:boolean; flying?:boolean; impactMass?:number; fractured?:boolean; retired?:boolean; size?:V3; vertices?:V3[]; finish?:Piece['finish']; sourceKind?:string; rootPieceId?:number; structural?:boolean; sourceMass?:number; fractureDepth?:number; bornAt?:number; remnants?:BreakRemnant[]; rebarTo?:number; rebarLinks?:{id:number;to:number;localA:V3;localB:V3}[] }
+export interface DynamicItem { body:any; id:number; kind:string; initial:V3; stress:number; vehicleId?:number; vehiclePart?:VehiclePart; concreteStrength?:number; reinforcement?:number; radius?:number; blockShot?:number; protectedProjectile?:boolean; flying?:boolean; impactMass?:number; fractured?:boolean; retired?:boolean; size?:V3; vertices?:V3[]; finish?:Piece['finish']; sourceKind?:string; rootPieceId?:number; structural?:boolean; sourceMass?:number; fractureDepth?:number; bornAt?:number; remnants?:BreakRemnant[]; rebarTo?:number; rebarLinks?:{id:number;to:number;localA:V3;localB:V3}[]; awakeTick?:number }
 export interface SimulationRules {
  vehicleParts?:VehiclePart[];
  vehicleMass?: number;
@@ -57,7 +58,7 @@ export class Simulation {
  pendingCollisions=new Map<string,{a:any;b:any}>();
  private facadeClearances=new Map<number,Set<DynamicItem>>();
  private glassFrames=new Map<DynamicItem,{support:DynamicItem;panelPoint:V3;supportPoint:V3}[]>();
- private glassStrain=new Map<number,number>();private nextGlassCheck=0;
+ private glassStrain=new Map<number,number>();private nextGlassCheck=0;private activityTick=0;
  projectileHits=new Set<string>();
  private projectilePool:DynamicItem[]=[];
  sandboxHazards={wind:false,earthquake:false,flood:false,meteors:false,attack:false};
@@ -346,8 +347,8 @@ export class Simulation {
   const wind=this.hazardActive('wind'), flood=this.hazardActive('flood')||(this.rules.sandbox&&this.water>0);
   const gust=wind ? 1+.3*Math.sin(t*3)+.2*Math.sin(t*7) : 0;
   const windForce=wind ? 58*this.intensity*Math.min(1,Math.max(0,(this.hazardAge('wind')-1)/3)) : 0;
-  for(const item of this.items) {
-   item.stress=0; if(item.fractured || item.id<0 || (!wind && !flood))continue;
+  if(wind||flood)for(const item of this.items) {
+   if(item.fractured || item.id<0)continue;
    const def=PARTS[item.kind as keyof typeof PARTS];
    if(wind) { const area=((item.kind==='wall'||item.kind==='facade')?16:item.kind==='slab'?2:3); this.force(item,area*.65*windForce*windForce*gust,0,area*.15*windForce*windForce); }
    if(flood) { const p=item.body.GetCenterOfMassPosition(),v=item.body.GetLinearVelocity(); const submerged=Math.max(0,Math.min(1,(this.water-p.GetY()+1)/2)); const volume=def.segments.reduce((n,s)=>n+s.size[0]*s.size[1]*s.size[2],0); this.force(item,submerged*(14500*this.intensity-v.GetX()*1900),submerged*(volume*1000*9.81-v.GetY()*1500),submerged*1000); }
@@ -358,16 +359,17 @@ export class Simulation {
   this.trees?.beforeStep(dt);
   this.vehicle?.step(dt);this.attacker?.step(dt);this.worldVehicles.step(dt);this.world.Step(dt,1);this.vehicle?.afterStep();this.attacker?.afterStep();this.worldVehicles.afterStep();this.trees?.afterStep(dt);
   this.projectileFlights.syncAll();
-  this.updateRebars(dt);
+  const activityTick=++this.activityTick;
+  for(const item of this.items){item.stress=0;if((item.id>0||item.structural)&&!item.fractured&&item.body.IsActive())item.awakeTick=activityTick;}
+  this.updateRebars(dt,activityTick);
   this.fractureProjectileImpacts(projectileSweeps);
   this.fractureGroundImpacts(groundImpacts);
   if(this.rules.sandbox&&!this.sandboxHazards.earthquake&&this.quakeResetSteps===0&&this.ground.GetMotionType()===J.EMotionType_Kinematic)this.bodies.SetMotionType(this.ground.GetID(),J.EMotionType_Static,J.EActivation_DontActivate);
   for(const [key,pair] of this.pendingCollisions){if(this.removedBodies.has(pair.a)||this.removedBodies.has(pair.b)){this.pendingCollisions.delete(key);continue;}if(!this.bodiesOverlap(pair.a,pair.b)){this.filter.EnableCollision(pair.a.GetCollisionGroup().GetSubGroupID(),pair.b.GetCollisionGroup().GetSubGroupID());this.pendingCollisions.delete(key);}}
   this.maxStress=0;
-  const awake=new Set<number>();for(const item of this.items)if((item.id>0||item.structural)&&!item.fractured&&item.body.IsActive())awake.add(item.id);
   for(const j of this.joints) {
    if(j.broken)continue;
-   if(!awake.has(j.a.id)&&(!j.b||!awake.has(j.b.id))){j.stress=0;j.overloadTime=Math.max(0,j.overloadTime-dt*.5);continue;}
+   if(j.a.awakeTick!==activityTick&&(!j.b||j.b.awakeTick!==activityTick)){j.stress=0;j.overloadTime=Math.max(0,j.overloadTime-dt*.5);continue;}
    const f=j.constraint.GetTotalLambdaPosition().Length()/dt,torque=j.pinned?null:j.constraint.GetTotalLambdaRotation();
    const stress=torque?Math.max(f/j.force,Math.abs(torque.GetX())/(dt*j.torque[0]),Math.abs(torque.GetY())/(dt*j.torque[1]),Math.abs(torque.GetZ())/(dt*j.torque[2])):f/j.force;j.stress=stress;
    j.a.stress=Math.max(j.a.stress,stress); if(j.b)j.b.stress=Math.max(j.b.stress,stress); this.maxStress=Math.max(this.maxStress,stress);
@@ -556,7 +558,7 @@ export class Simulation {
  captureGroundImpacts(){
   const falling:{item:DynamicItem;vy:number}[]=[];
   for(const item of this.items){
-   if(item.fractured||(item.id<=0&&!item.structural)||!['column','slab','wall','deck','facade','doorway','stairwell','stair','core'].includes(item.sourceKind??item.kind)||!item.body.IsActive())continue;
+   if(item.fractured||(item.id<=0&&!item.structural)||!GROUND_IMPACT_KINDS.has(item.sourceKind??item.kind)||!item.body.IsActive())continue;
    const vy=item.body.GetLinearVelocity().GetY();if(vy < -7*Math.sqrt(this.concreteStrength(item)))falling.push({item,vy});
   }
   return falling;
@@ -681,8 +683,8 @@ export class Simulation {
    }
   }
  }
- updateRebars(dt:number){
-  for(const link of this.rebars){if(link.broken)continue;const tension=Math.abs(link.constraint.GetTotalLambdaPosition())/dt,ratio=tension/link.strength;if(ratio>1)link.overloadTime+=dt*(ratio-1)*(ratio-1);else link.overloadTime=Math.max(0,link.overloadTime-dt*.7);if(link.overloadTime>.065)this.breakRebar(link);}
+ updateRebars(dt:number,activityTick?:number){
+  for(const link of this.rebars){if(link.broken)continue;if(activityTick!==undefined&&link.a.awakeTick!==activityTick&&link.b.awakeTick!==activityTick){link.overloadTime=Math.max(0,link.overloadTime-dt*.7);continue;}const tension=Math.abs(link.constraint.GetTotalLambdaPosition())/dt,ratio=tension/link.strength;if(ratio>1)link.overloadTime+=dt*(ratio-1)*(ratio-1);else link.overloadTime=Math.max(0,link.overloadTime-dt*.7);if(link.overloadTime>.065)this.breakRebar(link);}
  }
  breakRebar(link:RebarLink){if(link.broken)return;this.system.RemoveConstraint(link.constraint);link.broken=true;link.a.rebarLinks=link.a.rebarLinks?.filter(row=>row.id!==link.id);}
  removeRebars(item:DynamicItem){for(const link of this.rebars)if(!link.broken&&(link.a===item||link.b===item))this.breakRebar(link);}

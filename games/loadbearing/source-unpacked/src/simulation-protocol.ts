@@ -6,7 +6,7 @@ export type Hazard = 'wind'|'earthquake'|'flood'|'meteors'|'attack';
 export const POSE_STRIDE = 14; // position, quaternion, linear velocity, active, angular velocity
 export type WorkerCommand =
  | { type:'init'; pieces:Piece[]; scenario:Scenario; intensity:number; rules:any; threads:number }
- | { type:'snapshot-consumed'; seq:number }
+ | { type:'snapshot-consumed'; seq:number; poseBuffer?:ArrayBuffer; stressBuffer?:ArrayBuffer }
  | { type:'walker'; spawn:V3|null }
  | { type:'walker-input'; input:any }
  | { type:'vehicle-input'; input:any }
