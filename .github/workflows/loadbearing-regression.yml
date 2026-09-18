@@ -34,6 +34,7 @@ jobs:
         run: |
           cp tests/worker-backpressure.mjs artifacts/worker-backpressure-ci.mjs
           sed -i "s/{channel:'chrome',headless:true}/{headless:true}/" artifacts/worker-backpressure-ci.mjs
+          sed -i "s/await p.click('#workshop-mode')/await p.locator('#workshop-mode').click({force:true})/; s/await p.click('#sandbox-mode')/await p.locator('#sandbox-mode').click({force:true})/; s/await p.click('#load-showcase')/await p.locator('#load-showcase').click({force:true})/; s/await p.click('#vehicle-mode')/await p.locator('#vehicle-mode').click({force:true})/; s/await p.click('#vehicle-drive')/await p.locator('#vehicle-drive').click({force:true})/; s/await p.click('#restart')/await p.locator('#restart').click({force:true})/" artifacts/worker-backpressure-ci.mjs
           npm run dev -- --port 5174 > /tmp/loadbearing-vite.log 2>&1 &
           server=$!
           trap 'kill $server || true' EXIT
