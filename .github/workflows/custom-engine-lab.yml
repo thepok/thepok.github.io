@@ -1,0 +1,46 @@
+name: Custom engine lab checks
+
+on:
+  push:
+    branches: [chatgpt-custom-engine-lab, main]
+    paths:
+      - games/loadbearing-engine-lab/**
+      - .github/workflows/custom-engine-lab.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  physics-and-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Analytical and physics regressions
+        run: node games/loadbearing-engine-lab/tests/engine.test.mjs
+      - name: Install pinned browser test tools
+        working-directory: games/loadbearing-engine-lab
+        run: |
+          npm install --no-save --no-package-lock @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Actual module-worker and browser checks
+        run: |
+          python3 -m http.server 8777 --bind 127.0.0.1 > /tmp/custom-engine-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID"' EXIT
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8777/games/loadbearing-engine-lab/ > /dev/null; then break; fi
+            sleep 1
+          done
+          node games/loadbearing-engine-lab/tests/browser.mjs
+      - name: Browser screenshots and benchmark evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: custom-engine-browser-evidence
+          path: artifacts/
+          if-no-files-found: warn

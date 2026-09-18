@@ -1,0 +1,19 @@
+import assert from 'node:assert/strict';
+import {Engine,BandMatrix,beamElement,RigidBody,math,DT} from '../engine.mjs';
+const {add,mul,cross,norm,sub,mmv,inertia}=math;
+const near=(a,b,tol=1e-7)=>assert.ok(Math.abs(a-b)<=tol*Math.max(1,Math.abs(b)),`${a} != ${b}`);
+const advance=(e,n)=>{for(let i=0;i<n;i++)e.step();};
+const tests=[];
+function test(name,fn){fn();tests.push(name);console.log('PASS '+name);}
+test('banded Cholesky agrees with exact cantilever deflection and base reaction',()=>{
+ for(const n of [4,24,40]){const L=3,EI=1.8e11,F=100000,K=new BandMatrix(2*n),ke=beamElement(EI,L);for(let i=0;i<n;i++){const ix=[2*i-2,2*i-1,2*i,2*i+1];for(let a=0;a<4;a++)for(let b=0;b<=a;b++)K.add(ix[a],ix[b],ke[a][b]);}const rhs=new Float64Array(2*n);rhs[2*n-2]=F;const u=K.factor()(rhs);near(u[2*n-2],F*(n*L)**3/(3*EI));near(Math.abs(ke[1][2]*u[0]+ke[1][3]*u[1]),F*n*L);}
+});
+test('quiet tower stays at gravity equilibrium without invented damage',()=>{const e=new Engine();advance(e,1200);assert.deepEqual(e.broken,[]);assert.equal(e.topPeak,0);assert.ok(e.damage.every(d=>d===0));near(e.axialForces[0],e.mass.reduce((a,b)=>a+b,0)*9.81,1e-8);});
+test('light upper hit loads base but recovers rather than triggering scripted collapse',()=>{const e=new Engine();e.fire({mass:12000});advance(e,3000);assert.ok(e.events.some(e=>e.type==='impact'&&e.floor>=20));assert.ok(e.basePeak>.25&&e.basePeak<1);assert.deepEqual(e.broken,[]);assert.ok(Math.abs(e.u[0][46])<e.topPeak*.3);});
+test('strong upper hit causes delayed base failure without a base impact',()=>{const e=new Engine();e.fire({mass:400000});advance(e,1800);const impact=e.events.find(e=>e.type==='impact'),failure=e.events.find(e=>e.type==='failure');assert.ok(impact.floor>=20);assert.equal(failure.floor,1);assert.ok(failure.time>impact.time+.1);assert.ok(e.basePeak>1);assert.ok(e.events.some(e=>e.type==='ground-fracture'));assert.ok(e.rigids.length>2);for(const b of e.rigids){assert.ok([...b.p,...b.v,...b.q,...b.L].every(Number.isFinite));assert.ok(norm(b.p)<250,'no explosive contact launch');assert.ok(norm(b.v)<15,'post-collapse velocities remain bounded');}});
+test('stronger material survives the same projectile',()=>{const e=new Engine({strength:2});e.fire({mass:400000});advance(e,1800);assert.deepEqual(e.broken,[]);});
+test('splitting compounds preserves mass and linear/angular momentum',()=>{const states=Array.from({length:4},(_,i)=>({part:{id:i,floor:i,kind:'slab',m:1000,s:[3,.4,3]},p:[.3*i,3*i+10,0],q:math.qrot([.04*i,0,.12]),v:[2+i*.2,-1,.1*i],w:[.1,.2,-.1]}));const parent=new RigidBody(states);parent.integrate(DT);const now=parent.states(),kids=now.map(s=>new RigidBody([s]));near(kids.reduce((s,b)=>s+b.m,0),parent.m);const P=kids.reduce((s,b)=>add(s,mul(b.v,b.m)),[0,0,0]),L=kids.reduce((s,b)=>add(s,add(b.L,mul(cross(sub(b.p,parent.p),sub(b.v,parent.v)),b.m))),[0,0,0]);P.forEach((v,i)=>near(v,parent.v[i]*parent.m));L.forEach((v,i)=>near(v,parent.L[i]));});
+test('ground impact settles and sleeps rather than gaining energy',()=>{const e=new Engine({floors:4});e.attached=0;e.rigids=[new RigidBody([{part:{id:900,floor:0,m:2000,s:[3,1,2],kind:'slab'},p:[30,8,0],q:math.qrot([.1,0,.2]),v:[0,0,0],w:[0,0,0]}])];advance(e,2400);const b=e.rigids[0];assert.ok(b.p[1]<2);assert.ok(norm(b.v)<.3);assert.ok(b.asleep);});
+test('repeatability: fixed-tick bombardment has identical fracture history',()=>{const run=()=>{const e=new Engine();for(let i=0;i<1440;i++){if(i===120)e.fire({mass:400000});if(i===500)e.fire({mass:180000,height:.5,side:1});e.step();}return {events:e.events,broken:e.broken,body:e.rigids.map(b=>b.p)};};assert.deepEqual(run(),run());});
+test('invalid constructor and projectile input are rejected',()=>{assert.throws(()=>new Engine({floors:3}));assert.throws(()=>new Engine({strength:NaN}));assert.throws(()=>new Engine().fire({mass:-1}));});
+console.log(JSON.stringify({passed:tests.length,tests},null,2));
