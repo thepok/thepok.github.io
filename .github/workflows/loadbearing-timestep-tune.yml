@@ -1,0 +1,59 @@
+name: Loadbearing timestep tuning
+
+on:
+  push:
+    branches:
+      - chatgpt-unpack-loadbearing
+    paths:
+      - .github/workflows/loadbearing-timestep-tune.yml
+
+permissions:
+  contents: read
+
+jobs:
+  tune:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: games/loadbearing/source-unpacked/package-lock.json
+      - name: Install dependencies
+        working-directory: games/loadbearing/source-unpacked
+        run: npm ci
+      - name: Benchmark timestep variants
+        working-directory: games/loadbearing/source-unpacked
+        run: |
+          cat > timestep-tune.mjs <<'EOF'
+          import {performance} from 'node:perf_hooks';
+          import {build} from 'esbuild';
+          import {pathToFileURL} from 'node:url';
+          import {resolve} from 'node:path';
+          await build({stdin:{contents:"export {Simulation,loadPhysics} from './src/physics.ts';export {generateDemolitionBuilding} from './src/procedural-buildings.ts';",resolveDir:process.cwd()},bundle:true,platform:'node',format:'esm',external:['jolt-physics'],outfile:'artifacts/timestep-tune.mjs'});
+          const {Simulation,loadPhysics,generateDemolitionBuilding}=await import(pathToFileURL(resolve('artifacts/timestep-tune.mjs')).href+'?'+Date.now());
+          const J=await loadPhysics(),pieces=generateDemolitionBuilding(1000,0x51a7,'brutalist').pieces;
+          const pct=(a,p)=>[...a].sort((x,y)=>x-y)[Math.floor((a.length-1)*p)];
+          const variants=[['baseline60',12,3,1/60],['fast60',4,1,1/60],['fast30',4,1,1/30]];
+          function setSolver(sim,v,p){const s=sim.system.GetPhysicsSettings();s.mNumVelocitySteps=v;s.mNumPositionSteps=p;sim.system.SetPhysicsSettings(s)}
+          function steps(seconds,dt){return Math.ceil(seconds/dt)}
+          for(const [label,velocity,position,dt] of variants){
+            const sim=new Simulation(J,structuredClone(pieces),'sandbox',1,{sandbox:true,fragmentLimit:156},0);setSolver(sim,velocity,position);
+            for(let i=0;i<steps(2,dt);i++)sim.step(dt);
+            sim.setSandboxHazard('wind',true);for(let i=0;i<steps(1,dt);i++)sim.step(dt);
+            const samples=[];for(let i=0;i<steps(3,dt);i++){const t=performance.now();sim.step(dt);samples.push(performance.now()-t)}
+            const status=sim.buildingStatus(),mean=samples.reduce((a,b)=>a+b,0)/samples.length;
+            console.log('TIMESTEP '+JSON.stringify({label,velocity,position,hz:Math.round(1/dt),meanMs:+mean.toFixed(3),medianMs:+pct(samples,.5).toFixed(3),p95Ms:+pct(samples,.95).toFixed(3),realtimeFactor:+((dt*1000)/mean).toFixed(3),broken:sim.broken,fragments:sim.fragments,buildingPassed:status.passed,completedFloors:status.completedFloors,peakStress:+sim.peakStress.toFixed(4)}));
+            sim.dispose();
+
+            const hit=new Simulation(J,structuredClone(pieces),'sandbox',1,{sandbox:true,fragmentLimit:300},0);setSolver(hit,velocity,position);
+            for(let i=0;i<steps(2,dt);i++)hit.step(dt);
+            const xs=pieces.map(p=>p.p[0]),ys=pieces.map(p=>p.p[1]),minX=Math.min(...xs),shot=hit.launchProjectile([minX-18,Math.max(6,Math.min(12,Math.max(...ys)*.45)),0],[38,0,0],9000,1.5);
+            for(let i=0;i<steps(2.5,dt);i++)hit.step(dt);
+            const hp=shot.body.GetPosition(),hstatus=hit.buildingStatus();
+            console.log('IMPACT '+JSON.stringify({label,hz:Math.round(1/dt),broken:hit.broken,fragments:hit.fragments,projectileX:+hp.GetX().toFixed(3),projectileY:+hp.GetY().toFixed(3),buildingPassed:hstatus.passed,completedFloors:hstatus.completedFloors,peakStress:+hit.peakStress.toFixed(4),bodies:hit.bodyList.length,joints:hit.joints.length,rebars:hit.rebars.length}));
+            hit.dispose();
+          }
+          EOF
+          node timestep-tune.mjs
