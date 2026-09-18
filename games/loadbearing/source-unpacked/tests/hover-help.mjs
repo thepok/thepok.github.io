@@ -1,0 +1,14 @@
+import {chromium} from '@playwright/test';import assert from 'node:assert/strict';
+const b=await chromium.launch({channel:'chrome',headless:true}),p=await b.newPage({viewport:{width:1280,height:800}}),errors=[];p.on('pageerror',e=>errors.push(e.message));
+const coverage=async()=>{const missing=await p.locator('button,input:not([type=hidden]),select,summary,a[href]').evaluateAll(nodes=>nodes.filter(n=>!n.dataset.help&&!n.closest('#boot-screen')).map(n=>({tag:n.tagName,id:n.id,text:n.textContent.slice(0,60)})));assert.deepEqual(missing,[],'every control needs descriptive hover help');};
+const hover=async(selector,text)=>{await p.locator(selector).first().hover({force:true});await p.locator('#hover-help').waitFor({state:'visible'});assert.ok((await p.locator('#hover-help').textContent()).includes(text));const box=await p.locator('#hover-help').boundingBox();assert.ok(box.x>=0&&box.y>=0&&box.x+box.width<=1280&&box.y+box.height<=800);};
+try{
+ await p.addInitScript(()=>{localStorage.setItem('loadbearing.demo-seen','1');localStorage.setItem('loadbearing-lab.demo-seen','1');for(const key of ['loadbearing','loadbearing-lab'])localStorage.setItem(key+'.last-mode',JSON.stringify({challengeId:'campaign-01'}));});await p.goto(process.env.TEST_URL||'http://localhost:5174');await p.locator('#boot-screen').waitFor({state:'detached'});await coverage();
+ await hover('#undo','Strg+Z');await p.click('#campaign-map');await coverage();await hover('[data-campaign]:disabled','gesperrt');await p.keyboard.press('Escape');
+ await p.click('#sandbox-mode');await p.click('[data-sandbox-tab=projectiles]');await hover('#projectile-mass','Masse');await p.screenshot({path:'artifacts/help-projectile.png'});
+ await p.locator('#projectile-speed').focus();await p.locator('#hover-help').waitFor({state:'visible'});await p.keyboard.press('f');await p.waitForFunction(()=>window.__loadBearing.simulation?.projectiles>0);
+ await hover('#damage-stats','Trümmer');await p.click('#open-options');await hover('#game-options-resolution','75');await p.screenshot({path:'artifacts/help-options.png'});await p.keyboard.press('Escape');
+ await p.click('#vehicle-mode');await coverage();await hover('[data-vehicle-part=engine]','Motor');await p.screenshot({path:'artifacts/help-vehicle.png'});await p.click('.vehicle-plan summary');await coverage();await hover('#vehicle-grid button','Bauplatz');await p.click('#vehicle-close');
+ await p.click('#show-demo');await p.waitForFunction(()=>window.__loadBearing.demo.active);await hover('#demo-skip','Esc');await p.keyboard.press('Escape');await p.locator('#hover-help').waitFor({state:'hidden'});assert.deepEqual(errors,[]);console.log('PASS help on every static/dynamic control, disabled controls, sliders, metrics, modal top layer, vehicle cells and demo; F unaffected');
+}finally{await b.close();}
+

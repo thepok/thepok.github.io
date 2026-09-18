@@ -1,0 +1,8 @@
+import {build} from 'esbuild';import assert from 'node:assert/strict';
+await build({stdin:{contents:"export {Simulation,loadPhysics} from './src/physics.ts';export {VEHICLE_PRESETS} from './src/vehicle-blueprint.ts';",resolveDir:process.cwd()},bundle:true,platform:'node',format:'esm',external:['jolt-physics'],outfile:'artifacts/ramming-module.mjs'});
+const {Simulation,loadPhysics,VEHICLE_PRESETS}=await import('../artifacts/ramming-module.mjs?'+Date.now()),J=await loadPhysics();
+for(const preset of VEHICLE_PRESETS){const sim=new Simulation(J,[{id:1,kind:'foundation',p:[-2,0,0],rotation:0},{id:2,kind:'wall',p:[-2,0,0],rotation:0}],'sandbox',1,{sandbox:true,vehicleParts:preset.parts});try{for(let i=0;i<120;i++)sim.step();assert.ok(!sim.items.find(i=>i.id===2).fractured);sim.vehicle.controls.throttle=1;for(let i=0;i<600;i++)sim.step();const wall=sim.items.find(i=>i.id===2);console.log(preset.id,{fractured:wall.fractured,fragments:sim.fragments,z:sim.vehicle.chassis.GetPosition().GetZ()});assert.ok(wall.fractured,'ramming should break concrete wall');assert.equal(sim.projectiles,0);}finally{sim.dispose()}}
+console.log('PASS actual vehicle collisions fracture concrete without firing');
+
+const gentle=new Simulation(J,[{id:1,kind:'foundation',p:[-2,0,0],rotation:0},{id:2,kind:'wall',p:[-2,0,0],rotation:0}],'sandbox',1,{sandbox:true,vehicleParts:VEHICLE_PRESETS[1].parts});
+try{for(let i=0;i<120;i++)gentle.step();gentle.vehicle.controls.throttle=.08;for(let i=0;i<4000;i++)gentle.step();assert.ok(!gentle.items.find(i=>i.id===2).fractured,'creeping into a wall must not fracture it');console.log('PASS slow contact does not cause ram fracture');}finally{gentle.dispose()}

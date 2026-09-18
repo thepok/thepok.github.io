@@ -1,0 +1,10 @@
+import { chromium } from '@playwright/test';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({executablePath:process.env.LOCALAPPDATA+'/ms-playwright/chromium-1155/chrome-win/chrome.exe',headless:true,args:['--enable-unsafe-swiftshader']});
+const page=await browser.newPage({viewport:{width:1536,height:960}}),errors=[];page.on('pageerror',error=>errors.push(error.message));
+try{
+ await page.goto('http://127.0.0.1:5174');await page.waitForFunction(()=>window.__loadBearing?.ready);await page.click('#workshop-mode');await page.click('#sandbox-mode');await page.locator('#procedural-count-number').fill('500');await page.click('#generate-building');await page.waitForFunction(()=>window.__loadBearing.pieces.length===500);
+ const rect=await page.locator('#viewport').boundingBox();let selected=false;for(let y=rect.y+160;y<rect.y+rect.height-100&&!selected;y+=50)for(let x=rect.x+260;x<rect.x+rect.width-180&&!selected;x+=50){await page.mouse.move(x,y);if(await page.evaluate(()=>window.__loadBearing.scene.hoverId!==null)){await page.mouse.click(x,y);selected=await page.evaluate(()=>!!window.__loadBearing.scene.selection);}}assert.ok(selected,'instanced part should remain selectable');
+ await page.click('#run');await page.click('[data-hazard="wind"]');await page.waitForFunction(()=>window.__loadBearing.simulation?.items.some(i=>i.id>0&&i.stress>.01),{},{timeout:60000});await page.click('#stress');await page.waitForTimeout(250);
+ const state=await page.evaluate(()=>{const s=window.__loadBearing.scene,sim=window.__loadBearing.simulation,item=sim.items.filter(i=>i.id>0).sort((a,b)=>b.stress-a.stress)[0],ref=s.instanceRefs.get(item.id)[0],color=s.instanceColor;ref.mesh.getColorAt(ref.index,color);return{stress:item.stress,color:color.getHex(),base:ref.baseColor,calls:s.renderer.info.render.calls}});assert.notEqual(state.color,state.base,'stress overlay should tint an instance independently');assert.ok(state.calls<200);assert.deepEqual(errors,[]);console.log('PASS instanced picking and stress colors',state);
+}finally{await browser.close();}

@@ -1,0 +1,8 @@
+import {build} from 'esbuild';import {writeFile} from 'node:fs/promises';
+await build({stdin:{contents:"export {Simulation,loadPhysics} from './src/physics.ts';export {showcasePieces} from './src/showcases.ts';",resolveDir:process.cwd()},bundle:true,platform:'node',format:'esm',external:['jolt-physics'],outfile:'artifacts/perf-bundle.mjs'});
+const hold=process.argv[3]!==undefined?setInterval(()=>{},1000):null;
+const {Simulation,loadPhysics,showcasePieces}=await import('../artifacts/perf-bundle.mjs?'+Date.now());const J=process.argv[3]!==undefined?await (await import('jolt-physics/wasm-compat-multithread')).default():await loadPhysics(),results=[];
+for(const id of ['aurora-tower','twin-towers']){const sim=new Simulation(J,showcasePieces(id),'sandbox',1,{sandbox:true},Number(process.argv[3]??0));let total=0,world=0;const original=sim.world.Step.bind(sim.world);sim.world.Step=(...args)=>{const t=performance.now();const r=original(...args);world+=performance.now()-t;return r;};for(let i=0;i<240;i++)sim.step();total=0;world=0;let t=performance.now();for(let i=0;i<120;i++)sim.step();const idle=(performance.now()-t)/120;const x=id==='twin-towers'?8:0,z=id==='twin-towers'?2:0;sim.launchProjectile([x+10,18,z],[-15,0,0],1000,.7);world=0;t=performance.now();for(let i=0;i<600;i++)sim.step();total=performance.now()-t;const row={id,parts:sim.pieces.length,joints:sim.joints.length,idleMs:idle,impactStepMs:total/600,worldMs:world/600,wrapperMs:(total-world)/600,broken:sim.broken};results.push(row);console.log(row);sim.dispose();}
+await writeFile(process.argv[2]??'artifacts/perf-baseline.json',JSON.stringify(results,null,2));
+
+if(process.argv[3]!==undefined)process.exit(0);

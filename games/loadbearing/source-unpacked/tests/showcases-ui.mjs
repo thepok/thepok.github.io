@@ -1,0 +1,10 @@
+import { chromium } from '@playwright/test';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({executablePath:process.env.LOCALAPPDATA+'/ms-playwright/chromium-1155/chrome-win/chrome.exe',headless:true,args:['--enable-unsafe-swiftshader']});
+const page=await browser.newPage({viewport:{width:1536,height:960}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+try{
+ await page.goto('http://127.0.0.1:5174');await page.waitForFunction(()=>window.__loadBearing?.ready);await page.screenshot({path:'artifacts/blue-campaign.png'});await page.click('#campaign-map');await page.screenshot({path:'artifacts/blue-campaign-map.png'});await page.click('#campaign-close');await page.click('#workshop-mode');await page.click('#sandbox-mode');assert.ok(await page.locator('#showcase-picker').isVisible());assert.equal(await page.locator('#showcase option').count(),10);
+ for(const id of await page.locator('#showcase option').evaluateAll(options=>options.map(o=>o.value))){await page.selectOption('#showcase',id);await page.click('#load-showcase');assert.ok(Number(await page.locator('#count').textContent())>60);await page.screenshot({path:'artifacts/showcase-'+id+'.png'});}
+ await page.click('#undo');await page.click('#redo');await page.click('#run');await page.waitForFunction(()=>window.__loadBearing.simulation?.elapsed>1);await page.click('#aim-launch');const target=await page.evaluate(()=>{const s=window.__loadBearing.scene,p=window.__loadBearing.pieces.find(p=>p.kind==='column'&&p.p[1]===8),v=s.camera.position.clone().set(p.p[0],10,p.p[2]).project(s.camera),r=s.container.getBoundingClientRect();return{x:r.x+(v.x+1)*r.width/2,y:r.y+(1-v.y)*r.height/2}});await page.mouse.click(target.x,target.y);await page.waitForFunction(()=>window.__loadBearing.simulation.projectiles===1);await page.click('#stop');
+ await page.setViewportSize({width:1024,height:768});await page.screenshot({path:'artifacts/blue-1024.png'});assert.deepEqual(errors,[]);console.log('PASS showcase selection/loading, ten large layouts, undo/redo, physics and projectile, no page errors');
+}finally{await browser.close()}

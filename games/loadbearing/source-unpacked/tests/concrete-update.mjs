@@ -1,0 +1,6 @@
+import assert from 'node:assert/strict';
+import { build } from 'esbuild';
+await build({stdin:{contents:"export {Simulation,loadPhysics} from './src/physics.ts'; export {showcasePieces} from './src/showcases.ts';",resolveDir:process.cwd()},bundle:true,platform:'node',format:'esm',external:['jolt-physics'],outfile:'artifacts/concrete-update-test.mjs'});
+const {Simulation,loadPhysics,showcasePieces}=await import('../artifacts/concrete-update-test.mjs?'+Date.now());
+const J=await loadPhysics(),pieces=showcasePieces('grand-hall'),sim=new Simulation(J,pieces,'sandbox',1,{sandbox:true,fragmentLimit:600});
+const item=sim.items.find(i=>i.id>0&&i.sourceKind===undefined&&['foundation','column','wall','slab','core'].includes(i.kind));assert.ok(item);const body=item.body,p=item.body.GetPosition();const pose=[p.GetX(),p.GetY(),p.GetZ()];sim.updateConcrete([item.id],{concreteStrength:1.8,reinforcement:.4});assert.equal(item.concreteStrength,1.8);assert.equal(item.reinforcement,.4);const after=item.body.GetPosition();assert.deepEqual([after.GetX(),after.GetY(),after.GetZ()],pose);assert.equal(item.body,body);sim.step(1/120);assert.equal(item.body,body);sim.dispose();console.log('PASS live concrete update preserves native body and pose');

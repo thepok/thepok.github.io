@@ -1,0 +1,11 @@
+import {chromium} from '@playwright/test';import assert from 'node:assert/strict';
+const browser=await chromium.launch({executablePath:process.env.LOCALAPPDATA+'/ms-playwright/chromium-1155/chrome-win/chrome.exe',headless:true,args:['--enable-unsafe-swiftshader']});const page=await browser.newPage({viewport:{width:1536,height:960}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+const ready=()=>page.waitForFunction(()=>window.__loadBearing?.ready,{},{timeout:60000});
+try{
+ await page.goto(process.env.TEST_URL||'http://127.0.0.1:5174');await ready();
+ await page.click('#workshop-mode');await page.click('#sandbox-mode');await page.reload();await ready();assert.equal(await page.evaluate(()=>window.__loadBearing.scenario),'sandbox');
+ await page.selectOption('#scenario','wind');const id=await page.locator('#challenge').inputValue();await page.reload();await ready();assert.equal(await page.locator('#challenge').inputValue(),id);assert.equal(await page.evaluate(()=>window.__loadBearing.scenario),'wind');
+ await page.click('#vehicle-mode');await page.click('#vehicle-drive');await page.waitForFunction(()=>window.__loadBearing.vehicleWorkshop.driving);await page.reload();await ready();await page.waitForFunction(()=>window.__loadBearing.vehicleWorkshop.driving);await page.waitForFunction(()=>window.__loadBearing.simulation.elapsed>1);await page.keyboard.press('r');await page.waitForFunction(()=>window.__loadBearing.simulation?.elapsed<.5);await page.waitForFunction(()=>window.__loadBearing.vehicleWorkshop.driving&&window.__loadBearing.simulation.items.some(i=>i.kind==='vehicle-chassis'));assert.equal(await page.evaluate(()=>window.__loadBearing.vehicleWorkshop.enabled),true);
+ await page.keyboard.press('Escape');await page.waitForSelector('#vehicle-dialog[open]');await page.reload();await ready();await page.waitForSelector('#vehicle-dialog[open]');await page.click('#vehicle-close');await page.click('#campaign-mode');const campaign=await page.evaluate(()=>window.__loadBearing.campaignLevel.id);await page.reload();await ready();assert.equal(await page.evaluate(()=>window.__loadBearing.campaignLevel.id),campaign);
+ assert.deepEqual(errors,[]);console.log('PASS last sandbox, wind challenge, vehicle workshop and campaign restored on reload');
+}finally{await browser.close()}

@@ -1,0 +1,13 @@
+import { chromium } from '@playwright/test';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({executablePath:process.env.LOCALAPPDATA+'/ms-playwright/chromium-1155/chrome-win/chrome.exe',headless:true,args:['--enable-unsafe-swiftshader']});
+const page=await browser.newPage({viewport:{width:1536,height:960}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+try{
+ await page.goto('http://127.0.0.1:5174');await page.waitForFunction(()=>window.__loadBearing?.ready);
+ assert.equal(await page.evaluate(()=>window.__loadBearing.campaignLevel.id),'campaign-01');assert.ok(await page.locator('#intensity').isDisabled());
+ await page.click('#campaign-map');assert.equal(await page.locator('[data-campaign]').count(),18);assert.ok(await page.locator('[data-campaign="campaign-02"]').isDisabled());await page.screenshot({path:'artifacts/campaign-map.png'});await page.click('#campaign-close');
+ await page.click('[data-part="deck"]');const point=await page.evaluate(()=>{const s=window.__loadBearing.scene,v=s.camera.position.clone().set(0,0,0).project(s.camera),r=s.container.getBoundingClientRect();return{x:r.x+(v.x+1)*r.width/2,y:r.y+(1-v.y)*r.height/2}});await page.mouse.click(point.x,point.y);assert.ok(await page.evaluate(()=>window.__loadBearing.pieces.some(p=>p.kind==='deck'&&p.p.every(x=>x===0))));
+ await page.click('[data-speed="2"]');await page.click('#run');await page.waitForFunction(()=>window.__loadBearing.simulation?.result,null,{timeout:60000});assert.equal(await page.evaluate(()=>window.__loadBearing.simulation.result),'passed');assert.ok(await page.locator('#result-next').isVisible());await page.screenshot({path:'artifacts/campaign-passed.png'});await page.click('#result-next');assert.equal(await page.evaluate(()=>window.__loadBearing.campaignLevel.id),'campaign-02');await page.reload();await page.waitForFunction(()=>window.__loadBearing?.ready);assert.equal(await page.evaluate(()=>window.__loadBearing.campaignLevel.id),'campaign-02');
+ await page.click('#campaign-map');assert.ok(await page.locator('[data-campaign="campaign-02"]').isEnabled());assert.ok(await page.locator('[data-campaign="campaign-03"]').isDisabled());await page.click('[data-campaign="campaign-01"]');assert.equal(await page.evaluate(()=>window.__loadBearing.campaignLevel.id),'campaign-01');await page.click('#workshop-mode');assert.ok(await page.locator('#intensity').isEnabled());assert.equal(await page.locator('#count').textContent(),'25');
+ assert.deepEqual(errors,[]);console.log('PASS campaign: 18 levels, repair and real physics win, unlock next, replay, save/reload and workshop access');
+}finally{await browser.close()}

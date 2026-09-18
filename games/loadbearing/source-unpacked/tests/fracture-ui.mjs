@@ -1,0 +1,30 @@
+import { chromium } from '@playwright/test';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({executablePath:process.env.LOCALAPPDATA+'/ms-playwright/chromium-1155/chrome-win/chrome.exe',headless:true,args:['--enable-unsafe-swiftshader']});
+const page=await browser.newPage({viewport:{width:1536,height:960}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+try{
+ await page.goto('http://127.0.0.1:5174');await page.waitForFunction(()=>window.__loadBearing?.ready);
+ await page.click('#workshop-mode');await page.click('#sandbox-mode');await page.selectOption('#showcase','maison-azur');await page.click('#load-showcase');
+ assert.equal(await page.locator('#fragment-limit').getAttribute('max'),'3000');
+ await page.click('[data-hazard="wind"]');await page.click('[data-hazard="earthquake"]');await page.click('[data-hazard="flood"]');
+ await page.waitForFunction(()=>window.__loadBearing.simulation?.water>0,{},{timeout:60000});
+ await page.locator('#fragment-limit').fill('240');await page.waitForFunction(()=>window.__loadBearing.simulation?.fragmentLimit===240);
+ assert.equal(await page.locator('#fragment-limit-value').textContent(),'240 parts');
+ assert.deepEqual(await page.evaluate(()=>window.__loadBearing.simulation.sandboxHazards),{wind:true,earthquake:true,flood:true,meteors:false});
+ assert.ok(await page.evaluate(()=>window.__loadBearing.scene.windLeaves?.visible));
+ await page.click('#run');const time=await page.evaluate(()=>window.__loadBearing.simulation.elapsed);await page.click('[data-hazard="earthquake"]');
+ assert.equal(await page.evaluate(()=>window.__loadBearing.simulation.elapsed),time);
+ assert.equal(await page.locator('[data-hazard="earthquake"]').getAttribute('aria-pressed'),'false');
+ assert.equal(await page.locator('[data-hazard="wind"]').getAttribute('aria-pressed'),'true');
+ await page.screenshot({path:'artifacts/combined-sandbox-hazards.png'});
+ await page.click('#stop');assert.equal(await page.locator('[data-hazard][aria-pressed="true"]').count(),0);
+ await page.locator('#projectile-mass').fill('20000');await page.locator('#projectile-speed').fill('50');await page.click('#aim-launch');
+ await page.waitForFunction(()=>window.__loadBearing.simulation.elapsed>.6);
+ const point=await page.evaluate(()=>{const s=window.__loadBearing.scene,v=s.camera.position.clone().set(2,6,4).project(s.camera),r=s.container.getBoundingClientRect();return {x:r.x+(v.x+1)*r.width/2,y:r.y+(1-v.y)*r.height/2}});
+ await page.mouse.click(point.x,point.y);
+ await page.waitForFunction(()=>window.__loadBearing.simulation.fragments>0,{},{timeout:60000});await page.click('#run');
+ const state=await page.evaluate(()=>{const d=window.__loadBearing,s=d.simulation;let remnants=0,batches=0,rebars=0;d.scene.structure.traverse(o=>{if(o.userData.breakRemnantBatch){batches++;remnants+=o.count}});d.scene.extras.traverse(o=>{if(o.userData.rebar)rebars+=o.count});return {fragments:s.fragments,remnants,batches,rebars,linkedFragments:s.items.reduce((n,i)=>n+(i.rebarLinks?.length??0),0),sourceRemnants:s.items.reduce((n,i)=>n+(i.remnants?.length??0),0),hidden:s.items.filter(i=>i.fractured).every(i=>i.kind==='fragment'?!d.scene.fragmentBatches.refs.has(i.id):d.scene.meshes.get(i.id)?.visible===false),rendered:s.items.filter(i=>i.kind==='fragment'&&!i.fractured&&!i.retired).every(i=>d.scene.fragmentBatches.refs.has(i.id)),fps:d.scene.fps,drawCalls:d.scene.renderer.info.render.calls}});
+ assert.ok(state.hidden&&state.rendered);assert.ok(state.remnants>0,'broken joints should leave visible remnants on surviving neighbors');assert.ok(state.rebars>0&&state.linkedFragments>0,'reinforced concrete fragments should retain visible physical rebar links');await page.screenshot({path:'artifacts/physical-fracture.png'});console.log(state);
+ await page.click('#stop');assert.equal(await page.evaluate(()=>[...window.__loadBearing.scene.meshes.keys()].filter(id=>id<=-10000).length),0);assert.deepEqual(errors,[]);
+ console.log('PASS live combined hazards, pause, reset, physical projectile fragmentation and debris cleanup');
+}catch(error){console.log(await page.evaluate(()=>({elapsed:window.__loadBearing?.simulation?.elapsed,water:window.__loadBearing?.simulation?.water,hazards:window.__loadBearing?.simulation?.sandboxHazards,fragments:window.__loadBearing?.simulation?.fragments,ms:window.__loadBearing?.simulation?.physicsMs,fps:window.__loadBearing?.scene?.fps})));console.log(errors);await page.screenshot({path:'artifacts/fracture-ui-failure.png'});throw error;}finally{await browser.close();}

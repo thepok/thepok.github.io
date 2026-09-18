@@ -1,0 +1,8 @@
+import {chromium} from '@playwright/test';import assert from 'node:assert/strict';
+const browser=await chromium.launch({executablePath:process.env.LOCALAPPDATA+'/ms-playwright/chromium-1155/chrome-win/chrome.exe',headless:true,args:['--enable-unsafe-swiftshader']});const page=await browser.newPage({viewport:{width:1536,height:960}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+try{
+ await page.goto(process.env.TEST_URL||'http://127.0.0.1:5174');await page.waitForFunction(()=>window.__loadBearing?.ready,{},{timeout:60000});await page.click('#workshop-mode');await page.click('#vehicle-mode');await page.click('#vehicle-drive');await page.waitForFunction(()=>window.__loadBearing.simulation?.items.some(i=>i.kind==='vehicle-chassis'));
+ await page.evaluate(()=>{const s=window.__loadBearing.simulation;for(let i=0;i<120;i++)s.launchProjectile([70+i%5,10,70],[0,-1,0],900,.3)});
+ await page.waitForFunction(()=>window.__loadBearing.simulation.projectiles===120);await page.keyboard.press('f');await page.waitForFunction(()=>window.__loadBearing.simulation.projectiles===121);
+ const result=await page.evaluate(()=>{const a=window.__loadBearing;return {count:a.simulation.items.filter(i=>i.kind==='projectile').length,meshes:[...a.scene.meshes.keys()].filter(id=>id<=-3000&&id>-3060).length,clear:a.scene.windTrees.every(t=>Math.hypot(t.root.userData.baseX,t.root.userData.baseZ-20)>16+t.height*.31)}});assert.equal(result.count,60);assert.equal(result.meshes,60);assert.equal(result.clear,true);assert.deepEqual(errors,[]);console.log('PASS cannon fires after 120 shots; 60 bodies/meshes and clear vehicle spawn',result);
+}finally{await browser.close()}

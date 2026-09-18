@@ -1,0 +1,9 @@
+import assert from 'node:assert/strict';
+import {build} from 'esbuild';
+await build({stdin:{contents:"export {Simulation,loadPhysics} from './src/physics.ts';export {sample} from './src/catalog.ts';export {CAMPAIGN_LEVELS,starterPieces} from './src/campaign.ts';",resolveDir:process.cwd()},bundle:true,platform:'node',format:'esm',external:['jolt-physics'],outfile:'artifacts/building-physics-goals.mjs'});
+const {Simulation,loadPhysics,sample,CAMPAIGN_LEVELS,starterPieces}=await import('../artifacts/building-physics-goals.mjs?'+Date.now());const J=await loadPhysics();
+const rules={duration:1/120,minHeight:8,minFloorArea:32};
+const exploit=starterPieces(CAMPAIGN_LEVELS[1]);exploit.push({id:1000,kind:'column',p:[-4,4,-4],rotation:0});const cheap=new Simulation(J,exploit,'wind',1,rules);cheap.step();assert.equal(cheap.result,'failed');assert.match(cheap.reason,/8 m/);cheap.dispose();console.log('PASS one extra column cannot win the actual simulation');
+const missing=sample('wind').filter(p=>p.kind!=='slab'||p.p[1]!==4);const roof=new Simulation(J,missing,'wind',1,rules);roof.step();assert.equal(roof.result,'failed');assert.match(roof.reason,/4 m/);roof.dispose();console.log('PASS high roof without lower usable floors fails');
+const complete=new Simulation(J,sample('wind'),'wind',1,rules);assert.ok(complete.buildingStatus().passed);complete.step();assert.equal(complete.result,'passed');for(const joint of complete.joints)if(!joint.b){joint.constraint.SetEnabled(false);joint.broken=true}assert.equal(complete.buildingStatus().passed,false);complete.dispose();console.log('PASS anchored floors pass, broken support paths stop counting');
+const level=CAMPAIGN_LEVELS[1],survivor=new Simulation(J,sample('earthquake'),'earthquake',level.intensity,level.rules);while(!survivor.result)survivor.step();assert.equal(survivor.result,'passed',survivor.reason);survivor.dispose();console.log('PASS complete building meets stricter goal after full earthquake');

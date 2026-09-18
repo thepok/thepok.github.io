@@ -1,0 +1,20 @@
+#game-options-dialog{width:min(430px,calc(100vw - 28px));max-width:none;padding:24px;background:#e7f6fb;color:#163b56;border:1px solid #76a9bf;border-radius:0;box-shadow:0 20px 70px #245b7840}
+#game-options-dialog::backdrop{background:#173c5688;backdrop-filter:blur(4px)}
+#game-options-dialog .game-options-heading{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:1px solid #a8cad8;padding-bottom:14px}
+#game-options-dialog h2{margin:5px 0 0;font-family:'Barlow Condensed','Bahnschrift',sans-serif;font-size:34px;font-weight:500;color:#123d5a}
+#game-options-dialog .game-options-close{width:28px;height:28px;padding:0;border:1px solid #8fb9cd;background:#d2eaf4;color:#245b78;font-size:22px;line-height:1}
+#game-options-dialog .game-options-intro,#game-options-dialog .game-options-saved{margin:12px 0;font-size:11px;line-height:1.5;color:#55758a}
+#game-options-dialog .game-options-fields{display:grid;gap:7px}
+#game-options-dialog label{font-size:11px;letter-spacing:.2px;color:#244d67}
+#game-options-dialog output{float:right;color:#2379a8;font-variant-numeric:tabular-nums}
+#game-options-dialog select,#game-options-dialog input[type=range]{width:100%;accent-color:#3287b7}
+#game-options-dialog select{padding:8px 9px;background:#d4ecf5;color:#173f5a;border:1px solid #91bed1;border-radius:0}
+#game-options-dialog input[type=range]{margin:0 0 7px}
+#game-options-dialog .game-options-check{display:flex;align-items:center;gap:9px;padding:5px 0}
+#game-options-dialog .game-options-check input{accent-color:#3287b7}
+#game-options-dialog .game-options-debris{margin-top:11px;padding-top:12px;border-top:1px solid #a8cad8}
+#game-options-dialog .debris-setting{display:grid;gap:6px}
+#game-options-dialog .debris-setting label{font-size:11px}
+#game-options-dialog .debris-setting input{width:100%;accent-color:#3287b7}
+body.hide-game-hints .viewport-hint{display:none}
+body:not(.show-performance) #telemetry{display:none}

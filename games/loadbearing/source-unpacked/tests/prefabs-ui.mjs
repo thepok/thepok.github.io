@@ -1,0 +1,12 @@
+import { chromium } from '@playwright/test';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({executablePath:process.env.LOCALAPPDATA+'/ms-playwright/chromium-1155/chrome-win/chrome.exe',headless:true,args:['--enable-unsafe-swiftshader']});
+const page=await browser.newPage({viewport:{width:1536,height:960}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+async function place(x,y,z){const p=await page.evaluate(([x,y,z])=>{const s=window.__loadBearing.scene,v=s.camera.position.clone().set(x,y,z).project(s.camera),r=s.container.getBoundingClientRect();return{x:r.x+(v.x+1)*r.width/2,y:r.y+(1-v.y)*r.height/2}},[x,y,z]);await page.mouse.move(p.x,p.y);await page.mouse.click(p.x,p.y)}
+try{
+ await page.goto('http://127.0.0.1:5174');await page.waitForFunction(()=>window.__loadBearing?.ready);await page.click('#workshop-mode');await page.click('#sandbox-mode');await page.click('#clear');
+ assert.equal(await page.locator('[data-prefab]').count(),5);await page.click('[data-prefab="column-wall-bay"]');await place(0,0,0);assert.equal(await page.locator('#count').textContent(),'3');await place(4,0,0);assert.equal(await page.locator('#count').textContent(),'5','shared column reused');await page.click('#undo');assert.equal(await page.locator('#count').textContent(),'3');await page.click('#redo');assert.equal(await page.locator('#count').textContent(),'5');
+ await page.keyboard.press('r');await place(0,0,0);assert.equal(await page.locator('#count').textContent(),'7','rotated group shares corner column');await place(0,0,0);assert.equal(await page.locator('#count').textContent(),'7','repeat does not duplicate');
+ await page.click('[data-prefab="floor-bay"]');await page.click('#level-up');await place(-4,4,2);assert.equal(await page.locator('#count').textContent(),'12');await page.screenshot({path:'artifacts/prefab-building.png'});await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>!!window.__loadBearing.scene.ghost),false);
+ await page.click('#run');await page.waitForFunction(()=>window.__loadBearing.simulation?.elapsed>.5);assert.equal(await page.evaluate(()=>window.__loadBearing.simulation.pieces.length),12);await page.click('#stop');assert.equal(await page.locator('#count').textContent(),'12');assert.deepEqual(errors,[]);console.log('PASS prefabs: list, ghost, rotated placement, shared supports, atomic undo/redo, no duplicates, raised build plane, physical simulation');
+}finally{await browser.close()}

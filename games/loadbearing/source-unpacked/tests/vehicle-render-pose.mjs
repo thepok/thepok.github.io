@@ -1,0 +1,9 @@
+import {build} from 'esbuild';import assert from 'node:assert/strict';
+await build({entryPoints:['src/render-pose.ts'],bundle:true,platform:'node',format:'esm',outfile:'artifacts/vehicle-render-pose.mjs'});
+const {RenderPoseBuffer}=await import('../artifacts/vehicle-render-pose.mjs');
+class V{constructor(x=0,y=0,z=0,w=1){Object.assign(this,{x,y,z,w})}set(x,y,z,w=this.w){Object.assign(this,{x,y,z,w});return this}}
+const buffer=new RenderPoseBuffer(),wheel=new RenderPoseBuffer(),p=new V(),q=new V(),wp=new V(),wq=new V(),packets=[];const delays=[4,19,7,25,9,12];
+for(let i=0;i<150;i++){const at=i*1000/30;packets.push({at,arrival:at+delays[i%delays.length]})}let next=0,previous,old=0,oldPrevious,oldDeltas=[],deltas=[];
+for(let at=0;at<4800;at+=1000/120){while(next<packets.length&&packets[next].arrival<=at){const t=packets[next++].at;buffer.push(t,new V(t*.01),new V());wheel.push(t,new V(t*.01+2,0,1),new V());}if(!next)continue;buffer.sample(at-80,p,q);wheel.sample(at-80,wp,wq);old+=(packets[next-1].at*.01-old)*(1-Math.exp(-24/120));if(at>200){deltas.push(p.x-previous);oldDeltas.push(old-oldPrevious);assert.ok(Math.abs(wp.x-p.x-2)<1e-9,'chassis and wheels must share one interpolation timeline');}previous=p.x;oldPrevious=old;}
+assert.ok(Math.max(...deltas)-Math.min(...deltas)<1e-9,'constant-speed motion must remain uniform despite packet delivery jitter');assert.ok(Math.max(...oldDeltas)-Math.min(...oldDeltas)>.02,'replay must expose previous per-packet speed pulses');
+buffer.push(5000,new V(50),new V(0,0,0,-1));buffer.sample(4990,p,q);assert.ok(Math.abs(q.w-1)<1e-8,'equivalent quaternion signs cannot flip rotation');const reset=new RenderPoseBuffer();reset.push(0,new V(),new V());reset.sample(-80,p,q);assert.equal(p.x,0);console.log('PASS uniform jittered-packet motion, rigid wheel alignment, quaternion continuity and reset');
