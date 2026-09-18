@@ -35,7 +35,7 @@ jobs:
           const {Simulation,loadPhysics,generateDemolitionBuilding}=await import(pathToFileURL(resolve('artifacts/timestep-tune.mjs')).href+'?'+Date.now());
           const J=await loadPhysics(),pieces=generateDemolitionBuilding(1000,0x51a7,'brutalist').pieces;
           const pct=(a,p)=>[...a].sort((x,y)=>x-y)[Math.floor((a.length-1)*p)];
-          const variants=[['baseline60',12,3,1/60],['fast60',4,1,1/60],['fast30',4,1,1/30]];
+          const variants=[['baseline60',12,3,1/60],['safe60',8,2,1/60],['fast60',4,1,1/60],['fast30',4,1,1/30]];
           function setSolver(sim,v,p){const s=sim.system.GetPhysicsSettings();s.mNumVelocitySteps=v;s.mNumPositionSteps=p;sim.system.SetPhysicsSettings(s)}
           function steps(seconds,dt){return Math.ceil(seconds/dt)}
           for(const [label,velocity,position,dt] of variants){
