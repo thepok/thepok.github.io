@@ -1,0 +1,53 @@
+name: Loadbearing startup styles
+
+on:
+  push:
+    branches:
+      - chatgpt-unpack-loadbearing
+    paths:
+      - .github/workflows/loadbearing-startup-styles.yml
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: games/loadbearing/source-unpacked/package-lock.json
+      - name: Install dependencies
+        working-directory: games/loadbearing/source-unpacked
+        run: npm ci
+      - name: Verify reduced startup cap across styles
+        working-directory: games/loadbearing/source-unpacked
+        run: |
+          cat > startup-styles.mjs <<'EOF'
+          import {readFile,writeFile,mkdir} from 'node:fs/promises';
+          import {build} from 'esbuild';
+          import {pathToFileURL} from 'node:url';
+          import {resolve} from 'node:path';
+          import initJolt from 'jolt-physics';
+          await mkdir('artifacts',{recursive:true});
+          let source=await readFile('src/physics.ts','utf8');
+          source=source.replace('Math.max(32,velocitySteps)','Math.max(12,velocitySteps)').replace('Math.max(8,positionSteps)','Math.max(3,positionSteps)');
+          await writeFile('src/physics-startup-style.ts',source);
+          await build({stdin:{contents:"export {Simulation} from './src/physics-startup-style.ts';export {generateDemolitionBuilding} from './src/procedural-buildings.ts';",resolveDir:process.cwd()},bundle:true,platform:'node',format:'esm',external:['jolt-physics'],outfile:'artifacts/startup-styles.mjs'});
+          const {Simulation,generateDemolitionBuilding}=await import(pathToFileURL(resolve('artifacts/startup-styles.mjs')).href+'?'+Date.now());
+          const J=await initJolt();
+          for(const style of ['art-deco','refinery','triumph','brutalist','pagoda','skybridge','classic']){
+            const pieces=generateDemolitionBuilding(1000,0x51a7,style).pieces;
+            const sim=new Simulation(J,structuredClone(pieces),'sandbox',1,{sandbox:true,fragmentLimit:156},0);
+            const settle=await sim.settleStartup(),status=sim.buildingStatus();
+            let maxDrift=0;
+            for(const item of sim.items)if(item.id>0&&!item.fractured){const p=item.body.GetPosition();maxDrift=Math.max(maxDrift,Math.hypot(p.GetX()-item.initial[0],p.GetY()-item.initial[1],p.GetZ()-item.initial[2]));}
+            console.log('STYLE '+JSON.stringify({style,pieces:pieces.length,settle:!!settle,steps:settle?.steps,quiet:settle?.quiet,maxSpeed:settle&&+settle.maxSpeed.toFixed(5),milliseconds:settle&&+settle.milliseconds.toFixed(2),passed:status.passed,completedFloors:status.completedFloors,broken:sim.broken,fragments:sim.fragments,maxDrift:+maxDrift.toFixed(5),joints:sim.joints.length}));
+            if(!settle?.quiet||!status.passed||sim.broken||sim.fragments)process.exitCode=1;
+            sim.dispose();
+          }
+          EOF
+          node startup-styles.mjs
