@@ -1,0 +1,50 @@
+name: Loadbearing refinery startup compare
+
+on:
+  push:
+    branches:
+      - chatgpt-unpack-loadbearing
+    paths:
+      - .github/workflows/loadbearing-refinery-startup.yml
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: games/loadbearing/source-unpacked/package-lock.json
+      - name: Install dependencies
+        working-directory: games/loadbearing/source-unpacked
+        run: npm ci
+      - name: Compare refinery settling
+        working-directory: games/loadbearing/source-unpacked
+        run: |
+          cat > refinery-startup.mjs <<'EOF'
+          import {readFile,writeFile,mkdir} from 'node:fs/promises';
+          import {build} from 'esbuild';
+          import {pathToFileURL} from 'node:url';
+          import {resolve} from 'node:path';
+          import initJolt from 'jolt-physics';
+          await mkdir('artifacts',{recursive:true});
+          const original=await readFile('src/physics.ts','utf8'),J=await initJolt();
+          for(const [velocityCap,positionCap] of [[32,8],[12,3]]){
+            const source=original.replace('Math.max(32,velocitySteps)',`Math.max(${velocityCap},velocitySteps)`).replace('Math.max(8,positionSteps)',`Math.max(${positionCap},positionSteps)`);
+            await writeFile('src/physics-refinery.ts',source);
+            const out=`artifacts/refinery-${velocityCap}.mjs`;
+            await build({stdin:{contents:"export {Simulation} from './src/physics-refinery.ts';export {generateDemolitionBuilding} from './src/procedural-buildings.ts';",resolveDir:process.cwd()},bundle:true,platform:'node',format:'esm',external:['jolt-physics'],outfile:out});
+            const {Simulation,generateDemolitionBuilding}=await import(pathToFileURL(resolve(out)).href+'?'+Date.now());
+            const pieces=generateDemolitionBuilding(1000,0x51a7,'refinery').pieces,sim=new Simulation(J,structuredClone(pieces),'sandbox',1,{sandbox:true,fragmentLimit:156},0);
+            const settle=await sim.settleStartup();
+            let maxDrift=0;for(const item of sim.items)if(item.id>0&&!item.fractured){const p=item.body.GetPosition();maxDrift=Math.max(maxDrift,Math.hypot(p.GetX()-item.initial[0],p.GetY()-item.initial[1],p.GetZ()-item.initial[2]));}
+            console.log('REFINERY '+JSON.stringify({velocityCap,positionCap,...settle,milliseconds:+settle.milliseconds.toFixed(2),maxSpeed:+settle.maxSpeed.toFixed(5),broken:sim.broken,fragments:sim.fragments,maxDrift:+maxDrift.toFixed(5),joints:sim.joints.length}));
+            sim.dispose();
+          }
+          EOF
+          node refinery-startup.mjs
