@@ -1,0 +1,84 @@
+{
+  "variant": "complete-game-specialized-native",
+  "validatedSourceCommit": "cc01e982faeb6a87edc134538429e05bcd474300",
+  "validationRun": 35369938820,
+  "validationArtifact": 10558571626,
+  "originalMainCommit": "69e167362ef354806e156cc2ba0206458c24b0d3",
+  "nativeBuildCommit": "cd9ccb1f4fb8fb0fc62ccfc4d223351a27c4dfbd",
+  "nativeBuildRun": 35367229979,
+  "originalSourceSha256": "8840453a1426cd8d00ecf4a30892cfa4a896fdf7baf71d139fbb2d010e341a5e",
+  "unchangedAfterLineEndingNormalization": [
+    "src/scene.ts",
+    "src/procedural-buildings.ts",
+    "src/catalog.ts",
+    "src/local-fracture.ts",
+    "src/building-objective.ts",
+    "src/building-accessibility.ts",
+    "src/concrete-materials.ts",
+    "src/rebar-markings.ts",
+    "src/vehicle-blueprint.ts",
+    "src/world-vehicles.ts",
+    "src/demo-mode.css",
+    "src/game-options.css",
+    "src/hover-help.css",
+    "src/mobile.css",
+    "src/style.css",
+    "src/ui-shell.css",
+    "src/world-vehicle-ui.css"
+  ],
+  "benchmarks": [
+    {
+      "style": "brutalist",
+      "referenceMeanMs": 26.725908333333596,
+      "optimizedMeanMs": 21.578324999999897,
+      "speedup": 1.2385534249453432,
+      "referenceP95Ms": 47.53000000002794,
+      "optimizedP95Ms": 39.75,
+      "referenceFinal": {
+        "tick": 599,
+        "broken": 727,
+        "fragments": 253,
+        "joints": 2558,
+        "bodies": 1235,
+        "active": 1186,
+        "meanHeight": 25.616434230708876
+      },
+      "optimizedFinal": {
+        "tick": 599,
+        "broken": 712,
+        "fragments": 254,
+        "joints": 2570,
+        "bodies": 1235,
+        "active": 1194,
+        "meanHeight": 25.621983705110132
+      }
+    },
+    {
+      "style": "art-deco",
+      "referenceMeanMs": 29.296616666666814,
+      "optimizedMeanMs": 22.59230000000001,
+      "speedup": 1.2967522858082976,
+      "referenceP95Ms": 50.65000000002328,
+      "optimizedP95Ms": 41.68499999999767,
+      "referenceFinal": {
+        "tick": 599,
+        "broken": 877,
+        "fragments": 500,
+        "joints": 1735,
+        "bodies": 1451,
+        "active": 1384,
+        "meanHeight": 24.307269651238354
+      },
+      "optimizedFinal": {
+        "tick": 599,
+        "broken": 927,
+        "fragments": 500,
+        "joints": 1685,
+        "bodies": 1448,
+        "active": 1373,
+        "meanHeight": 24.307574860191373
+      }
+    }
+  ],
+  "note": "One paired run per style, same Chrome and runner. Worker simulation throughput, not render FPS. Reference has the same ownership safety fixes and transport, but original packaged Jolt, individual getters and SixDOF joints. Fixed-joint specialization can produce small numerical differences."
+}

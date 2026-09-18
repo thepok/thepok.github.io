@@ -1,0 +1,516 @@
+{
+  "cpu": "AMD EPYC 7763 64-Core Processor",
+  "node": "v22.23.2",
+  "browser": "152.0.7977.82",
+  "results": [
+    {
+      "style": "brutalist",
+      "mode": "reference",
+      "info": {
+        "mode": "multithread",
+        "threads": 3,
+        "core": "original",
+        "renderer": "webgl",
+        "isolation": true
+      },
+      "replay": {
+        "name": "full-game-bombardment-v1",
+        "dt": 0.016666666666666666,
+        "ticks": 600,
+        "parts": 1000,
+        "fragmentLimit": 500,
+        "core": "original",
+        "meanMs": 26.725908333333596,
+        "p50Ms": 26.790000000037253,
+        "p95Ms": 47.53000000002794,
+        "maxMs": 81.43499999999767,
+        "physicsThroughput": 0.6236146011875432,
+        "snapshotMs": 97.21499999979278,
+        "upgradedJoints": 0,
+        "finite": true,
+        "timeline": [
+          {
+            "tick": 59,
+            "broken": 81,
+            "fragments": 70,
+            "joints": 3197,
+            "bodies": 1087,
+            "active": 1046,
+            "meanHeight": 25.280468585132102
+          },
+          {
+            "tick": 119,
+            "broken": 131,
+            "fragments": 76,
+            "joints": 3147,
+            "bodies": 1092,
+            "active": 1062,
+            "meanHeight": 25.30228389835939
+          },
+          {
+            "tick": 179,
+            "broken": 266,
+            "fragments": 147,
+            "joints": 3013,
+            "bodies": 1150,
+            "active": 1119,
+            "meanHeight": 25.541577859899657
+          },
+          {
+            "tick": 239,
+            "broken": 513,
+            "fragments": 180,
+            "joints": 2766,
+            "bodies": 1177,
+            "active": 1146,
+            "meanHeight": 25.287928221291278
+          },
+          {
+            "tick": 299,
+            "broken": 662,
+            "fragments": 247,
+            "joints": 2623,
+            "bodies": 1230,
+            "active": 1199,
+            "meanHeight": 25.60174137463811
+          },
+          {
+            "tick": 359,
+            "broken": 696,
+            "fragments": 247,
+            "joints": 2589,
+            "bodies": 1230,
+            "active": 1195,
+            "meanHeight": 25.590987493212406
+          },
+          {
+            "tick": 419,
+            "broken": 710,
+            "fragments": 247,
+            "joints": 2575,
+            "bodies": 1230,
+            "active": 1180,
+            "meanHeight": 25.590455883782205
+          },
+          {
+            "tick": 479,
+            "broken": 714,
+            "fragments": 247,
+            "joints": 2571,
+            "bodies": 1230,
+            "active": 1188,
+            "meanHeight": 25.594342528282027
+          },
+          {
+            "tick": 539,
+            "broken": 721,
+            "fragments": 253,
+            "joints": 2564,
+            "bodies": 1235,
+            "active": 1188,
+            "meanHeight": 25.611592102450032
+          },
+          {
+            "tick": 599,
+            "broken": 727,
+            "fragments": 253,
+            "joints": 2558,
+            "bodies": 1235,
+            "active": 1186,
+            "meanHeight": 25.616434230708876
+          }
+        ],
+        "threads": 3
+      },
+      "warnings": [
+        "[.WebGL-0x399c026af000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+        "No available adapters.",
+        "THREE.WebGPURenderer: WebGPU is not available, running under WebGL2 backend.",
+        "WebGPU renderer unavailable; using WebGL. Error: WebGPU adapter did not provide a WebGPU backend\n    at eo.initializeRenderer (http://127.0.0.1:5174/assets/main-tDTA63I1.js:29:32876)",
+        "[.WebGL-0x399c026af000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+        "[.WebGL-0x399c026af000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+        "[.WebGL-0x399c026af000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)",
+        "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+      ]
+    },
+    {
+      "style": "brutalist",
+      "mode": "optimized",
+      "info": {
+        "mode": "multithread",
+        "threads": 3,
+        "core": "specialized-native",
+        "renderer": "webgl",
+        "isolation": true
+      },
+      "replay": {
+        "name": "full-game-bombardment-v1",
+        "dt": 0.016666666666666666,
+        "ticks": 600,
+        "parts": 1000,
+        "fragmentLimit": 500,
+        "core": "specialized-native",
+        "meanMs": 21.578324999999897,
+        "p50Ms": 21.214999999967404,
+        "p95Ms": 39.75,
+        "maxMs": 56.98999999999069,
+        "physicsThroughput": 0.772380000146756,
+        "snapshotMs": 59.00500000012107,
+        "upgradedJoints": 1732,
+        "finite": true,
+        "timeline": [
+          {
+            "tick": 59,
+            "broken": 85,
+            "fragments": 76,
+            "joints": 3193,
+            "bodies": 1092,
+            "active": 1051,
+            "meanHeight": 25.297160831986346
+          },
+          {
+            "tick": 119,
+            "broken": 135,
+            "fragments": 82,
+            "joints": 3143,
+            "bodies": 1097,
+            "active": 1067,
+            "meanHeight": 25.32271230135905
+          },
+          {
+            "tick": 179,
+            "broken": 279,
+            "fragments": 151,
+            "joints": 3000,
+            "bodies": 1153,
+            "active": 1123,
+            "meanHeight": 25.55667335941005
+          },
+          {
+            "tick": 239,
+            "broken": 513,
+            "fragments": 184,
+            "joints": 2766,
+            "bodies": 1180,
+            "active": 1149,
+            "meanHeight": 25.28504142375626
+          },
+          {
+            "tick": 299,
+            "broken": 661,
+            "fragments": 248,
+            "joints": 2621,
+            "bodies": 1230,
+            "active": 1197,
+            "meanHeight": 25.61710328750218
+          },
+          {
+            "tick": 359,
+            "broken": 682,
+            "fragments": 254,
+            "joints": 2600,
+            "bodies": 1235,
+            "active": 1200,
+            "meanHeight": 25.611879159665914
+          },
+          {
+            "tick": 419,
+            "broken": 697,
+            "fragments": 254,
+            "joints": 2585,
+            "bodies": 1235,
+            "active": 1199,
+            "meanHeight": 25.614668243648257
+          },
+          {
+            "tick": 479,
+            "broken": 702,
+            "fragments": 254,
+            "joints": 2580,
+            "bodies": 1235,
+            "active": 1197,
+            "meanHeight": 25.618881884242438
+          },
+          {
+            "tick": 539,
+            "broken": 706,
+            "fragments": 254,
+            "joints": 2576,
+            "bodies": 1235,
+            "active": 1196,
+            "meanHeight": 25.61915731351378
+          },
+          {
+            "tick": 599,
+            "broken": 712,
+            "fragments": 254,
+            "joints": 2570,
+            "bodies": 1235,
+            "active": 1194,
+            "meanHeight": 25.621983705110132
+          }
+        ],
+        "threads": 3
+      },
+      "warnings": [
+        "No available adapters.",
+        "THREE.WebGPURenderer: WebGPU is not available, running under WebGL2 backend.",
+        "WebGPU renderer unavailable; using WebGL. Error: WebGPU adapter did not provide a WebGPU backend\n    at eo.initializeRenderer (http://127.0.0.1:5174/assets/main-tDTA63I1.js:29:32876)",
+        "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+      ]
+    },
+    {
+      "style": "art-deco",
+      "mode": "reference",
+      "info": {
+        "mode": "multithread",
+        "threads": 3,
+        "core": "original",
+        "renderer": "webgl",
+        "isolation": true
+      },
+      "replay": {
+        "name": "full-game-bombardment-v1",
+        "dt": 0.016666666666666666,
+        "ticks": 600,
+        "parts": 1000,
+        "fragmentLimit": 500,
+        "core": "original",
+        "meanMs": 29.296616666666814,
+        "p50Ms": 29.470000000030268,
+        "p95Ms": 50.65000000002328,
+        "maxMs": 86.57000000000698,
+        "physicsThroughput": 0.5688939052689218,
+        "snapshotMs": 111.77500000002328,
+        "upgradedJoints": 0,
+        "finite": true,
+        "timeline": [
+          {
+            "tick": 59,
+            "broken": 107,
+            "fragments": 162,
+            "joints": 2500,
+            "bodies": 1165,
+            "active": 1134,
+            "meanHeight": 24.153701878072305
+          },
+          {
+            "tick": 119,
+            "broken": 159,
+            "fragments": 179,
+            "joints": 2453,
+            "bodies": 1180,
+            "active": 1150,
+            "meanHeight": 24.200128423863152
+          },
+          {
+            "tick": 179,
+            "broken": 356,
+            "fragments": 382,
+            "joints": 2256,
+            "bodies": 1349,
+            "active": 1318,
+            "meanHeight": 24.8175914918197
+          },
+          {
+            "tick": 239,
+            "broken": 644,
+            "fragments": 500,
+            "joints": 1968,
+            "bodies": 1451,
+            "active": 1406,
+            "meanHeight": 24.248006518831296
+          },
+          {
+            "tick": 299,
+            "broken": 802,
+            "fragments": 500,
+            "joints": 1810,
+            "bodies": 1451,
+            "active": 1395,
+            "meanHeight": 24.47414936305494
+          },
+          {
+            "tick": 359,
+            "broken": 834,
+            "fragments": 500,
+            "joints": 1778,
+            "bodies": 1451,
+            "active": 1391,
+            "meanHeight": 24.40807430841621
+          },
+          {
+            "tick": 419,
+            "broken": 855,
+            "fragments": 500,
+            "joints": 1757,
+            "bodies": 1451,
+            "active": 1387,
+            "meanHeight": 24.358187339574197
+          },
+          {
+            "tick": 479,
+            "broken": 862,
+            "fragments": 500,
+            "joints": 1750,
+            "bodies": 1451,
+            "active": 1388,
+            "meanHeight": 24.334482272471586
+          },
+          {
+            "tick": 539,
+            "broken": 869,
+            "fragments": 500,
+            "joints": 1743,
+            "bodies": 1451,
+            "active": 1389,
+            "meanHeight": 24.30895981789136
+          },
+          {
+            "tick": 599,
+            "broken": 877,
+            "fragments": 500,
+            "joints": 1735,
+            "bodies": 1451,
+            "active": 1384,
+            "meanHeight": 24.307269651238354
+          }
+        ],
+        "threads": 3
+      },
+      "warnings": [
+        "No available adapters.",
+        "THREE.WebGPURenderer: WebGPU is not available, running under WebGL2 backend.",
+        "WebGPU renderer unavailable; using WebGL. Error: WebGPU adapter did not provide a WebGPU backend\n    at eo.initializeRenderer (http://127.0.0.1:5174/assets/main-tDTA63I1.js:29:32876)",
+        "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+      ]
+    },
+    {
+      "style": "art-deco",
+      "mode": "optimized",
+      "info": {
+        "mode": "multithread",
+        "threads": 3,
+        "core": "specialized-native",
+        "renderer": "webgl",
+        "isolation": true
+      },
+      "replay": {
+        "name": "full-game-bombardment-v1",
+        "dt": 0.016666666666666666,
+        "ticks": 600,
+        "parts": 1000,
+        "fragmentLimit": 500,
+        "core": "specialized-native",
+        "meanMs": 22.59230000000001,
+        "p50Ms": 21.67499999998836,
+        "p95Ms": 41.68499999999767,
+        "maxMs": 80.67999999999302,
+        "physicsThroughput": 0.7377144720398836,
+        "snapshotMs": 69.01000000000931,
+        "upgradedJoints": 1694,
+        "finite": true,
+        "timeline": [
+          {
+            "tick": 59,
+            "broken": 104,
+            "fragments": 162,
+            "joints": 2503,
+            "bodies": 1165,
+            "active": 1134,
+            "meanHeight": 24.151834662651083
+          },
+          {
+            "tick": 119,
+            "broken": 140,
+            "fragments": 185,
+            "joints": 2472,
+            "bodies": 1185,
+            "active": 1155,
+            "meanHeight": 24.21196798484557
+          },
+          {
+            "tick": 179,
+            "broken": 342,
+            "fragments": 320,
+            "joints": 2270,
+            "bodies": 1297,
+            "active": 1267,
+            "meanHeight": 24.66838078580836
+          },
+          {
+            "tick": 239,
+            "broken": 649,
+            "fragments": 488,
+            "joints": 1963,
+            "bodies": 1436,
+            "active": 1404,
+            "meanHeight": 24.088978235057144
+          },
+          {
+            "tick": 299,
+            "broken": 856,
+            "fragments": 500,
+            "joints": 1756,
+            "bodies": 1448,
+            "active": 1394,
+            "meanHeight": 24.45560488537703
+          },
+          {
+            "tick": 359,
+            "broken": 892,
+            "fragments": 500,
+            "joints": 1720,
+            "bodies": 1448,
+            "active": 1391,
+            "meanHeight": 24.37789466049751
+          },
+          {
+            "tick": 419,
+            "broken": 910,
+            "fragments": 500,
+            "joints": 1702,
+            "bodies": 1448,
+            "active": 1390,
+            "meanHeight": 24.316780671427313
+          },
+          {
+            "tick": 479,
+            "broken": 920,
+            "fragments": 500,
+            "joints": 1692,
+            "bodies": 1448,
+            "active": 1387,
+            "meanHeight": 24.3089745346578
+          },
+          {
+            "tick": 539,
+            "broken": 925,
+            "fragments": 500,
+            "joints": 1687,
+            "bodies": 1448,
+            "active": 1380,
+            "meanHeight": 24.30695785003412
+          },
+          {
+            "tick": 599,
+            "broken": 927,
+            "fragments": 500,
+            "joints": 1685,
+            "bodies": 1448,
+            "active": 1373,
+            "meanHeight": 24.307574860191373
+          }
+        ],
+        "threads": 3
+      },
+      "warnings": [
+        "No available adapters.",
+        "THREE.WebGPURenderer: WebGPU is not available, running under WebGL2 backend.",
+        "WebGPU renderer unavailable; using WebGL. Error: WebGPU adapter did not provide a WebGPU backend\n    at eo.initializeRenderer (http://127.0.0.1:5174/assets/main-tDTA63I1.js:29:32876)",
+        "THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+      ]
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,3 @@
+{"frameCollapseGlassFractured":true,"broken":1,"fragments":10}
+{"generatedParts":1000,"settleSteps":120,"quiet":true,"brokenGlass":0}
+glass breakage: support, frame collapse, fragile energy threshold, and generated stability passed
