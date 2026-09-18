@@ -1,0 +1,93 @@
+name: Build specialized full game physics core
+on:
+  push:
+    branches: [chatgpt-full-game-physics]
+    paths:
+      - tools/full-game-physics/native/**
+      - .github/workflows/full-game-native.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [single, threaded]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Exact JoltPhysics.js 1.1.0 source used by the stable game
+        uses: actions/checkout@v4
+        with:
+          repository: jrouwe/JoltPhysics.js
+          ref: c9c122bcd48e92885fbee7d267c928c3781d581c
+          path: native
+          persist-credentials: false
+      - name: Add safe batch API and fixed-constraint impulse bindings
+        run: |
+          cp tools/full-game-physics/native/LoadBearingQueries.h native/
+          cat tools/full-game-physics/native/extensions.idl >> native/JoltJS.idl
+          printf '\n#include "LoadBearingQueries.h"\n' >> native/JoltJS.h
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('native/CMakeLists.txt')
+          text=p.read_text()
+          # Upstream optimizes its link command, but not this glue compilation.
+          # Our native batch loops must be optimized too. Do not use fast-math.
+          text=text.replace('set(EMCC_GLUE_ARGS\n  -c','set(EMCC_GLUE_ARGS\n  -O3\n  -c')
+          text=text.replace('GIT_TAG "v5.6.0"','GIT_TAG "v5.6.0"\n        GIT_SHALLOW TRUE')
+          p.write_text(text)
+          PY
+      - name: Install pinned upstream compiler
+        working-directory: native
+        run: |
+          npm install --ignore-scripts
+          bash ci/install-emsdk.sh
+      - name: Compile SIMD core with unchanged physics settings
+        working-directory: native
+        env:
+          VARIANT: ${{ matrix.variant }}
+        run: |
+          source emsdk/emsdk_env.sh
+          mkdir -p dist
+          MT=OFF
+          if [ "$VARIANT" = threaded ]; then MT=ON; fi
+          cmake -B Build/LB -DCMAKE_BUILD_TYPE=Distribution -DBUILD_WASM_COMPAT_ONLY=ON -DENABLE_SIMD=ON -DENABLE_MULTI_THREADING=$MT
+          cmake --build Build/LB -j2
+          printf '%s\n' 'JoltPhysics.js c9c122bcd48e92885fbee7d267c928c3781d581c / Jolt 5.6.0 / emsdk 6.0.2 / SIMD / Distribution / optimized glue' > dist/BUILD.txt
+          git -C Build/LB/_deps/joltphysics-src rev-parse HEAD >> dist/BUILD.txt
+          cp LICENSE dist/LICENSE-JoltPhysics-js.txt
+      - name: Preserve binaries and exact API
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-game-native-${{ matrix.variant }}
+          path: |
+            native/dist/
+            native/Build/LB/glue.cpp
+          retention-days: 14
+  dependencies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Materialize exact full game and locked dependencies for tests
+        run: |
+          mkdir -p original
+          unzip -q games/loadbearing/source.zip -d original
+          cd original
+          npm ci
+      - uses: actions/upload-artifact@v4
+        with:
+          name: full-game-test-dependencies
+          path: original/
+          include-hidden-files: true
+          retention-days: 7

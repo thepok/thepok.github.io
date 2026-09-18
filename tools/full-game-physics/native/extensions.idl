@@ -1,0 +1,23 @@
+
+// Fixed constraints already exist in the pinned Jolt engine; expose their
+// impulses so the game's existing overload and progressive-yield model survives.
+[NoDelete]
+interface FixedConstraint {
+    [Value] Vec3 GetTotalLambdaPosition();
+    [Value] Vec3 GetTotalLambdaRotation();
+};
+FixedConstraint implements TwoBodyConstraint;
+
+interface LoadBearingQueries {
+    void LoadBearingQueries();
+    void ClearBodies();
+    void AddBody([Const, Ref] Body body);
+    void ClearJoints();
+    void AddJoint([Const, Ref] TwoBodyConstraint joint);
+    unsigned long GetBodyCount();
+    unsigned long GetJointCount();
+    unsigned long GetPoseAddress();
+    unsigned long GetLambdaAddress();
+    void CapturePoses();
+    void CaptureLambdas();
+};
