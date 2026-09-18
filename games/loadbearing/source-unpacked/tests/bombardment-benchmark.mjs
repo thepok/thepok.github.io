@@ -10,15 +10,21 @@ await build({
 });
 const {Simulation,loadPhysics,generateDemolitionBuilding}=await import('../artifacts/bombardment-benchmark.mjs?'+Date.now());
 const J=await loadPhysics();
-const count=Number(process.env.BENCH_PARTS||1000),seed=0x51a7;
-const pieces=generateDemolitionBuilding(count,seed,'brutalist').pieces;
+const count=Number(process.env.BENCH_PARTS||1000),seed=Number(process.env.BENCH_SEED||0x51a7),style=process.env.BENCH_STYLE||'brutalist';
+const solverMode=process.env.BENCH_SOLVER||'current';
+const pieces=generateDemolitionBuilding(count,seed,style).pieces;
 const pct=(a,p)=>[...a].sort((x,y)=>x-y)[Math.floor((a.length-1)*p)];
 const bounds={
  minX:Math.min(...pieces.map(p=>p.p[0])),maxX:Math.max(...pieces.map(p=>p.p[0])),
  minZ:Math.min(...pieces.map(p=>p.p[2])),maxZ:Math.max(...pieces.map(p=>p.p[2])),
  maxY:Math.max(...pieces.map(p=>p.p[1]))
 };
-const sim=new Simulation(J,structuredClone(pieces),'sandbox',1,{sandbox:true,fragmentLimit:500},0);
+const sim=new Simulation(J,structuredClone(pieces),'sandbox',1,{sandbox:true,fragmentLimit:300},0);
+const physicsSettings=sim.system.GetPhysicsSettings();
+if(solverMode==='legacy'){physicsSettings.mNumVelocitySteps=12;physicsSettings.mNumPositionSteps=3;sim.system.SetPhysicsSettings(physicsSettings);}
+else if(solverMode==='aggressive'){physicsSettings.mNumVelocitySteps=8;physicsSettings.mNumPositionSteps=2;sim.system.SetPhysicsSettings(physicsSettings);}
+else assert.equal(solverMode,'current','BENCH_SOLVER must be current, legacy or aggressive');
+const velocitySteps=physicsSettings.mNumVelocitySteps,positionSteps=physicsSettings.mNumPositionSteps;
 await sim.settleStartup();
 for(let i=0;i<90;i++)sim.step(1/60);
 
@@ -29,6 +35,7 @@ const shots=[
  [[-5,bounds.maxY+18,bounds.maxZ*.25],[3,-58,-2],18000,1.9],
  [[bounds.minX-24,Math.max(7,bounds.maxY*.38),bounds.maxZ*.45],[60,1,-7],16000,1.8],
 ];
+let worldMs=0;const worldStep=sim.world.Step.bind(sim.world);sim.world.Step=(...args)=>{const at=performance.now(),result=worldStep(...args);worldMs+=performance.now()-at;return result;};
 const samples=[],timeline=[];
 for(let frame=0;frame<480;frame++){
   const shotIndex=[20,105,190,275,360].indexOf(frame);
@@ -37,10 +44,14 @@ for(let frame=0;frame<480;frame++){
   if(frame%60===59)timeline.push({second:(frame+1)/60,broken:sim.broken,fragments:sim.fragments,bodies:sim.bodyList.length,peakStress:+sim.peakStress.toFixed(3)});
 }
 const mean=samples.reduce((a,b)=>a+b,0)/samples.length,status=sim.buildingStatus();
+const structural=sim.items.filter(i=>i.id>0);
+const fractured=structural.filter(i=>i.fractured).length;
+const moved=structural.filter(i=>{if(i.fractured)return true;const p=i.body.GetPosition();return Math.hypot(p.GetX()-i.initial[0],p.GetY()-i.initial[1],p.GetZ()-i.initial[2])>1.5}).length;
 const result={
- pieces:count,shots:shots.length,simulatedSeconds:8,
+ pieces:count,style,seed,shots:shots.length,simulatedSeconds:8,solverMode,solver:{velocitySteps,positionSteps},
  meanStepMs:+mean.toFixed(3),medianStepMs:+pct(samples,.5).toFixed(3),p95StepMs:+pct(samples,.95).toFixed(3),maxStepMs:+Math.max(...samples).toFixed(3),
- realtimeFactor:+((1000/60)/mean).toFixed(3),broken:sim.broken,fragments:sim.fragments,bodies:sim.bodyList.length,joints:sim.joints.length,rebars:sim.rebars.length,
+ worldMeanStepMs:+(worldMs/samples.length).toFixed(3),wrapperMeanStepMs:+(mean-worldMs/samples.length).toFixed(3),realtimeFactor:+((1000/60)/mean).toFixed(3),
+ broken:sim.broken,fragments:sim.fragments,fractured,moved,bodies:sim.bodyList.length,joints:sim.joints.length,rebars:sim.rebars.length,
  buildingPassed:status.passed,completedFloors:status.completedFloors,peakStress:+sim.peakStress.toFixed(3),timeline
 };
 assert.equal(pieces.length,count);
