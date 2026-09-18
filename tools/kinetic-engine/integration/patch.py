@@ -27,7 +27,14 @@ p=root/'package-lock.json';lock=json.loads(p.read_text());lock['packages'][''].g
 for p in (root/'tests').glob('*.mjs'):
  s=p.read_text().replace("(await import('jolt-physics')).default","(await import('../src/own-engine/compatibility.mjs')).default").replace("from 'jolt-physics'","from '../src/own-engine/compatibility.mjs'")
  if p.name=='physics-body-capacity.mjs':s=s.replace("platform:'neutral'","platform:'node'")
- if p.name=='vehicle-physics.mjs':s=s.replace('recycling.launchProjectile([0,10,20],[0,-1,-10],mass,radius)',"recycling.launchProjectile([0,10,20],[0,-1,-10],mass,radius,'solid',true)")
+ if p.name=='vehicle-physics.mjs':
+  s=s.replace('recycling.launchProjectile([0,10,20],[0,-1,-10],mass,radius)',"recycling.launchProjectile([0,10,20],[0,-1,-10],mass,radius,'solid',true)")
+  # Physical fracture can transfer every attachment to surviving fragments.
+  # broken counts lost joints, not broken parts; require the actual target to
+  # fracture and create physical debris. The separate single-shot test remains.
+  old="target.broken>0&&target.fragments>0,'mounted cannon must physically break the concrete target'"
+  assert s.count(old)==1
+  s=s.replace(old,"target.items.find(i=>i.id===2).fractured&&target.fragments>0,'mounted cannon must physically fracture the concrete target, even when connections transfer to surviving fragments'")
  p.write_text(s)
 (root/'tests/own-env.mjs').write_text("import{readFileSync}from'node:fs';globalThis.__KINETIC_WASM__=readFileSync(new URL('../src/own-engine/kernel.wasm',import.meta.url));\n")
 # Fail on any remaining third-party physics import in the shipped source.
