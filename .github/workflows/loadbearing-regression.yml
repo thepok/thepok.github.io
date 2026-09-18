@@ -1,0 +1,44 @@
+name: Loadbearing regression validation
+
+on:
+  push:
+    branches:
+      - chatgpt-unpack-loadbearing
+    paths:
+      - .github/workflows/loadbearing-regression.yml
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: games/loadbearing/source-unpacked
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: games/loadbearing/source-unpacked/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - name: Snapshot/render client regression
+        run: node tests/snapshot-render-client.mjs
+      - name: Install browser
+        run: npx playwright install --with-deps chromium
+      - name: Worker backpressure in Chromium
+        run: |
+          cp tests/worker-backpressure.mjs artifacts/worker-backpressure-ci.mjs
+          sed -i "s/{channel:'chrome',headless:true}/{headless:true}/" artifacts/worker-backpressure-ci.mjs
+          npm run dev -- --port 5174 > /tmp/loadbearing-vite.log 2>&1 &
+          server=$!
+          trap 'kill $server || true' EXIT
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:5174 >/dev/null; then break; fi
+            sleep 1
+          done
+          TEST_URL=http://127.0.0.1:5174 node artifacts/worker-backpressure-ci.mjs
