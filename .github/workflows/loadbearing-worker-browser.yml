@@ -25,13 +25,66 @@ jobs:
           cache-dependency-path: games/loadbearing/source-unpacked/package-lock.json
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - name: Run worker backpressure regression
+      - name: Run direct worker backpressure and buffer recycling check
         run: |
           mkdir -p artifacts
-          cp tests/worker-backpressure.mjs artifacts/worker-backpressure-ci.mjs
-          sed -i "s/{channel:'chrome',headless:true}/{headless:true}/" artifacts/worker-backpressure-ci.mjs
-          sed -i "s/await p.selectOption('#showcase','maison-azur')/await p.evaluate(()=>{const s=document.querySelector('#showcase');s.value='maison-azur';s.dispatchEvent(new Event('change',{bubbles:true}))})/" artifacts/worker-backpressure-ci.mjs
-          sed -i "s/await p.click('#workshop-mode')/await p.evaluate(()=>document.querySelector('#workshop-mode')?.click())/; s/await p.click('#sandbox-mode')/await p.evaluate(()=>document.querySelector('#sandbox-mode')?.click())/; s/await p.click('#load-showcase')/await p.evaluate(()=>document.querySelector('#load-showcase')?.click())/; s/await p.click('#vehicle-mode')/await p.evaluate(()=>document.querySelector('#vehicle-mode')?.click())/; s/await p.click('#vehicle-drive')/await p.evaluate(()=>document.querySelector('#vehicle-drive')?.click())/; s/await p.click('#restart')/await p.evaluate(()=>document.querySelector('#restart')?.click())/" artifacts/worker-backpressure-ci.mjs
+          cat > artifacts/worker-direct-ci.mjs <<'EOF'
+          import {chromium} from '@playwright/test';
+          import assert from 'node:assert/strict';
+          const browser=await chromium.launch({headless:true});
+          const page=await browser.newPage({viewport:{width:1280,height:800}});
+          const errors=[];page.on('pageerror',e=>errors.push(e.message));
+          try{
+            await page.goto('http://127.0.0.1:5174');
+            const init=await page.evaluate(async()=>{
+              const [{Simulation},{generateDemolitionBuilding}]=await Promise.all([
+                import('/src/simulation-client.ts'),
+                import('/src/procedural-buildings.ts'),
+              ]);
+              const pieces=generateDemolitionBuilding(120,0x51a7,'brutalist').pieces;
+              const sim=new Simulation({},pieces,'sandbox',1,{sandbox:true,fragmentLimit:156});
+              globalThis.__directSim=sim;
+              await sim.ready;
+              sim.step();
+              return {mode:sim.mode,threads:sim.threads,pieces:sim.pieces.length,crossOriginIsolated:globalThis.crossOriginIsolated};
+            });
+            assert.equal(init.pieces,120);
+            await page.evaluate(()=>{
+              const s=globalThis.__directSim;
+              globalThis.__acks=[];globalThis.__snapshots=0;
+              const post=s.worker.postMessage.bind(s.worker);
+              s.worker.postMessage=(message,transfer)=>{
+                if(message?.type==='snapshot-consumed')globalThis.__acks.push({
+                  seq:message.seq,
+                  poseBytes:message.poseBuffer?.byteLength??0,
+                  stressBytes:message.stressBuffer?.byteLength??0,
+                  transfers:Array.isArray(transfer)?transfer.length:0,
+                });
+                return post(message,transfer);
+              };
+              globalThis.__snapshotListener=e=>{if(e.data?.type==='snapshot')globalThis.__snapshots++};
+              s.worker.addEventListener('message',globalThis.__snapshotListener);
+            });
+            await page.waitForTimeout(700);
+            const stalled=await page.evaluate(()=>globalThis.__snapshots);
+            assert.ok(stalled<=1,'worker emitted more than one unconsumed snapshot: '+stalled);
+            await page.evaluate(()=>globalThis.__directSim.step());
+            const before=await page.evaluate(()=>globalThis.__directSim.elapsed);
+            await page.evaluate(()=>globalThis.__pump=setInterval(()=>globalThis.__directSim.step(),16));
+            await page.waitForTimeout(700);
+            const result=await page.evaluate(()=>{
+              clearInterval(globalThis.__pump);
+              const s=globalThis.__directSim,after=s.elapsed,acks=globalThis.__acks;
+              s.worker.removeEventListener('message',globalThis.__snapshotListener);
+              s.dispose();
+              return {after,acks,snapshots:globalThis.__snapshots};
+            });
+            assert.ok(result.after>before,'simulation did not resume after snapshot consumption');
+            assert.ok(result.acks.some(a=>a.transfers===2&&a.poseBytes>0&&a.stressBytes>0),'snapshot buffers were not transferred back to worker');
+            assert.deepEqual(errors,[]);
+            console.log('PASS direct worker backpressure + buffer recycling',JSON.stringify({init,stalled,acks:result.acks.length,snapshots:result.snapshots}));
+          }finally{await browser.close()}
+          EOF
           npm run dev -- --port 5174 > /tmp/loadbearing-vite.log 2>&1 &
           server=$!
           trap 'kill $server || true' EXIT
@@ -39,4 +92,4 @@ jobs:
             if curl -fsS http://127.0.0.1:5174 >/dev/null; then break; fi
             sleep 1
           done
-          TEST_URL=http://127.0.0.1:5174 node artifacts/worker-backpressure-ci.mjs
+          node artifacts/worker-direct-ci.mjs
