@@ -1,0 +1,80 @@
+name: Validate complete optimized game
+on:
+  push:
+    branches: [chatgpt-full-game-physics]
+    paths:
+      - tools/full-game-physics/integration/**
+      - .github/workflows/full-game-validation.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  game:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@v4
+        with:
+          name: full-game-native-single
+          run-id: 35367229979
+          github-token: ${{ github.token }}
+          path: cores/single
+      - uses: actions/download-artifact@v4
+        with:
+          name: full-game-native-threaded
+          run-id: 35367229979
+          github-token: ${{ github.token }}
+          path: cores/threaded
+      - name: Prepare exact original full game plus compatible backend
+        run: |
+          mkdir -p game
+          unzip -q games/loadbearing/source.zip -d game
+          python3 tools/full-game-physics/integration/apply.py game
+          cp cores/single/dist/jolt-physics.wasm-compat.js game/src/native/
+          cp cores/threaded/dist/jolt-physics.multithread.wasm-compat.js game/src/native/
+          cp tools/full-game-physics/integration/*.mjs game/tests/
+          cd game
+          npm ci
+          npm run build
+      - name: Original physics and native data equivalence regressions
+        working-directory: game
+        run: |
+          npm test
+          node tests/native-queries.mjs
+          for test in glass-breakage concrete-materials-physics concrete-update local-fracture rebar-connections walker-physics walker-weapons world-vehicles world-pieces-edit projectile-compound-flight projectile-debris-budget snapshot-render-client vehicle-physics landslide-challenges; do
+            node tests/$test.mjs
+          done
+      - name: Real original GUI, threaded A-B replay, walker, vehicle, reset and mobile checks
+        working-directory: game
+        run: |
+          npm run preview -- --port 5174 > /tmp/game-preview.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID"' EXIT
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:5174/ > /dev/null; then break; fi
+            sleep 1
+          done
+          node tests/browser.mjs
+      - name: Preserve built game, exact source and verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: complete-game-validation
+          path: |
+            game/dist/
+            game/src/
+            game/tests/
+            game/public/
+            game/package*.json
+            game/tsconfig.json
+            game/vite.config.ts
+            game/index.html
+            game/artifacts/browser/
+            cores/single/dist/BUILD.txt
+            cores/threaded/dist/BUILD.txt
+          retention-days: 14
