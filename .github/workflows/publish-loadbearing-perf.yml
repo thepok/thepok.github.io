@@ -1,0 +1,51 @@
+name: Publish loadbearing perf preview
+
+on:
+  push:
+    branches:
+      - chatgpt-physics-bombardment-bench
+    paths:
+      - games/loadbearing/source-unpacked/**
+      - .github/workflows/publish-loadbearing-perf.yml
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: chatgpt-physics-bombardment-bench
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: games/loadbearing/source-unpacked/package-lock.json
+      - name: Build optimized preview
+        working-directory: games/loadbearing/source-unpacked
+        run: |
+          npm ci
+          npm run build
+          rm -rf /tmp/loadbearing-perf
+          mkdir -p /tmp/loadbearing-perf
+          cp -a dist/. /tmp/loadbearing-perf/
+          printf '%s\n' "$GITHUB_SHA" > /tmp/loadbearing-perf/PREVIEW_COMMIT.txt
+      - name: Publish only preview folder to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout main
+          rm -rf games/loadbearing-perf
+          mkdir -p games/loadbearing-perf
+          cp -a /tmp/loadbearing-perf/. games/loadbearing-perf/
+          git add games/loadbearing-perf
+          if git diff --cached --quiet; then
+            echo "Preview already current"
+          else
+            git commit -m "preview: publish optimized loadbearing build"
+            git push origin main
+          fi
