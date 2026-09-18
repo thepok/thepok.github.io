@@ -37,10 +37,30 @@ jobs:
             sleep 1
           done
           node games/loadbearing-engine-lab/tests/browser.mjs
+      - name: Verify published bytes and run the public HTTPS demo
+        if: github.ref == 'refs/heads/main'
+        run: |
+          mv artifacts artifacts-local
+          ready=0
+          for i in $(seq 1 30); do
+            ready=1
+            for file in index.html engine.mjs worker.mjs app.mjs render.mjs; do
+              if ! curl -fsS --max-time 15 "https://thepok.github.io/games/loadbearing-engine-lab/$file?check=$GITHUB_SHA" -o /tmp/engine-live-file || ! cmp -s /tmp/engine-live-file "games/loadbearing-engine-lab/$file"; then
+                ready=0
+                break
+              fi
+            done
+            if [ "$ready" = 1 ]; then break; fi
+            sleep 5
+          done
+          test "$ready" = 1
+          TEST_URL=https://thepok.github.io/games/loadbearing-engine-lab/ node games/loadbearing-engine-lab/tests/browser.mjs
       - name: Browser screenshots and benchmark evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: custom-engine-browser-evidence
-          path: artifacts/
+          path: |
+            artifacts/
+            artifacts-local/
           if-no-files-found: warn
