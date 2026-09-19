@@ -13,7 +13,7 @@ struct Body {
  int active=1,canSleep=1,ccd=0;V beforeV;Q tensorQ;float tensorMass=-1;int tensorValid=0;
 };
 struct Joint {float out[8]{};int allocated=0,enabled=0,a=0,b=0,kind=0;V la,lb;Q qa,qb;V low,high,friction;V axisA,axisB;float minDist=0,maxDist=0,motorTarget=0,motorMin=0,motorMax=0;int motorState=0;
- V impulse,angularImpulse,ra,rb,bias,angularBias,n;M linearMass,angularMass;float distanceImpulse=0,motorImpulse=0,distanceMass=0;int active=0,limited=0;float angularInv[3]{};V axes[3];
+ V impulse,angularImpulse,ra,rb,bias,angularBias,n;M linearMass,angularMass;float distanceImpulse=0,motorImpulse=0,distanceMass=0;int active=0,limited=0;float angularInv[3]{};V axes[3];V velocityAngleError,velocityAngularDenominator;float pairInvTotal=0,pairFractionA=0,pairFractionB=0;
 };
 struct Contact {int a,b;V p,n,t1,t2,ra,rb,localA,localB,angularNA,angularNB,angular1A,angular1B,angular2A,angular2B;float depth=0,nmass=0,t1mass=0,t2mass=0,normal=0,f1=0,f2=0,target=0,friction=0;u64 key=0;};
 struct Cache {u64 key=0;int tick=0,used=0;float normal=0;V friction;};

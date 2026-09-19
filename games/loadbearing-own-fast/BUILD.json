@@ -1,92 +1,34 @@
 {
-  "engine": "KINETIC 0.2",
+  "engine": "KINETIC 0.2.1",
   "physicsLibrary": "none",
-  "baselineMain": "7e800f9fbdb862083aac6dc02ea2334ebecd97af",
-  "nativeSourceCommit": "4eceeb8eae25eb402aef55bc7e9ad63381cc5178",
-  "nativeValidationRun": 35425010992,
-  "browserGateCommit": "da87afd56d55478f287e24617a762d0be80d5028",
-  "browserGateRun": 35425224196,
-  "publicationSourceCommit": "be8b19702bef08125e567b751b94bc28e2c9c9df",
-  "sourceArchiveBaselineSha256": "196522ac9d8ea72aef1049a27151a1d89d605d0c58df92d75abd22198e8fe1a2",
+  "baselineMain": "07452976f74b6f1328a1e3d69112a55c5e13b6d0",
+  "validatedSourceCommit": "b700204a4564db8645700c93895db168fa124c55",
+  "validationRun": 35464183880,
   "kernel": {
     "baselineSha256": "037176c75c5d5800e2a6600e8468c5592d57d2431aff889e92a3ce1eca2084ed",
-    "optimizedSha256": "f81ef353179dbb726c388f586e609293cb14f0f2d119579769b22f0058a36ad5",
+    "optimizedSha256": "a259221b0809bdf720fa60394849567a398e8919203bacc1709a997aaeafe0d5",
     "bytes": {
       "baseline": 113537,
-      "optimized": 170175
+      "optimized": 169642
     },
     "runtimeImports": [],
     "memoryBytes": 134217728,
     "internalSteps": "60 Hz for large scenes; 120 Hz for startup, small scenes and enabled motor hinges",
     "geometry": "All original bodies, parts and fracture geometries; no clustering or lower debris budget"
   },
-  "environment": {
-    "node": "v22.23.2",
-    "cpu": "AMD EPYC 7763 64-Core Processor / AMD EPYC 9V45 96-Core Processor",
-    "cores": 4,
-    "arch": "x64",
-    "platform": "linux",
-    "perPreset": {
-      "art-deco": {
-        "node": "v22.23.2",
-        "cpu": "AMD EPYC 7763 64-Core Processor",
-        "cores": 4,
-        "arch": "x64",
-        "platform": "linux"
-      },
-      "brutalist": {
-        "node": "v22.23.2",
-        "cpu": "AMD EPYC 9V45 96-Core Processor",
-        "cores": 4,
-        "arch": "x64",
-        "platform": "linux"
-      }
-    }
-  },
   "benchmarks": [
     {
       "preset": "art-deco",
       "pairs": 3,
-      "speedup": 1.9813046383985269,
+      "speedup": 2.038108379542545,
       "range": [
-        1.925903488597593,
-        1.9838432426987438
+        2.0278456053971463,
+        2.071694372689516
       ],
-      "targetMet": false,
-      "referenceMeanMs": 28.416952205833464,
-      "optimizedMeanMs": 14.457036987500299,
-      "referenceP95Ms": 56.17069700002321,
-      "optimizedP95Ms": 22.91194999999425,
-      "referenceFinal": {
-        "tick": 1200,
-        "hash": "1d4a817c",
-        "finite": true,
-        "broken": 2406,
-        "fragments": 1000,
-        "liveJoints": 234,
-        "allocatedBodies": 1839,
-        "active": 984,
-        "intact": 471,
-        "meanHeight": 0.7682791453036786,
-        "minY": -0.16344571113586426,
-        "maxY": 9.302279472351074,
-        "maxSpeed": 8.476735199599652
-      },
-      "optimizedFinal": {
-        "tick": 1200,
-        "hash": "00f4c78e",
-        "finite": true,
-        "broken": 2115,
-        "fragments": 1000,
-        "liveJoints": 516,
-        "allocatedBodies": 1831,
-        "active": 1354,
-        "intact": 600,
-        "meanHeight": 1.843741816704472,
-        "minY": -0.17185965180397034,
-        "maxY": 12.475685119628906,
-        "maxSpeed": 14.365186121047914
-      },
+      "referenceMeanMs": 29.00532478333343,
+      "optimizedMeanMs": 14.019049784166636,
+      "referenceP95Ms": 56.355054000014206,
+      "optimizedP95Ms": 22.35673100000713,
       "quality": {
         "finite": true,
         "aggregateChecksPass": true,
@@ -104,51 +46,35 @@
         "maxMeanHeightDifferenceMetres": 5.165435334052308,
         "finalMeanHeightDifferenceMetres": 1.0754626714007933,
         "note": "Aggregate regression gates are not a proof of equal visual quality. Inspect the live collapse too."
+      },
+      "final": {
+        "tick": 1200,
+        "hash": "00f4c78e",
+        "finite": true,
+        "broken": 2115,
+        "fragments": 1000,
+        "liveJoints": 516,
+        "allocatedBodies": 1831,
+        "active": 1354,
+        "intact": 600,
+        "meanHeight": 1.843741816704472,
+        "minY": -0.17185965180397034,
+        "maxY": 12.475685119628906,
+        "maxSpeed": 14.365186121047914
       }
     },
     {
       "preset": "brutalist",
       "pairs": 3,
-      "speedup": 2.2458341264826274,
+      "speedup": 2.1843229400089283,
       "range": [
-        2.2217037211773847,
-        2.2477742903301534
+        2.0989531792505947,
+        2.2133123804254895
       ],
-      "targetMet": true,
-      "referenceMeanMs": 24.00602206916747,
-      "optimizedMeanMs": 10.726495100833217,
-      "referenceP95Ms": 35.076885999995284,
-      "optimizedP95Ms": 16.038887000002433,
-      "referenceFinal": {
-        "tick": 1200,
-        "hash": "91453715",
-        "finite": true,
-        "broken": 2598,
-        "fragments": 1000,
-        "liveJoints": 700,
-        "allocatedBodies": 1804,
-        "active": 1512,
-        "intact": 629,
-        "meanHeight": 2.985432198297807,
-        "minY": -0.02449643984436989,
-        "maxY": 12.958575248718262,
-        "maxSpeed": 3.6926321069974803
-      },
-      "optimizedFinal": {
-        "tick": 1200,
-        "hash": "fd0b25fd",
-        "finite": true,
-        "broken": 2558,
-        "fragments": 1000,
-        "liveJoints": 737,
-        "allocatedBodies": 1793,
-        "active": 1568,
-        "intact": 637,
-        "meanHeight": 3.1146827710315796,
-        "minY": -0.16183649003505707,
-        "maxY": 10.364710807800293,
-        "maxSpeed": 5.077079900683978
-      },
+      "referenceMeanMs": 41.03244089083297,
+      "optimizedMeanMs": 18.6143736133333,
+      "referenceP95Ms": 59.83354999998119,
+      "optimizedP95Ms": 29.06036300001142,
       "quality": {
         "finite": true,
         "aggregateChecksPass": true,
@@ -166,29 +92,160 @@
         "maxMeanHeightDifferenceMetres": 3.061175564114013,
         "finalMeanHeightDifferenceMetres": 0.12925057273377272,
         "note": "Aggregate regression gates are not a proof of equal visual quality. Inspect the live collapse too."
+      },
+      "final": {
+        "tick": 1200,
+        "hash": "fd0b25fd",
+        "finite": true,
+        "broken": 2558,
+        "fragments": 1000,
+        "liveJoints": 737,
+        "allocatedBodies": 1793,
+        "active": 1568,
+        "intact": 637,
+        "meanHeight": 3.1146827710315796,
+        "minY": -0.16183649003505707,
+        "maxY": 10.364710807800293,
+        "maxSpeed": 5.077079900683978
       }
     }
   ],
-  "allAggregateQualityGatesPass": true,
-  "doubleSpeedTargetAllPresets": false,
-  "unchangedGameFiles": [
-    "src/scene.ts",
-    "src/catalog.ts",
-    "src/procedural-buildings.ts",
-    "src/local-fracture.ts",
-    "src/concrete-materials.ts",
-    "src/building-objective.ts",
-    "src/building-accessibility.ts",
-    "src/vehicle-blueprint.ts",
-    "src/rebar-markings.ts",
-    "src/ui-shell.css",
-    "src/game-options.css",
-    "src/world-vehicle-ui.css",
-    "src/hover-help.css",
-    "src/demo-mode.css",
-    "src/mobile.css",
-    "src/style.css"
+  "environmentByPreset": {
+    "art-deco": {
+      "node": "v22.23.2",
+      "cpu": "AMD EPYC 7763 64-Core Processor",
+      "cores": 4,
+      "arch": "x64",
+      "platform": "linux"
+    },
+    "brutalist": {
+      "node": "v22.23.2",
+      "cpu": "AMD EPYC 7763 64-Core Processor",
+      "cores": 4,
+      "arch": "x64",
+      "platform": "linux"
+    }
+  },
+  "perStepEqualityAgainstV02": [
+    {
+      "preset": "art-deco",
+      "seed": 20903,
+      "steps": 1200,
+      "warmupSteps": 90,
+      "identicalEveryStep": true,
+      "baseline": "KINETIC 0.2",
+      "baselineSha256": "f81ef353179dbb726c388f586e609293cb14f0f2d119579769b22f0058a36ad5",
+      "candidateSha256": "a259221b0809bdf720fa60394849567a398e8919203bacc1709a997aaeafe0d5",
+      "final": {
+        "broken": 2115,
+        "fragments": 1000
+      },
+      "scope": "Exact IEEE-754 output states, damage accumulators and joint stages after every measured step. This establishes equality on these scenes, not all possible inputs."
+    },
+    {
+      "preset": "brutalist",
+      "seed": 20903,
+      "steps": 1200,
+      "warmupSteps": 90,
+      "identicalEveryStep": true,
+      "baseline": "KINETIC 0.2",
+      "baselineSha256": "f81ef353179dbb726c388f586e609293cb14f0f2d119579769b22f0058a36ad5",
+      "candidateSha256": "a259221b0809bdf720fa60394849567a398e8919203bacc1709a997aaeafe0d5",
+      "final": {
+        "broken": 2558,
+        "fragments": 1000
+      },
+      "scope": "Exact IEEE-754 output states, damage accumulators and joint stages after every measured step. This establishes equality on these scenes, not all possible inputs."
+    },
+    {
+      "preset": "quiet",
+      "seed": 20903,
+      "steps": 1200,
+      "warmupSteps": 90,
+      "identicalEveryStep": true,
+      "baseline": "KINETIC 0.2",
+      "baselineSha256": "f81ef353179dbb726c388f586e609293cb14f0f2d119579769b22f0058a36ad5",
+      "candidateSha256": "a259221b0809bdf720fa60394849567a398e8919203bacc1709a997aaeafe0d5",
+      "final": {
+        "broken": 0,
+        "fragments": 0
+      },
+      "scope": "Exact IEEE-754 output states, damage accumulators and joint stages after every measured step. This establishes equality on these scenes, not all possible inputs."
+    }
   ],
-  "timestepTradeoff": "Large ordinary worlds: 60 Hz internal instead of 120 Hz. Startup/small/activated motor hinges retain 120 Hz. External timestep, solver iteration parameters, shapes, bodies, materials and debris caps are unchanged.",
-  "scope": "Physics computation, not frame rate. Three alternating paired runs per collapse preset; each pair runs on one machine, different scenes may use different runners. Quality gates and visual A/B are not identical-trajectory guarantees."
+  "doubleSpeedTargetAllPresets": true,
+  "allAggregateQualityGatesPass": true,
+  "unchangedGameFiles": [
+    "src/cannon-ballistics.ts",
+    "src/sandbox-world.ts",
+    "src/ui-shell.css",
+    "src/projectile-ranges.ts",
+    "src/building-objective.ts",
+    "src/main.ts",
+    "src/physical-trees.ts",
+    "src/local-fracture.ts",
+    "src/challenges.ts",
+    "src/game-options.css",
+    "src/building-accessibility.ts",
+    "src/concrete-controls.ts",
+    "src/catalog.ts",
+    "src/scene.ts",
+    "src/world-vehicles.ts",
+    "src/detached-launchers.ts",
+    "src/physics-worker.ts",
+    "src/projectile-flights.ts",
+    "src/world-vehicle-ui.css",
+    "src/occupancy.ts",
+    "src/rebar-markings.ts",
+    "src/simulation-view.ts",
+    "src/vehicle-physics.ts",
+    "src/architectural-showcases.ts",
+    "src/projectile-preview.ts",
+    "src/demo-driving.ts",
+    "src/walker-aim.ts",
+    "src/vehicle-help.ts",
+    "src/hover-help.ts",
+    "src/ui-shell.ts",
+    "src/campaign.ts",
+    "src/attack-vehicle.ts",
+    "src/vehicle-workshop.ts",
+    "src/game-options.ts",
+    "src/hover-help.css",
+    "src/vehicle-blueprint.ts",
+    "src/fragment-batches.ts",
+    "src/walker-physics.ts",
+    "src/free-camera-keys.ts",
+    "src/demo-mode.css",
+    "src/walker-mode.ts",
+    "src/procedural-classic.ts",
+    "src/mobile-ui.ts",
+    "src/physics.ts",
+    "src/prefabs.ts",
+    "src/simulation-client.ts",
+    "src/bootstrap.ts",
+    "src/block-projectile.ts",
+    "src/demo-mode.ts",
+    "src/fracture.ts",
+    "src/render-pose.ts",
+    "src/mobile.css",
+    "src/simulation-protocol.ts",
+    "src/meteor-flight.ts",
+    "src/projectile-building-controls.ts",
+    "src/storey-projectile.ts",
+    "src/world-vehicle-ui.ts",
+    "src/procedural-buildings.ts",
+    "src/level-preview.ts",
+    "src/showcases.ts",
+    "src/concrete-materials.ts",
+    "src/style.css",
+    "src/destruction-audio.ts",
+    "src/structural-edit.ts",
+    "src/benchmark/worker.ts",
+    "src/benchmark/ui.ts",
+    "src/benchmark/ui.css",
+    "src/benchmark/suite.ts"
+  ],
+  "qualityScope": "Exact output equality with KINETIC 0.2 after all 1200 steps in both collapse scenes and quiet scene. Versus user-approved KINETIC 0.1, aggregate quality gates, not identical motion.",
+  "timestepTradeoff": "Inherited 0.2 policy: large ordinary worlds internal 60Hz versus 0.1 internal 120Hz. Startup, small scenes and enabled vehicle motors remain 120Hz. Cache optimization makes no additional quality reduction.",
+  "timingScope": "Median of 3 alternating paired ratios per scene, same machine within every pair; physics computation including projectile creation, excluding rendering/setup/warmup/tracing. Not an FPS guarantee."
 }

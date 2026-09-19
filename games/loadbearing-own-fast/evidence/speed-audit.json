@@ -1,9 +1,9 @@
 {
   "baselineSha256": "037176c75c5d5800e2a6600e8468c5592d57d2431aff889e92a3ce1eca2084ed",
-  "optimizedSha256": "f81ef353179dbb726c388f586e609293cb14f0f2d119579769b22f0058a36ad5",
+  "optimizedSha256": "a259221b0809bdf720fa60394849567a398e8919203bacc1709a997aaeafe0d5",
   "bytes": {
     "baseline": 113537,
-    "optimized": 170175
+    "optimized": 169642
   },
   "runtimeImports": [],
   "memoryBytes": 134217728,

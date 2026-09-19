@@ -1,4 +1,4 @@
-# KINETIC 0.2 — Physik-Benchmark und Performance-Vorschau
+# KINETIC 0.2.1 — Physik-Benchmark und Performance-Vorschau
 
 [Optimiertes vollständiges Spiel](https://thepok.github.io/games/loadbearing-own-fast/)
 
@@ -82,20 +82,43 @@ nicht Teil der einzelnen Schrittzeiten. Der ausgewiesene Faktor betrifft den
 Er gilt für die angegebenen Szenen und das jeweilige Gerät. Bei aktiven Fahrzeugen
 bleibt der feinere Teilschritt erhalten; dort ist derselbe Faktor nicht zugesichert.
 
+## Neue Optimierungen ohne weitere Qualitätsreduktion
+
+Die Version 0.2.1 berechnet unveränderte Winkel, Trägheitsterme und Massenverhältnisse
+innerhalb der Geschwindigkeitsiteration nur einmal. Die sechs Bounding-Box-
+Vergleiche laufen parallel in SIMD, mit denselben Ungleichungen und Rundungen.
+Zeitschritt, Iterationszahlen, Material, Einzelkörper, Geometrie und Trümmergrenzen
+werden gegenüber Version 0.2 nicht verändert.
+
+Zusätzlich zur Qualitätsprüfung gegen die ursprüngliche KINETIC-Version wurde
+Version 0.2.1 gegen Version 0.2 nach **jedem einzelnen Simulationsschritt** geprüft:
+Positionen, Drehungen, lineare/Winkelgeschwindigkeiten, Aktivität, Bruchzustände,
+Spannungen und Schadensakkumulatoren sind in beiden Einsturzszenen und der
+Ruheprobe exakt gleich. Das gilt für diese geprüften Szenen, nicht pauschal für
+alle möglichen Gebäude. Der bereits beschriebene 60/120-Hz-Unterschied zur
+ursprünglichen Version 0.1 bleibt ausdrücklich bestehen.
+
 ## Nachprüfbare Ergebnisse
 
-`BUILD.json` nennt Basisversion, geprüfte Commits, Workflow-Läufe, SHA-256-Hashes,
-Compiler und die gemessenen Ergebnisse. `evidence/benchmark/` enthält die Rohdaten,
-`evidence/speed-browser/` sichtbare A/B-Einstürze und den Test der echten Bedienung,
-`evidence/regressions/` die ausgeführten bisherigen Spieltests.
+Drei abwechselnde A/B-Paare pro Szene, 1.000 Originalteile, 1.000 Trümmerplätze,
+fünf feste Schüsse, 20 simulierte Sekunden. Referenz ist der eingefrorene,
+zuvor freigegebene KINETIC-0.1-Kern, nicht Jolt. Jeder Vergleich läuft auf demselben
+Rechner. Unterschiedliche Szenen können unterschiedliche CI-Rechner verwenden.
 
-| Gebäude | Referenz ms/Schritt | Optimiert ms/Schritt | Median Physikdurchsatz | Spanne der 3 Paare |
+| Gebäude | Referenz ms/Schritt | Optimiert ms/Schritt | Median Durchsatz | Spanne |
 |---|---:|---:|---:|---:|
-| art-deco | 28.42 | 14.46 | 1.98× | 1.93–1.98× |
-| brutalist | 24.01 | 10.73 | 2.25× | 2.22–2.25× |
+| art-deco | 29.01 | 14.02 | 2.04× | 2.03–2.07× |
+| brutalist | 41.03 | 18.61 | 2.18× | 2.10–2.21× |
 
-Gemessen unter v22.23.2 auf AMD EPYC 7763 64-Core Processor / AMD EPYC 9V45 96-Core Processor. Jeder A/B-Vergleich läuft auf demselben Rechner; die beiden Gebäudetypen wurden auf getrennten CI-Runnern geprüft. Schrittzeiten: Median der drei Laufmittel. Durchsatzfaktor: Median der gepaarten Verhältnisse.
-Die native WASM-Datei der Messungen ist identisch mit der hier ausgelieferten.
+Zeiten sind Mediane der drei Laufmittel; der Faktor ist der Median der gepaarten
+Verhältnisse. Beide getesteten Presets überschreiten Faktor 2 im Median. Keine
+Garantie für jedes Gerät, aktive Fahrzeuge, jedes Gebäude oder die Render-FPS.
+
+`BUILD.json` nennt die getesteten Kerne und Prüfläufe. `evidence/cache/` enthält
+alle Einzelzeiten, Phasen, Konfigurationen und die exakten Schrittvergleiche.
+`evidence/speed-browser/` enthält Tests und Screenshots der echten Benutzeroberfläche,
+Abbruch, Export, Mobilansicht und sichtbaren Einstürze. Ausgeliefert werden dieselben
+WASM-Bytes, die gemessen wurden.
 
 ## Spielstände und Quellcode
 

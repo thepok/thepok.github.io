@@ -8,11 +8,11 @@ static Six cx[MAX_J],cr[MAX_J],cz[MAX_J],cp[MAX_J],ca[MAX_J],cd[MAX_J];
 static V cv[MAX_B],cw[MAX_B];static int cj[MAX_J],cn=0;
 static double sixDot(Six*a,Six*b){double s=0;for(int i=0;i<cn;i++){s+=double(a[i].t.x)*b[i].t.x+double(a[i].t.y)*b[i].t.y+double(a[i].t.z)*b[i].t.z+double(a[i].r.x)*b[i].r.x+double(a[i].r.y)*b[i].r.y+double(a[i].r.z)*b[i].r.z;}return s;}
 static Six precondition(int row,Six rhs){Joint&j=joints[cj[row]];Body&A=bodies[j.a],&B=bodies[j.b];V bv=rhs.t-cross(rhs.r,j.rb),bw=rhs.r,p,t;
- if(A.invMass>0&&B.invMass>0){float total=A.mass+B.mass;V v=bv*(B.mass/total),w=mv(j.linearMass,mv(B.worldI,bw)+cross(j.n,bv)*j.distanceMass);p=(v+cross(w,j.n)*(A.mass/total)-bv)*B.mass;t=mv(B.worldI,w-bw)-cross(j.rb,p);}
+ if(A.invMass>0&&B.invMass>0){V v=bv*j.pairFractionB,w=mv(j.linearMass,mv(B.worldI,bw)+cross(j.n,bv)*j.distanceMass);p=(v+cross(w,j.n)*j.pairFractionA-bv)*B.mass;t=mv(B.worldI,w-bw)-cross(j.rb,p);}
  else if(B.invMass>0){p=bv*(-B.mass);t=mv(B.worldI,-bw)-cross(j.rb,p);}else{p=(bv-cross(bw,j.n))*(-A.mass);t=mv(A.worldI,-bw)-cross(j.ra,p);}
  return {-p,-t};}
 
-static void cgMatrix(Six*in,Six*out){
+static void cgMatrix(Six* __restrict in,Six* __restrict out){
  for(int i=0;i<bCount;i++){cv[i]={};cw[i]={};}
  for(int i=0;i<cn;i++){Joint&j=joints[cj[i]];Body&A=bodies[j.a],&B=bodies[j.b];V p=in[i].t,t=in[i].r;
  cv[j.a]-=p*A.invMass;cv[j.b]+=p*B.invMass;cw[j.a]-=mv(A.invI,cross(j.ra,p)+t);cw[j.b]+=mv(B.invI,cross(j.rb,p)+t);}

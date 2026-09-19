@@ -1,0 +1,5 @@
+PASS concrete material behavior and fixed fracture cost {
+  regular: { bodies: 10, fragments: 4, links: 3 },
+  heavy: { bodies: 10, fragments: 4, links: 3 },
+  plain: { bodies: 10, fragments: 4, links: 0 }
+}

@@ -1,12 +1,22 @@
 #pragma once
 static void prepJoint(Joint&j,float dt){Body&A=bodies[j.a],&B=bodies[j.b];j.active=j.enabled&&A.added&&B.added&&(A.active||B.active)&&(A.invMass+B.invMass>0);if(!j.active)return;j.ra=rot(A.q,j.la);j.rb=rot(B.q,j.lb);V error=B.p+j.rb-A.p-j.ra;j.bias=error*0.f;j.angularBias={};j.limited=0;
  bool weld=j.kind==0&&len2(j.low)+len2(j.high)==0;
- if(weld){j.limited=2;j.n=j.ra-j.rb;if(A.invMass>0&&B.invMass>0){float mu=1/(A.invMass+B.invMass);j.distanceMass=mu;M tensor=diag(len2(j.n),len2(j.n),len2(j.n));for(int i=0;i<3;i++)for(int k=0;k<3;k++)tensor.a[i*3+k]-=j.n[i]*j.n[k];j.linearMass=inverse(A.worldI+B.worldI+tensor*mu);}}
+ if(weld){j.limited=2;j.n=j.ra-j.rb;const float total=A.mass+B.mass;j.pairInvTotal=1/total;j.pairFractionA=A.mass/total;j.pairFractionB=B.mass/total;if(A.invMass>0&&B.invMass>0){float mu=1/(A.invMass+B.invMass);j.distanceMass=mu;M tensor=diag(len2(j.n),len2(j.n),len2(j.n));for(int i=0;i<3;i++)for(int k=0;k<3;k++)tensor.a[i*3+k]-=j.n[i]*j.n[k];j.linearMass=inverse(A.worldI+B.worldI+tensor*mu);}}
  else {j.linearMass=inverse(diag(A.invMass+B.invMass,A.invMass+B.invMass,A.invMass+B.invMass)+momentMatrix(A.invI,j.ra)+momentMatrix(B.invI,j.rb));j.angularMass=inverse(A.invI+B.invI);}
  if(j.kind==2){float d=len(error);j.n=d>1e-8f?error/d:V(0,1,0);j.distanceMass=1/maxf(1e-15f,effective(A,B,j.ra,j.rb,j.n));float e=d>j.maxDist?d-j.maxDist:d<j.minDist?d-j.minDist:0;j.bias=j.n*clampf(.16f*e/dt,-3,3);j.limited=e>0?1:e<0?-1:0;if(!j.limited)j.distanceImpulse=0;V imp=j.n*j.distanceImpulse;applyImpulse(A,-imp,j.ra);applyImpulse(B,imp,j.rb);return;}
  Q fa=qm(A.q,j.qa),fb=qm(B.q,j.qb),err=qm(fb,conj(fa));float sign=err.w>=0?1:-1;V angular=V(err.x,err.y,err.z)*(2*sign);for(int i=0;i<3;i++)j.axes[i]=rot(fa,i==0?V(1,0,0):i==1?V(0,1,0):V(0,0,1));
  if(j.kind==3){j.motorImpulse=0;V a=rot(A.q,j.axisA),b=rot(B.q,j.axisB);j.n=unit(a+b);j.angularBias=cross(a,b)*0.f;j.angularImpulse-=j.n*dot(j.angularImpulse,j.n);}
  else if(j.kind==0){for(int i=0;i<3;i++){float e=dot(angular,j.axes[i]),lo=j.low[i],hi=j.high[i];if(lo==hi)j.angularBias+=j.axes[i]*e;else if(e<lo)j.angularBias+=j.axes[i]*(e-lo);else if(e>hi)j.angularBias+=j.axes[i]*(e-hi);}if(weldFrequency>0&&weld){float omega=6.28318530718f*weldFrequency,den=2.f*omega+dt*omega*omega;float beta=weldBeta;j.angularInv[0]=weldAlpha;j.angularBias=cap(j.angularBias,.3f)*(beta/dt);j.bias=cap(error,.5f)*(beta/dt);}else{j.angularInv[0]=0;j.angularBias={};}}
+ // Orientations and inertia remain constant during the velocity iterations.
+ // Compute the same quantities once, without caching positional projection.
+ if(j.kind==0&&!weld){
+  Q a=qm(A.q,j.qa),b=qm(B.q,j.qb),qe=qm(b,conj(a));
+  V err(qe.x,qe.y,qe.z);err*=qe.w<0?-2.f:2.f;
+  for(int i=0;i<3;i++){
+   V axis=j.axes[i];j.velocityAngleError[i]=dot(err,axis);
+   j.velocityAngularDenominator[i]=dot(axis,mv(A.invI+B.invI,axis));
+  }
+ }
  if(cgEnabled&&weld){j.active=2;j.impulse*=.95f;j.angularImpulse*=.95f;applyImpulse(A,-j.impulse,j.ra);applyImpulse(B,j.impulse,j.rb);applyAngular(A,-j.angularImpulse);applyAngular(B,j.angularImpulse);return;}if(j.kind==1)j.angularImpulse={};j.impulse*=.85f;j.angularImpulse*=.85f;applyImpulse(A,-j.impulse,j.ra);applyImpulse(B,j.impulse,j.rb);applyAngular(A,-j.angularImpulse);applyAngular(B,j.angularImpulse);
 }
 static inline void solveJointBodies(Joint& __restrict j,float dt,Body* __restrict pa,Body* __restrict pb){if(!j.active||j.active==2)return;Body&A=*pa,&B=*pb;
@@ -28,7 +38,7 @@ static inline void solveJointBodies(Joint& __restrict j,float dt,Body* __restric
  if(j.kind==3){V target=-wr-j.angularBias;target-=j.n*dot(target,j.n);angular=mv(j.angularMass,target);angular-=j.n*dot(angular,j.n);j.angularImpulse+=angular;applyAngular(A,-angular);applyAngular(B,angular);if(j.motorState){float den=dot(j.n,mv(A.invI+B.invI,j.n));float d=den>1e-12f?(j.motorTarget-dot(B.w-A.w,j.n))/den:0,old=j.motorImpulse;j.motorImpulse=clampf(old+d,j.motorMin*dt,j.motorMax*dt);V t=j.n*(j.motorImpulse-old);applyAngular(A,-t);applyAngular(B,t);}return;}
  // All three zero-limit axes use a block solve. Yielded axes retain finite limits/friction.
  bool fixed=j.low.x==0&&j.low.y==0&&j.low.z==0&&j.high.x==0&&j.high.y==0&&j.high.z==0;
- if(fixed){angular=mv(j.angularMass,-wr-j.angularBias);j.angularImpulse+=angular;applyAngular(A,-angular);applyAngular(B,angular);}else{Q fa=qm(A.q,j.qa),fb=qm(B.q,j.qb),qe=qm(fb,conj(fa));V err(qe.x,qe.y,qe.z);err*=qe.w<0?-2.f:2.f;for(int i=0;i<3;i++){V axis=j.axes[i];float den=dot(axis,mv(A.invI+B.invI,axis));if(den<1e-15f)continue;float e=dot(err,axis),old=dot(j.angularImpulse,axis),lambda=old-(dot(B.w-A.w,axis)+dot(j.angularBias,axis))/den;float limit=j.friction[i]*dt;if(e>=j.low[i]&&e<=j.high[i])lambda=clampf(lambda,-limit,limit);else if(e>j.high[i])lambda=minf(limit,lambda);else lambda=maxf(-limit,lambda);V delta=axis*(lambda-old);j.angularImpulse+=delta;applyAngular(A,-delta);applyAngular(B,delta);}}
+ if(fixed){angular=mv(j.angularMass,-wr-j.angularBias);j.angularImpulse+=angular;applyAngular(A,-angular);applyAngular(B,angular);}else{for(int i=0;i<3;i++){V axis=j.axes[i];float den=j.velocityAngularDenominator[i];if(den<1e-15f)continue;float e=j.velocityAngleError[i],old=dot(j.angularImpulse,axis),lambda=old-(dot(B.w-A.w,axis)+dot(j.angularBias,axis))/den;float limit=j.friction[i]*dt;if(e>=j.low[i]&&e<=j.high[i])lambda=clampf(lambda,-limit,limit);else if(e>j.high[i])lambda=minf(limit,lambda);else lambda=maxf(-limit,lambda);V delta=axis*(lambda-old);j.angularImpulse+=delta;applyAngular(A,-delta);applyAngular(B,delta);}}
 }
 static void solveJoint(Joint&j,float dt){solveJointBodies(j,dt,&bodies[j.a],&bodies[j.b]);}
 static void poseImpulse(Body&b,V impulse,V r){if(b.invMass<=0)return;b.p+=impulse*b.invMass;V dq=cap(mv(b.invI,cross(r,impulse)),.12f);b.q=norm(qm(qdelta(dq),b.q));b.invI=rotated(b.localInvI,b.q);}

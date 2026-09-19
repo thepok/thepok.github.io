@@ -18,7 +18,13 @@ static WorldPrim wp(int body,int index){
 }
 static V support(const WorldPrim&w,V n){V local=rot(conj(w.q),n);if(w.p->kind==1)return w.c+unit(n)*w.h.x;if(w.p->kind==0)return w.c+rot(w.q,{local.x>=0?w.h.x:-w.h.x,local.y>=0?w.h.y:-w.h.y,local.z>=0?w.h.z:-w.h.z});Geometry &g=geometries[w.p->g];float best=-1e30f;V out;for(int i=0;i<g.nv;i++){float d=dot(g.vertices[i],local);if(d>best){best=d;out=g.vertices[i];}}return w.c+rot(w.q,out);}
 static float projectRadius(const WorldPrim &w,V n){if(w.p->kind==1)return w.h.x;if(w.p->kind==0)return absf(dot(w.axis[0],n))*w.h.x+absf(dot(w.axis[1],n))*w.h.y+absf(dot(w.axis[2],n))*w.h.z;Geometry &g=geometries[w.p->g];float radius=0;V axis=rot(conj(w.q),n);for(int i=0;i<g.nv;i++)radius=maxf(radius,absf(dot(g.vertices[i],axis)));return radius;}
-static bool aabb(V lo,V hi,V lo2,V hi2,float margin=.012f){return lo.x<=hi2.x+margin&&hi.x+margin>=lo2.x&&lo.y<=hi2.y+margin&&hi.y+margin>=lo2.y&&lo.z<=hi2.z+margin&&hi.z+margin>=lo2.z;}
+// Same six comparisons, evaluated in parallel; padding lane never participates.
+static bool aabb(V lo,V hi,V lo2,V hi2,float margin=.012f){
+ const v128_t m=wasm_f32x4_splat(margin);
+ const v128_t left=wasm_f32x4_le((v128_t)lo.lanes,wasm_f32x4_add((v128_t)hi2.lanes,m));
+ const v128_t right=wasm_f32x4_ge(wasm_f32x4_add((v128_t)hi.lanes,m),(v128_t)lo2.lanes);
+ return (wasm_i32x4_bitmask(wasm_v128_and(left,right))&7)==7;
+}
 static int clip(V *in,int count,V *out,V n,float d){if(!count)return 0;V prev=in[count-1];float dp=dot(prev,n)-d;int nc=0;for(int i=0;i<count;i++){V p=in[i];float dd=dot(p,n)-d;if((dd<=0)!=(dp<=0)){if(nc<20)out[nc++]=prev+(p-prev)*(dp/(dp-dd));}if(dd<=0&&nc<20)out[nc++]=p;prev=p;dp=dd;}return nc;}
 static void edgeClosest(V p,V a,V q,V b,V &o1,V&o2){V d1=a-p,d2=b-q,r=p-q;float A=dot(d1,d1),E=dot(d2,d2),B=dot(d1,d2),C=dot(d1,r),F=dot(d2,r),den=A*E-B*B;float s=den>1e-15f?clampf((B*F-C*E)/den,0,1):0,t=E>1e-15f?(B*s+F)/E:0;if(t<0){t=0;s=A>0?clampf(-C/A,0,1):0;}else if(t>1){t=1;s=A>0?clampf((B-C)/A,0,1):0;}o1=p+d1*s;o2=q+d2*t;}
 static inline float boxRadius(const WorldPrim&w,V n){return absf(dot(w.axis[0],n))*w.h.x+absf(dot(w.axis[1],n))*w.h.y+absf(dot(w.axis[2],n))*w.h.z;}
