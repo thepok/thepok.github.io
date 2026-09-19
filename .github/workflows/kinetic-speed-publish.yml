@@ -1,0 +1,105 @@
+name: Publish verified KINETIC speed and benchmark preview
+on:
+  push:
+    branches: [chatgpt-kinetic-speed-v2]
+    paths:
+      - tools/kinetic-speed-release/**
+      - .github/workflows/kinetic-speed-publish.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      actions: read
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Require pinned native speed, quality and browser validation
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run watch 35424317447 --repo thepok/thepok.github.io --exit-status
+          test "$(gh api repos/thepok/thepok.github.io/actions/runs/35424317447 --jq '.conclusion')" = success
+          test "$(gh api repos/thepok/thepok.github.io/actions/runs/35424317447 --jq '.head_sha')" = 0b42abd8eb263ff7bfd9c878f307ba0cc3449f69
+      - uses: actions/download-artifact@v4
+        with:
+          name: kinetic-speed-validation
+          run-id: 35424317447
+          github-token: ${{ github.token }}
+          path: validated
+      - name: Final diagnostic-only fixes; keep measured native binaries unchanged
+        run: |
+          if [ -d validated/game/src ]; then mv validated unpacked; mv unpacked/game validated; fi
+          cp tools/kinetic-speed-release/benchmark-contract.mjs validated/tests/
+          python3 tools/kinetic-speed-release/finalize.py validated
+          cd validated
+          npm ci
+          npm run build
+          node tests/own-audit.mjs
+          node tests/speed-audit.mjs
+          node tests/benchmark-contract.mjs
+      - name: Package measured native core, complete source and evidence
+        run: |
+          python3 tools/kinetic-speed-release/prepare.py
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('validated/tests/speed-browser.mjs')
+          s=p.read_text();old="assert.equal(live.controlled,true);"
+          assert s.count(old)==1
+          s=s.replace(old,old+"assert.equal(live.internalSubsteps,variant==='reference'?2400:1200);")
+          p.write_text(s)
+          PY
+      - name: Publish only new preview directory; leave approved KINETIC unchanged
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin main
+          git switch -C main origin/main
+          mkdir -p games/loadbearing-own-fast
+          cp -a /tmp/loadbearing-own-fast/. games/loadbearing-own-fast/
+          git add games/loadbearing-own-fast
+          if git diff --cached --quiet; then echo 'Already published'; else
+            test -z "$(git diff --cached --name-only | grep -v '^games/loadbearing-own-fast/' || true)"
+            git commit -m 'preview: publish accelerated own KINETIC engine with reproducible A-B benchmark'
+            git push origin main
+          fi
+      - name: Require exact current index and metadata on public HTTPS
+        run: |
+          ready=0
+          for i in $(seq 1 60); do
+            ready=1
+            for file in index.html BUILD.json; do
+              if ! curl -fsS --max-time 15 "https://thepok.github.io/games/loadbearing-own-fast/$file?verify=kinetic-speed-v2" -o /tmp/live-speed-file || ! cmp -s /tmp/live-speed-file "/tmp/loadbearing-own-fast/$file"; then ready=0; break; fi
+            done
+            if [ "$ready" = 1 ]; then break; fi
+            sleep 5
+          done
+          test "$ready" = 1
+      - name: Public browser benchmark, export, cancellation and visible crashes
+        working-directory: validated
+        run: |
+          mv artifacts/speed-browser artifacts/speed-browser-local
+          TEST_URL=https://thepok.github.io/games/loadbearing-own-fast/ node tests/speed-browser.mjs
+      - name: Preserve public-site evidence and downloadable tested source
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kinetic-speed-public-verification
+          path: |
+            validated/artifacts/speed-browser/
+            /tmp/loadbearing-own-fast/BUILD.json
+            /tmp/loadbearing-own-fast/source.zip
+          if-no-files-found: warn
+          retention-days: 30

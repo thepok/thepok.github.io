@@ -1,0 +1,16 @@
+import {build} from 'esbuild';
+import assert from 'node:assert/strict';
+await build({stdin:{contents:"export {statistics,scenario,shotPlan,Measurement,compareRuns} from './src/benchmark/suite.ts';",resolveDir:process.cwd()},bundle:true,platform:'node',format:'esm',outfile:'artifacts/benchmark-contract.mjs'});
+const {statistics,scenario,shotPlan,Measurement,compareRuns}=await import('../artifacts/benchmark-contract.mjs');
+assert.deepEqual(statistics([]),{count:0,totalMs:0,meanMs:0,medianMs:0,p95Ms:0,maxMs:0});
+assert.equal(statistics([1,2,3,4]).meanMs,2.5);assert.equal(statistics([1,2,3,4]).medianMs,2);assert.equal(statistics(Array.from({length:100},(_,i)=>i+1)).p95Ms,95);
+const a=scenario({preset:'art-deco',seed:0x51a7}),b=scenario({preset:'art-deco',seed:0x51a7});assert.deepEqual(a,b);assert.equal(a.pieces.length,1000);assert.equal(a.fragmentLimit,1000);assert.equal(a.ticks,1200);
+assert.deepEqual(shotPlan(a.pieces,a.dt).map(s=>s.tick),[60,180,300,420,600]);assert.throws(()=>scenario({preset:'current',pieces:[]}));assert.throws(()=>scenario({preset:'quiet',fragmentLimit:3}));
+let counter=0;const vec={GetX:()=>0,GetY:()=>0,GetZ:()=>0,GetW:()=>1},body={GetPosition:()=>vec,GetRotation:()=>vec,GetLinearVelocity:()=>vec,GetAngularVelocity:()=>vec,IsActive:()=>false};
+const sim={pieces:a.pieces,world:{k:{substeps_total:()=>counter,optimization_version:()=>200}},items:[{id:1,body}],joints:[],bodyList:[body],fragmentLimit:1000,broken:0,fragments:0,step(){counter++;}};
+const measure=new Measurement(sim,1/60,1,true);counter+=90;measure.step();assert.equal(measure.finish().internalSubsteps,1,'Warmup before the first measured tick is not measured');
+const base={...measure.finish(),preset:'art-deco',repetition:1,final:{finite:true,broken:1000,fragments:1000,meanHeight:1,minY:0,maxSpeed:1},traces:[{finite:true,meanHeight:1,hash:'a'}]};
+assert.equal(compareRuns(base,base).quality.aggregateChecksPass,true);
+for(const bad of [{fragments:400},{broken:800},{minY:-100},{maxSpeed:500},{meanHeight:6}])assert.equal(compareRuns(base,{...base,final:{...base.final,...bad}}).quality.aggregateChecksPass,false);
+assert.throws(()=>compareRuns(base,{...base,blueprintHash:'not-the-same-scene'}));
+console.log('PASS benchmark statistics, matched scene, fixed shot ticks, quality rejection, warmup exclusion');
