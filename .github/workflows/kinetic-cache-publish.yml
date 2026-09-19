@@ -1,0 +1,89 @@
+name: Publish verified KINETIC 0.2.1 speed refinement
+on:
+  push:
+    branches: [chatgpt-kinetic-speed-cache]
+    paths:
+      - tools/kinetic-cache-release/**
+      - .github/workflows/kinetic-cache-publish.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      actions: read
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Require exact quality, gameplay and 2x speed gates
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run watch 35464183880 --repo thepok/thepok.github.io --exit-status
+          test "$(gh api repos/thepok/thepok.github.io/actions/runs/35464183880 --jq '.conclusion')" = success
+          test "$(gh api repos/thepok/thepok.github.io/actions/runs/35464183880 --jq '.head_sha')" = b700204a4564db8645700c93895db168fa124c55
+      - uses: actions/download-artifact@v4
+        with:
+          name: kinetic-cache-game
+          run-id: 35464183880
+          github-token: ${{ github.token }}
+          path: validated/game
+      - uses: actions/download-artifact@v4
+        with:
+          name: kinetic-cache-art-deco
+          run-id: 35464183880
+          github-token: ${{ github.token }}
+          path: validated/art-deco
+      - uses: actions/download-artifact@v4
+        with:
+          name: kinetic-cache-brutalist
+          run-id: 35464183880
+          github-token: ${{ github.token }}
+          path: validated/brutalist
+      - name: Package exact tested bytes with complete source and measured evidence
+        run: python3 tools/kinetic-cache-release/prepare.py
+      - name: Update only the existing performance preview, never the approved original
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin main
+          # Abort instead of overwriting a concurrent edit to this preview.
+          test "$(git rev-parse origin/main:games/loadbearing-own-fast)" = f4dc95455d6ce1b658daa6c266e761f53fbd3294
+          git switch -C main origin/main
+          cp -a /tmp/kinetic-release/. games/loadbearing-own-fast/
+          git add games/loadbearing-own-fast
+          test -z "$(git diff --cached --name-only | grep -v '^games/loadbearing-own-fast/' || true)"
+          git commit -m 'perf: publish KINETIC 0.2.1 with exact cache equivalence and verified 2x benchmarks'
+          git push origin main
+      - name: Verify new manifest on public HTTPS
+        run: |
+          ready=0
+          for i in $(seq 1 60); do
+            if curl -fsS --max-time 15 "https://thepok.github.io/games/loadbearing-own-fast/BUILD.json?cache=b700204" -o /tmp/live-build.json && cmp -s /tmp/live-build.json /tmp/kinetic-release/BUILD.json; then ready=1; break; fi
+            sleep 5
+          done
+          test "$ready" = 1
+      - name: Test actual public benchmark UI and live full-game collapse
+        working-directory: validated/game
+        run: |
+          npm ci
+          rm -rf artifacts/speed-browser
+          TEST_URL=https://thepok.github.io/games/loadbearing-own-fast/ node tests/speed-browser.mjs
+      - name: Retain public browser verification
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kinetic-cache-public
+          path: validated/game/artifacts/speed-browser/
+          retention-days: 30
