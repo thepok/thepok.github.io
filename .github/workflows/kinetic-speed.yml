@@ -1,0 +1,84 @@
+name: KINETIC speed and quality validation
+on:
+  push:
+    branches: [chatgpt-kinetic-speed-v2]
+    paths:
+      - tools/kinetic-speed/**
+      - .github/workflows/kinetic-speed.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  full-game:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Reconstruct original full game plus hash-checked own-engine optimization
+        run: |
+          mkdir -p game
+          unzip -q games/loadbearing-own/source.zip -d game
+          python3 tools/kinetic-speed/apply.py game
+          sudo apt-get update -qq
+          sudo apt-get install -y clang-18 lld-18
+          clang++-18 --target=wasm32 -std=c++17 -O3 -msimd128 -mbulk-memory -ffreestanding -nostdlib -fno-exceptions -fno-rtti -Wl,--no-entry -Wl,--export-all -Wl,--export-memory -Wl,--initial-memory=134217728 -Wl,--max-memory=134217728 -Wl,-z,stack-size=2097152 game/src/own-engine/kernel.cpp -o game/src/own-engine/kernel.wasm
+          clang++-18 --version > game/compiler.txt
+      - name: Build complete GUI and audit frozen reference and own engine
+        working-directory: game
+        run: |
+          npm ci
+          npm run build
+          node tests/own-audit.mjs
+          node tests/speed-audit.mjs
+      - name: Original feature and physical regression tests
+        working-directory: game
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/regressions
+          npm test | tee artifacts/regressions/physics.log
+          for name in glass-breakage concrete-materials-physics concrete-update local-fracture rebar-connections walker-physics walker-weapons world-vehicles world-pieces-edit projectile-compound-flight projectile-debris-budget snapshot-render-client vehicle-physics physics-body-capacity startup-settling art-deco-cores core-building slab-impact-regressions glass-projectile-pose; do
+            node --import ./tests/own-env.mjs tests/$name.mjs | tee artifacts/regressions/$name.log
+          done
+      - name: Same-machine alternating A-B benchmark with quality gates
+        working-directory: game
+        run: |
+          npm run bench:physics -- --repeats 3 --presets art-deco,brutalist --out artifacts/benchmark/results.json
+          npm run bench:physics -- --repeats 1 --presets quiet --out artifacts/benchmark/quiet.json
+      - name: Actual browser benchmark controls, cancellation, export and visible A-B crashes
+        working-directory: game
+        run: |
+          npm run preview -- --port 5174 > /tmp/kinetic-speed-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID"' EXIT
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:5174/ > /dev/null; then break; fi
+            sleep 1
+          done
+          node tests/speed-browser.mjs
+      - name: Save exact binaries, editable source, full raw data and visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kinetic-speed-validation
+          path: |
+            game/dist/
+            game/src/
+            game/tests/
+            game/public/
+            game/package*.json
+            game/tsconfig.json
+            game/vite.config.ts
+            game/index.html
+            game/compiler.txt
+            game/artifacts/engine-audit.json
+            game/artifacts/speed-audit.json
+            game/artifacts/benchmark/*.json
+            game/artifacts/regressions/
+            game/artifacts/speed-browser/
+          retention-days: 30
