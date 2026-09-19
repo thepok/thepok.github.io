@@ -1,0 +1,96 @@
+name: Final KINETIC ground safety and throughput
+on:
+  push:
+    branches: [chatgpt-kinetic-speed-v2]
+    paths:
+      - tools/kinetic-ground/**
+      - .github/workflows/kinetic-ground.yml
+permissions:
+  contents: read
+  actions: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        task: [art-deco, brutalist, browser]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@v4
+        with:
+          name: kinetic-speed-final-game
+          run-id: 35425224196
+          github-token: ${{ github.token }}
+          path: game
+      - name: Apply final ground fast path and compile our own engine
+        run: |
+          python3 tools/kinetic-ground/patch.py game
+          cp tools/kinetic-ground/public-check.mjs game/tests/ground-public-check.mjs
+          rm -rf game/artifacts/benchmark game/artifacts/speed-browser
+          sudo apt-get update -qq
+          sudo apt-get install -y clang-18 lld-18
+          clang++-18 --target=wasm32 -std=c++17 -O3 -msimd128 -mbulk-memory -ffreestanding -nostdlib -fno-exceptions -fno-rtti -Wl,--no-entry -Wl,--export-all -Wl,--export-memory -Wl,--initial-memory=134217728 -Wl,--max-memory=134217728 -Wl,-z,stack-size=2097152 game/src/own-engine/kernel.cpp -o game/src/own-engine/kernel.wasm
+          clang++-18 --version > game/compiler.txt
+          cd game
+          npm ci
+          npm run build
+          node tests/own-audit.mjs
+          node tests/speed-audit.mjs
+          node tests/benchmark-contract.mjs
+          node tests/fast-floor-regression.mjs
+      - name: Three alternating A-B pairs, complete destruction and strict quality checks
+        if: matrix.task != 'browser'
+        working-directory: game
+        env:
+          PRESET: ${{ matrix.task }}
+        run: npm run bench:physics -- --repeats 3 --presets "$PRESET" --out artifacts/benchmark/results.json
+      - name: Existing full-game physics regressions
+        if: matrix.task == 'browser'
+        working-directory: game
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/regressions
+          npm test | tee artifacts/regressions/physics.log
+          node tests/benchmark-contract.mjs | tee artifacts/regressions/benchmark-contract.log
+          node tests/fast-floor-regression.mjs | tee artifacts/regressions/fast-floor.log
+          for name in glass-breakage concrete-materials-physics concrete-update local-fracture rebar-connections walker-physics walker-weapons world-vehicles world-pieces-edit projectile-compound-flight projectile-debris-budget snapshot-render-client vehicle-physics physics-body-capacity startup-settling art-deco-cores core-building slab-impact-regressions glass-projectile-pose; do
+            node --import ./tests/own-env.mjs tests/$name.mjs | tee artifacts/regressions/$name.log
+          done
+          npm run bench:physics -- --repeats 1 --presets quiet --out artifacts/benchmark/quiet.json
+      - name: Full browser A-B, controls and both visible crashes including ground escape checks
+        if: matrix.task == 'browser'
+        working-directory: game
+        run: |
+          npm run preview -- --port 5174 > /tmp/kinetic-ground-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID"' EXIT
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:5174/ > /dev/null; then break; fi
+            sleep 1
+          done
+          node tests/speed-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kinetic-ground-${{ matrix.task }}
+          path: |
+            game/dist/
+            game/src/
+            game/tests/
+            game/public/
+            game/package*.json
+            game/tsconfig.json
+            game/vite.config.ts
+            game/index.html
+            game/compiler.txt
+            game/artifacts/engine-audit.json
+            game/artifacts/speed-audit.json
+            game/artifacts/benchmark/*.json
+            game/artifacts/regressions/
+            game/artifacts/speed-browser/
+          retention-days: 30
