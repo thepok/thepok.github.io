@@ -1,0 +1,194 @@
+{
+  "engine": "KINETIC 0.2",
+  "physicsLibrary": "none",
+  "baselineMain": "7e800f9fbdb862083aac6dc02ea2334ebecd97af",
+  "nativeSourceCommit": "4eceeb8eae25eb402aef55bc7e9ad63381cc5178",
+  "nativeValidationRun": 35425010992,
+  "browserGateCommit": "da87afd56d55478f287e24617a762d0be80d5028",
+  "browserGateRun": 35425224196,
+  "publicationSourceCommit": "be8b19702bef08125e567b751b94bc28e2c9c9df",
+  "sourceArchiveBaselineSha256": "196522ac9d8ea72aef1049a27151a1d89d605d0c58df92d75abd22198e8fe1a2",
+  "kernel": {
+    "baselineSha256": "037176c75c5d5800e2a6600e8468c5592d57d2431aff889e92a3ce1eca2084ed",
+    "optimizedSha256": "f81ef353179dbb726c388f586e609293cb14f0f2d119579769b22f0058a36ad5",
+    "bytes": {
+      "baseline": 113537,
+      "optimized": 170175
+    },
+    "runtimeImports": [],
+    "memoryBytes": 134217728,
+    "internalSteps": "60 Hz for large scenes; 120 Hz for startup, small scenes and enabled motor hinges",
+    "geometry": "All original bodies, parts and fracture geometries; no clustering or lower debris budget"
+  },
+  "environment": {
+    "node": "v22.23.2",
+    "cpu": "AMD EPYC 7763 64-Core Processor / AMD EPYC 9V45 96-Core Processor",
+    "cores": 4,
+    "arch": "x64",
+    "platform": "linux",
+    "perPreset": {
+      "art-deco": {
+        "node": "v22.23.2",
+        "cpu": "AMD EPYC 7763 64-Core Processor",
+        "cores": 4,
+        "arch": "x64",
+        "platform": "linux"
+      },
+      "brutalist": {
+        "node": "v22.23.2",
+        "cpu": "AMD EPYC 9V45 96-Core Processor",
+        "cores": 4,
+        "arch": "x64",
+        "platform": "linux"
+      }
+    }
+  },
+  "benchmarks": [
+    {
+      "preset": "art-deco",
+      "pairs": 3,
+      "speedup": 1.9813046383985269,
+      "range": [
+        1.925903488597593,
+        1.9838432426987438
+      ],
+      "targetMet": false,
+      "referenceMeanMs": 28.416952205833464,
+      "optimizedMeanMs": 14.457036987500299,
+      "referenceP95Ms": 56.17069700002321,
+      "optimizedP95Ms": 22.91194999999425,
+      "referenceFinal": {
+        "tick": 1200,
+        "hash": "1d4a817c",
+        "finite": true,
+        "broken": 2406,
+        "fragments": 1000,
+        "liveJoints": 234,
+        "allocatedBodies": 1839,
+        "active": 984,
+        "intact": 471,
+        "meanHeight": 0.7682791453036786,
+        "minY": -0.16344571113586426,
+        "maxY": 9.302279472351074,
+        "maxSpeed": 8.476735199599652
+      },
+      "optimizedFinal": {
+        "tick": 1200,
+        "hash": "00f4c78e",
+        "finite": true,
+        "broken": 2115,
+        "fragments": 1000,
+        "liveJoints": 516,
+        "allocatedBodies": 1831,
+        "active": 1354,
+        "intact": 600,
+        "meanHeight": 1.843741816704472,
+        "minY": -0.17185965180397034,
+        "maxY": 12.475685119628906,
+        "maxSpeed": 14.365186121047914
+      },
+      "quality": {
+        "finite": true,
+        "aggregateChecksPass": true,
+        "checks": {
+          "damage": true,
+          "fragments": true,
+          "finalHeight": true,
+          "collapseCurve": true,
+          "ground": true,
+          "velocity": true
+        },
+        "poseCheckpointsIdentical": false,
+        "damageRelativeDifference": 0.12094763092269327,
+        "fragmentRelativeDifference": 0,
+        "maxMeanHeightDifferenceMetres": 5.165435334052308,
+        "finalMeanHeightDifferenceMetres": 1.0754626714007933,
+        "note": "Aggregate regression gates are not a proof of equal visual quality. Inspect the live collapse too."
+      }
+    },
+    {
+      "preset": "brutalist",
+      "pairs": 3,
+      "speedup": 2.2458341264826274,
+      "range": [
+        2.2217037211773847,
+        2.2477742903301534
+      ],
+      "targetMet": true,
+      "referenceMeanMs": 24.00602206916747,
+      "optimizedMeanMs": 10.726495100833217,
+      "referenceP95Ms": 35.076885999995284,
+      "optimizedP95Ms": 16.038887000002433,
+      "referenceFinal": {
+        "tick": 1200,
+        "hash": "91453715",
+        "finite": true,
+        "broken": 2598,
+        "fragments": 1000,
+        "liveJoints": 700,
+        "allocatedBodies": 1804,
+        "active": 1512,
+        "intact": 629,
+        "meanHeight": 2.985432198297807,
+        "minY": -0.02449643984436989,
+        "maxY": 12.958575248718262,
+        "maxSpeed": 3.6926321069974803
+      },
+      "optimizedFinal": {
+        "tick": 1200,
+        "hash": "fd0b25fd",
+        "finite": true,
+        "broken": 2558,
+        "fragments": 1000,
+        "liveJoints": 737,
+        "allocatedBodies": 1793,
+        "active": 1568,
+        "intact": 637,
+        "meanHeight": 3.1146827710315796,
+        "minY": -0.16183649003505707,
+        "maxY": 10.364710807800293,
+        "maxSpeed": 5.077079900683978
+      },
+      "quality": {
+        "finite": true,
+        "aggregateChecksPass": true,
+        "checks": {
+          "damage": true,
+          "fragments": true,
+          "finalHeight": true,
+          "collapseCurve": true,
+          "ground": true,
+          "velocity": true
+        },
+        "poseCheckpointsIdentical": false,
+        "damageRelativeDifference": 0.015396458814472672,
+        "fragmentRelativeDifference": 0,
+        "maxMeanHeightDifferenceMetres": 3.061175564114013,
+        "finalMeanHeightDifferenceMetres": 0.12925057273377272,
+        "note": "Aggregate regression gates are not a proof of equal visual quality. Inspect the live collapse too."
+      }
+    }
+  ],
+  "allAggregateQualityGatesPass": true,
+  "doubleSpeedTargetAllPresets": false,
+  "unchangedGameFiles": [
+    "src/scene.ts",
+    "src/catalog.ts",
+    "src/procedural-buildings.ts",
+    "src/local-fracture.ts",
+    "src/concrete-materials.ts",
+    "src/building-objective.ts",
+    "src/building-accessibility.ts",
+    "src/vehicle-blueprint.ts",
+    "src/rebar-markings.ts",
+    "src/ui-shell.css",
+    "src/game-options.css",
+    "src/world-vehicle-ui.css",
+    "src/hover-help.css",
+    "src/demo-mode.css",
+    "src/mobile.css",
+    "src/style.css"
+  ],
+  "timestepTradeoff": "Large ordinary worlds: 60 Hz internal instead of 120 Hz. Startup/small/activated motor hinges retain 120 Hz. External timestep, solver iteration parameters, shapes, bodies, materials and debris caps are unchanged.",
+  "scope": "Physics computation, not frame rate. Three alternating paired runs per collapse preset; each pair runs on one machine, different scenes may use different runners. Quality gates and visual A/B are not identical-trajectory guarantees."
+}

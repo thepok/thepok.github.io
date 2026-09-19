@@ -1,0 +1,12 @@
+{
+  "baselineSha256": "037176c75c5d5800e2a6600e8468c5592d57d2431aff889e92a3ce1eca2084ed",
+  "optimizedSha256": "f81ef353179dbb726c388f586e609293cb14f0f2d119579769b22f0058a36ad5",
+  "bytes": {
+    "baseline": 113537,
+    "optimized": 170175
+  },
+  "runtimeImports": [],
+  "memoryBytes": 134217728,
+  "internalSteps": "60 Hz for large scenes; 120 Hz for startup, small scenes and enabled motor hinges",
+  "geometry": "All original bodies, parts and fracture geometries; no clustering or lower debris budget"
+}

@@ -1,0 +1,29 @@
+{
+  "engine": "KINETIC — own C++/WASM",
+  "version": "0.2.0",
+  "wasmBytes": 170175,
+  "sha256": "f81ef353179dbb726c388f586e609293cb14f0f2d119579769b22f0058a36ad5",
+  "wasmImports": [],
+  "thirdPartyPhysicsDependency": false,
+  "bodyModel": "Every original part retains its own 6-DOF rigid body",
+  "nativeSourceFiles": [
+    "bodies.hpp",
+    "collisions.hpp",
+    "constraints.hpp",
+    "interface.hpp",
+    "kernel.cpp",
+    "math.hpp",
+    "projection.hpp"
+  ],
+  "assetFiles": [
+    "compatibility-BVYWxWyp.js",
+    "index-BcU2xJjR.js",
+    "kernel-8SVjpEhv.wasm",
+    "kernel-reference-Cn_gBlSC.wasm",
+    "main-C1DG-j5i.js",
+    "main-Cnozd_ZJ.css",
+    "physics-worker-Dn0JJlU9.js",
+    "three-C4T8_r6N.js",
+    "worker-1Hv6Mco3.js"
+  ]
+}

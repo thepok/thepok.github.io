@@ -1,0 +1,8 @@
+PASS thin fast debris stays above ground at 60 Hz {
+  minY: 0.05438043549656868,
+  position: [
+    0.0008786370162852108,
+    0.056314222514629364,
+    0.000020632312953239307
+  ]
+}
