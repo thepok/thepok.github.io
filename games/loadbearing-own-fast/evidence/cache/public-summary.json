@@ -1,0 +1,32 @@
+{
+  "url": "https://thepok.github.io/games/loadbearing-own-fast/",
+  "validationRun": 35464414715,
+  "artifactId": 10590598168,
+  "browser": "Chrome 152.0.7977.82",
+  "functionalChecksPassed": true,
+  "browserErrors": [],
+  "scope": "Actual public HTTPS page: original GUI, benchmark modal, cancellation/resume, JSON export, mobile layout, visible collapse on both kernels. Functional assertions do not require every debris body to remain above ground.",
+  "isolatedBrowserBenchmark": {
+    "pairs": 1,
+    "preset": "art-deco",
+    "speedup": 2.0650719071344037,
+    "referenceMeanMs": 31.659858333332718,
+    "optimizedMeanMs": 15.331116666666349,
+    "referenceP95Ms": 62.184999999939464,
+    "optimizedP95Ms": 24.414999999920838,
+    "referenceKernelSha256": "037176c75c5d5800e2a6600e8468c5592d57d2431aff889e92a3ce1eca2084ed",
+    "optimizedKernelSha256": "a259221b0809bdf720fa60394849567a398e8919203bacc1709a997aaeafe0d5",
+    "note": "Single functional-test sample, not the three-pair performance qualification. The earlier localhost browser sample measured 1.9849083146387578x. Neither implies a guarantee for every device."
+  },
+  "liveReplay": {
+    "reference": {"broken": 2410, "fragments": 1000, "meanHeight": 0.901946328885374, "finite": true, "outliers": []},
+    "optimized": {
+      "broken": 2202,
+      "fragments": 1000,
+      "meanHeight": 1.6685093508634183,
+      "finite": true,
+      "outliers": [{"id": -1002222, "kind": "fragment", "position": [-14.298260688781738, -598.4157104492188, 20.050556182861328], "velocity": [-0.5038731694221497, -78.94856262207031, -0.22723081707954407]}]
+    },
+    "qualityIssue": "One fragment passed through the static floor in the additional live scene. The standardized isolated presets pass their separate ground checks. See QA-NOTES-0.2.1.md; this is not a defect-free-quality claim."
+  }
+}
