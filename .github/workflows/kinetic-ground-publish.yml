@@ -1,0 +1,98 @@
+name: Publish final ground-safe KINETIC speed benchmark
+on:
+  push:
+    branches: [chatgpt-kinetic-speed-v2]
+    paths:
+      - tools/kinetic-ground-release/**
+      - .github/workflows/kinetic-ground-publish.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Require all final scene and strict live-ground checks
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run watch 35426888597 --repo thepok/thepok.github.io --exit-status
+          test "$(gh api repos/thepok/thepok.github.io/actions/runs/35426888597 --jq '.conclusion')" = success
+          test "$(gh api repos/thepok/thepok.github.io/actions/runs/35426888597 --jq '.head_sha')" = 2c23ca4efe339575c2105a8bef197a808aa38773
+      - uses: actions/download-artifact@v4
+        with:
+          name: kinetic-ground-browser
+          run-id: 35426888597
+          github-token: ${{ github.token }}
+          path: validated
+      - uses: actions/download-artifact@v4
+        with:
+          name: kinetic-ground-art-deco
+          run-id: 35426888597
+          github-token: ${{ github.token }}
+          path: measured/art-deco
+      - uses: actions/download-artifact@v4
+        with:
+          name: kinetic-ground-brutalist
+          run-id: 35426888597
+          github-token: ${{ github.token }}
+          path: measured/brutalist
+      - name: Package the exact tested native core and whole game
+        run: |
+          cp tools/kinetic-ground-release/public-check.mjs validated/tests/ground-public-check.mjs
+          python3 tools/kinetic-ground-release/prepare.py
+          cd validated
+          npm ci
+          node tests/speed-audit.mjs
+          node tests/benchmark-contract.mjs
+          node tests/fast-floor-regression.mjs
+      - name: Update only isolated speed preview; preserve approved engine and saves
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin main
+          git switch -C main origin/main
+          mkdir -p games/loadbearing-own-fast
+          cp -a /tmp/loadbearing-own-fast/. games/loadbearing-own-fast/
+          git add games/loadbearing-own-fast
+          if git diff --cached --quiet; then echo 'Already current'; else
+            test -z "$(git diff --cached --name-only | grep -v '^games/loadbearing-own-fast/' || true)"
+            git commit -m 'preview: publish ground-safe accelerated own KINETIC with final paired benchmarks'
+            git push origin main
+          fi
+      - name: Verify exact published index and final metadata over HTTPS
+        run: |
+          ready=0
+          for i in $(seq 1 60); do
+            ready=1
+            for file in index.html BUILD.json; do
+              if ! curl -fsS --max-time 15 "https://thepok.github.io/games/loadbearing-own-fast/$file?verify=$GITHUB_SHA" -o /tmp/ground-published || ! cmp -s /tmp/ground-published "/tmp/loadbearing-own-fast/$file"; then ready=0; break; fi
+            done
+            if [ "$ready" = 1 ]; then break; fi
+            sleep 5
+          done
+          test "$ready" = 1
+      - name: Actual public benchmark, cancellation and ground-safe collapse
+        working-directory: validated
+        run: node tests/ground-public-check.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kinetic-ground-public
+          path: |
+            validated/artifacts/public/
+            /tmp/loadbearing-own-fast/BUILD.json
+            /tmp/loadbearing-own-fast/source.zip
+            /tmp/loadbearing-own-fast/evidence/benchmark/*.json
+          retention-days: 30
