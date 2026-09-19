@@ -1,0 +1,114 @@
+name: KINETIC cached solver A-B and exact quality checks
+on:
+  push:
+    branches: [chatgpt-kinetic-speed-cache]
+    paths:
+      - tools/kinetic-cache-speed/**
+      - .github/workflows/kinetic-cache-speed.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: [art-deco, brutalist]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Compile own engine, retaining pinned old cores for comparisons
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y clang-18 lld-18
+          mkdir -p game
+          unzip -q games/loadbearing-own-fast/source.zip -d game
+          python3 tools/kinetic-cache-speed/apply.py game
+          cp tools/kinetic-cache-speed/equivalence.mjs game/tests/cache-equivalence.mjs
+          cd game
+          bash ../tools/kinetic-cache-speed/build.sh
+          npm ci
+          node tests/speed-audit.mjs
+      - name: Exact per-step equivalence against the previously shipped 0.2 core
+        working-directory: game
+        run: node tests/cache-equivalence.mjs '${{ matrix.preset }}'
+      - name: Three alternating A-B pairs against original KINETIC 0.1
+        working-directory: game
+        run: npm run bench:physics -- --repeats 3 --presets '${{ matrix.preset }}' --require-2x --out artifacts/cache/benchmark.json
+      - name: Retain complete measurements even if a target fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kinetic-cache-${{ matrix.preset }}
+          path: |
+            game/artifacts/cache/
+            game/artifacts/speed-audit.json
+            game/src/own-engine/
+          retention-days: 30
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build full game with cache optimization
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y clang-18 lld-18
+          mkdir -p game
+          unzip -q games/loadbearing-own-fast/source.zip -d game
+          python3 tools/kinetic-cache-speed/apply.py game
+          cp tools/kinetic-cache-speed/equivalence.mjs game/tests/cache-equivalence.mjs
+          cd game
+          bash ../tools/kinetic-cache-speed/build.sh
+          npm ci
+          npm run build
+          node tests/speed-audit.mjs
+      - name: Quiet-world equality and existing gameplay regression gates
+        working-directory: game
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/cache/regressions
+          node tests/cache-equivalence.mjs quiet
+          npm test | tee artifacts/cache/regressions/physics.log
+          for test in benchmark-contract fast-floor-regression glass-breakage concrete-materials-physics concrete-update local-fracture rebar-connections walker-physics walker-weapons world-vehicles world-pieces-edit projectile-compound-flight projectile-debris-budget snapshot-render-client vehicle-physics physics-body-capacity startup-settling art-deco-cores core-building slab-impact-regressions glass-projectile-pose; do
+            node --import ./tests/own-env.mjs tests/$test.mjs | tee artifacts/cache/regressions/$test.log
+          done
+      - name: Original GUI, live collapse, A-B UI, export and cancellation
+        working-directory: game
+        run: |
+          npm run preview -- --port 5174 > /tmp/kinetic.log 2>&1 &
+          SERVER=$!
+          trap 'kill "$SERVER"' EXIT
+          for i in $(seq 1 30); do if curl -fsS http://127.0.0.1:5174/ >/dev/null; then break; fi; sleep 1; done
+          node tests/speed-browser.mjs
+      - name: Preserve tested full-game build and browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kinetic-cache-game
+          path: |
+            game/dist/
+            game/src/
+            game/tests/
+            game/public/
+            game/package*.json
+            game/tsconfig.json
+            game/vite.config.ts
+            game/index.html
+            game/artifacts/cache/
+            game/artifacts/speed-audit.json
+            game/artifacts/speed-browser/
+          retention-days: 30
