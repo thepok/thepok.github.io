@@ -1,0 +1,18 @@
+name: Hold superseded speed preview publication
+on:
+  push:
+    branches: [chatgpt-kinetic-speed-v2]
+    paths: [.github/workflows/kinetic-speed-safety.yml]
+permissions:
+  actions: write
+  contents: read
+jobs:
+  hold:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel our obsolete publication while retaining its benchmark evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          state=$(gh api repos/thepok/thepok.github.io/actions/runs/35424759165 --jq '.status')
+          if [ "$state" != completed ]; then gh api --method POST repos/thepok/thepok.github.io/actions/runs/35424759165/cancel; fi
