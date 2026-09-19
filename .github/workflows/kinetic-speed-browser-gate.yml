@@ -1,0 +1,95 @@
+name: Final KINETIC benchmark browser gate
+on:
+  push:
+    branches: [chatgpt-kinetic-speed-v2]
+    paths:
+      - tools/kinetic-speed-release/browser-gate.py
+      - tools/kinetic-speed-release/assemble.py
+      - .github/workflows/kinetic-speed-browser-gate.yml
+permissions:
+  contents: read
+  actions: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Require completed native, regression and benchmark jobs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run watch 35425010992 --repo thepok/thepok.github.io --exit-status || true
+          test "$(gh api repos/thepok/thepok.github.io/actions/runs/35425010992 --jq '.head_sha')" = 4eceeb8eae25eb402aef55bc7e9ad63381cc5178
+          gh api repos/thepok/thepok.github.io/actions/runs/35425010992/jobs > /tmp/native-jobs.json
+          python3 - <<'PY'
+          import json
+          jobs=json.load(open('/tmp/native-jobs.json'))['jobs']
+          assert len(jobs)==2
+          for j in jobs:
+              assert j['status']=='completed'
+              steps={s['name']:s['conclusion'] for s in j['steps']}
+              for name in ['Reconstruct original full game and final own-engine optimizations','Build complete GUI; audit both kernels and benchmark correctness','Alternating A-B pairs on this runner with fixed quality gates']:
+                  assert steps[name]=='success',(j['name'],name,steps[name])
+              if 'art-deco' in j['name']:
+                  assert steps['Original feature and physical regression tests']=='success'
+                  assert steps['Unloaded structure must remain undamaged']=='success'
+              failures=[s['name'] for s in j['steps'] if s['conclusion']=='failure']
+              assert all(n=='Actual browser benchmark controls and visible A-B crashes' for n in failures),failures
+          PY
+      - uses: actions/download-artifact@v4
+        with:
+          name: kinetic-speed-validation-art-deco
+          run-id: 35425010992
+          github-token: ${{ github.token }}
+          path: validated
+      - uses: actions/download-artifact@v4
+        with:
+          name: kinetic-speed-validation-brutalist
+          run-id: 35425010992
+          github-token: ${{ github.token }}
+          path: second
+      - name: Assemble measured native bytes and correct only live-test expectations
+        run: |
+          python3 tools/kinetic-speed-release/assemble.py
+          python3 tools/kinetic-speed-release/browser-gate.py validated
+          cd validated
+          npm ci
+          node tests/benchmark-contract.mjs
+          node tests/fast-floor-regression.mjs
+          mv artifacts/speed-browser artifacts/speed-browser-first-attempt
+      - name: Original browser GUI, A-B benchmark, JSON, cancellation and live crashes
+        working-directory: validated
+        run: |
+          npm run preview -- --port 5174 > /tmp/kinetic-final-browser.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID"' EXIT
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:5174/ > /dev/null; then break; fi
+            sleep 1
+          done
+          node tests/speed-browser.mjs
+      - name: Preserve final complete tested game and measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kinetic-speed-final-game
+          path: |
+            validated/dist/
+            validated/src/
+            validated/tests/
+            validated/public/
+            validated/package*.json
+            validated/tsconfig.json
+            validated/vite.config.ts
+            validated/index.html
+            validated/compiler.txt
+            validated/artifacts/engine-audit.json
+            validated/artifacts/speed-audit.json
+            validated/artifacts/benchmark/*.json
+            validated/artifacts/regressions/
+            validated/artifacts/speed-browser/
+          retention-days: 30
