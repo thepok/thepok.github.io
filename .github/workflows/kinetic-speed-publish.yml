@@ -3,7 +3,8 @@ on:
   push:
     branches: [chatgpt-kinetic-speed-v2]
     paths:
-      - tools/kinetic-speed-release/**
+      - tools/kinetic-speed-release/prepare.py
+      - tools/kinetic-speed-release/README.md
       - .github/workflows/kinetic-speed-publish.yml
   workflow_dispatch:
 permissions:
@@ -26,41 +27,31 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Require pinned native speed, quality and browser validation
+      - name: Require final pinned complete-game browser gate and native results
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh run watch 35424317447 --repo thepok/thepok.github.io --exit-status
-          test "$(gh api repos/thepok/thepok.github.io/actions/runs/35424317447 --jq '.conclusion')" = success
-          test "$(gh api repos/thepok/thepok.github.io/actions/runs/35424317447 --jq '.head_sha')" = 0b42abd8eb263ff7bfd9c878f307ba0cc3449f69
+          gh run watch 35425224196 --repo thepok/thepok.github.io --exit-status
+          test "$(gh api repos/thepok/thepok.github.io/actions/runs/35425224196 --jq '.conclusion')" = success
+          test "$(gh api repos/thepok/thepok.github.io/actions/runs/35425224196 --jq '.head_sha')" = da87afd56d55478f287e24617a762d0be80d5028
       - uses: actions/download-artifact@v4
         with:
-          name: kinetic-speed-validation
-          run-id: 35424317447
+          name: kinetic-speed-final-game
+          run-id: 35425224196
           github-token: ${{ github.token }}
           path: validated
-      - name: Final diagnostic-only fixes; keep measured native binaries unchanged
+      - name: Audit and package exact tested native binaries and GUI without rebuilding
         run: |
           if [ -d validated/game/src ]; then mv validated unpacked; mv unpacked/game validated; fi
-          cp tools/kinetic-speed-release/benchmark-contract.mjs validated/tests/
-          python3 tools/kinetic-speed-release/finalize.py validated
+          if [ -d validated/validated/src ]; then mv validated unpacked; mv unpacked/validated validated; fi
           cd validated
           npm ci
-          npm run build
           node tests/own-audit.mjs
           node tests/speed-audit.mjs
           node tests/benchmark-contract.mjs
-      - name: Package measured native core, complete source and evidence
-        run: |
+          node tests/fast-floor-regression.mjs
+          cd ..
           python3 tools/kinetic-speed-release/prepare.py
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('validated/tests/speed-browser.mjs')
-          s=p.read_text();old="assert.equal(live.controlled,true);"
-          assert s.count(old)==1
-          s=s.replace(old,old+"assert.equal(live.internalSubsteps,variant==='reference'?2400:1200);")
-          p.write_text(s)
-          PY
       - name: Publish only new preview directory; leave approved KINETIC unchanged
         run: |
           git config user.name 'github-actions[bot]'
@@ -81,13 +72,13 @@ jobs:
           for i in $(seq 1 60); do
             ready=1
             for file in index.html BUILD.json; do
-              if ! curl -fsS --max-time 15 "https://thepok.github.io/games/loadbearing-own-fast/$file?verify=kinetic-speed-v2" -o /tmp/live-speed-file || ! cmp -s /tmp/live-speed-file "/tmp/loadbearing-own-fast/$file"; then ready=0; break; fi
+              if ! curl -fsS --max-time 15 "https://thepok.github.io/games/loadbearing-own-fast/$file?verify=$GITHUB_SHA" -o /tmp/live-speed-file || ! cmp -s /tmp/live-speed-file "/tmp/loadbearing-own-fast/$file"; then ready=0; break; fi
             done
             if [ "$ready" = 1 ]; then break; fi
             sleep 5
           done
           test "$ready" = 1
-      - name: Public browser benchmark, export, cancellation and visible crashes
+      - name: Public benchmark controls, export, cancellation and visible A-B crashes
         working-directory: validated
         run: |
           mv artifacts/speed-browser artifacts/speed-browser-local

@@ -9,8 +9,16 @@ visual=json.loads((source/'artifacts/speed-browser/verification.json').read_text
 audit=json.loads((source/'artifacts/speed-audit.json').read_text())
 assert audit['baselineSha256']=='037176c75c5d5800e2a6600e8468c5592d57d2431aff889e92a3ce1eca2084ed'
 assert audit['runtimeImports']==[]
+assert hashlib.sha256((source/'src/own-engine/kernel.wasm').read_bytes()).hexdigest()==audit['optimizedSha256']
 assert visual['errors']==[] and len(visual['runs'])==2
 assert visual['benchmark']['aggregateQualityPass']
+for run in visual['runs']:
+ live=run['live'];variant=run['variant']
+ assert live['ticks']==1200 and live['final']['finite'] and live['final']['fragments']==1000
+ assert live['final']['meanHeight']<10
+ assert live['controlled']==(len(live['interventions'])==0)
+ assert all(n=='trees-present' for n in live['interventions'])
+ assert live['internalSubsteps']==(2400 if variant=='reference' else 1200)
 rows=[]
 for result in bench['results']:
  assert result['aggregateQualityPass'] and result['repeats']==3
@@ -41,11 +49,11 @@ with zipfile.ZipFile(base) as z:
  native=source/'src/own-engine'
  shutil.copytree(native,target/'engine-source',dirs_exist_ok=True)
  reference={n:z.read(n) for n in z.namelist() if n.startswith('src/own-engine/') and not n.endswith('/')}
-manifest={'engine':'KINETIC 0.2','physicsLibrary':'none','baselineMain':'7e800f9fbdb862083aac6dc02ea2334ebecd97af','nativeSourceCommit':'0b42abd8eb263ff7bfd9c878f307ba0cc3449f69','nativeValidationRun':35424317447,'publicationSourceCommit':os.environ['GITHUB_SHA'],'sourceArchiveBaselineSha256':hashlib.sha256(base.read_bytes()).hexdigest(),'kernel':audit,'environment':bench['environment'],'benchmarks':rows,'allAggregateQualityGatesPass':True,'doubleSpeedTargetAllPresets':all(r['targetMet'] for r in rows),'unchangedGameFiles':unchanged,'timestepTradeoff':'Large ordinary worlds: 60 Hz internal instead of 120 Hz. Startup/small/activated motor hinges retain 120 Hz. External timestep, solver iteration parameters, shapes, bodies, materials and debris caps are unchanged.','scope':'Physics computation, not frame rate. Three alternating paired runs per collapse preset. Quality gates and visual A/B are not identical-trajectory guarantees.'}
+manifest={'engine':'KINETIC 0.2','physicsLibrary':'none','baselineMain':'7e800f9fbdb862083aac6dc02ea2334ebecd97af','nativeSourceCommit':'4eceeb8eae25eb402aef55bc7e9ad63381cc5178','nativeValidationRun':35425010992,'browserGateCommit':'da87afd56d55478f287e24617a762d0be80d5028','browserGateRun':35425224196,'publicationSourceCommit':os.environ['GITHUB_SHA'],'sourceArchiveBaselineSha256':hashlib.sha256(base.read_bytes()).hexdigest(),'kernel':audit,'environment':bench['environment'],'benchmarks':rows,'allAggregateQualityGatesPass':True,'doubleSpeedTargetAllPresets':all(r['targetMet'] for r in rows),'unchangedGameFiles':unchanged,'timestepTradeoff':'Large ordinary worlds: 60 Hz internal instead of 120 Hz. Startup/small/activated motor hinges retain 120 Hz. External timestep, solver iteration parameters, shapes, bodies, materials and debris caps are unchanged.','scope':'Physics computation, not frame rate. Three alternating paired runs per collapse preset; each pair runs on one machine, different scenes may use different runners. Quality gates and visual A/B are not identical-trajectory guarantees.'}
 (target/'BUILD.json').write_text(json.dumps(manifest,indent=2)+'\n')
 lines=['| Gebäude | Referenz ms/Schritt | Optimiert ms/Schritt | Median Physikdurchsatz | Spanne der 3 Paare |','|---|---:|---:|---:|---:|']
 for r in rows:lines.append(f"| {r['preset']} | {r['referenceMeanMs']:.2f} | {r['optimizedMeanMs']:.2f} | {r['speedup']:.2f}× | {r['range'][0]:.2f}–{r['range'][1]:.2f}× |")
-lines+=['',f"Gemessen unter {bench['environment']['node']} auf {bench['environment']['cpu']}. Schrittzeiten: Median der drei Laufmittel. Durchsatzfaktor: Median der gepaarten Verhältnisse.",'Die native WASM-Datei der Messungen ist identisch mit der hier ausgelieferten.']
+lines+=['',f"Gemessen unter {bench['environment']['node']} auf {bench['environment']['cpu']}. Jeder A/B-Vergleich läuft auf demselben Rechner; die beiden Gebäudetypen wurden auf getrennten CI-Runnern geprüft. Schrittzeiten: Median der drei Laufmittel. Durchsatzfaktor: Median der gepaarten Verhältnisse.",'Die native WASM-Datei der Messungen ist identisch mit der hier ausgelieferten.']
 readme=Path('tools/kinetic-speed-release/README.md').read_text().replace('<!-- RESULTS -->','\n'.join(lines))
 (target/'README.md').write_text(readme)
 with zipfile.ZipFile(target/'source.zip','w',zipfile.ZIP_DEFLATED) as z:
