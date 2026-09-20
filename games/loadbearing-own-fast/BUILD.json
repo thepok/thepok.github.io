@@ -247,5 +247,18 @@
   ],
   "qualityScope": "Exact output equality with KINETIC 0.2 after all 1200 steps in both collapse scenes and quiet scene. Versus user-approved KINETIC 0.1, aggregate quality gates, not identical motion.",
   "timestepTradeoff": "Inherited 0.2 policy: large ordinary worlds internal 60Hz versus 0.1 internal 120Hz. Startup, small scenes and enabled vehicle motors remain 120Hz. Cache optimization makes no additional quality reduction.",
-  "timingScope": "Median of 3 alternating paired ratios per scene, same machine within every pair; physics computation including projectile creation, excluding rendering/setup/warmup/tracing. Not an FPS guarantee."
+  "timingScope": "Median of 3 alternating paired ratios per scene, same machine within every pair; physics computation including projectile creation, excluding rendering/setup/warmup/tracing. Not an FPS guarantee.",
+  "mobileProgressFix": {
+    "validationRun": 35501533179,
+    "validatedHead": "51d83369109f94d321455910c005bba53f922326",
+    "codeChangeCommit": "139d3adae7c6ef3e8be0a8ab91ee797339843f81",
+    "benchmarkFirstVisibleProgressMs": 772,
+    "benchmarkFirstVisibleStatus": "Referenz \u00b7 Paar 1/1 \u00b7 Geb\u00e4ude vorspannen \u00b7 2/120 Schritte",
+    "throttledGameStartMs": 8822,
+    "generatedRegressionCount": 10,
+    "generatedMaxSettleSteps": 70,
+    "generatedAllQuiet": true,
+    "generatedStartupBreaks": 0,
+    "profile": "Android-style Chromium, 412x915, touch, 4 logical cores, 4x CPU throttle"
+  }
 }

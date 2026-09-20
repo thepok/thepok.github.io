@@ -1,0 +1,81 @@
+{
+  "benchmarkProgress": [
+    {
+      "wallMs": 5,
+      "status": "Test wird vorbereitet …",
+      "value": 0
+    },
+    {
+      "wallMs": 264,
+      "status": "Test wird vorbereitet …",
+      "value": 0
+    },
+    {
+      "wallMs": 518,
+      "status": "Referenz · Paar 1/1 · Gebäude vorspannen · 1/120 Schritte",
+      "value": 0.0625
+    },
+    {
+      "wallMs": 772,
+      "status": "Referenz · Paar 1/1 · Gebäude vorspannen · 2/120 Schritte",
+      "value": 0.125
+    }
+  ],
+  "gameProgress": [
+    {
+      "wallMs": 24,
+      "status": "STARTING PHYSICS",
+      "timer": "00.0 s",
+      "elapsed": 0,
+      "startup": null,
+      "preparing": false,
+      "startupProgress": 0
+    },
+    {
+      "wallMs": 3355,
+      "status": "STARTING PHYSICS",
+      "timer": "00.0 s",
+      "elapsed": 0,
+      "startup": null,
+      "preparing": false,
+      "startupProgress": 0
+    },
+    {
+      "wallMs": 5680,
+      "status": "STARTING PHYSICS",
+      "timer": "00.0 s",
+      "elapsed": 0,
+      "startup": null,
+      "preparing": false,
+      "startupProgress": 0
+    },
+    {
+      "wallMs": 7730,
+      "status": "SIMULATING",
+      "timer": "00.0 s",
+      "elapsed": 0,
+      "startup": null,
+      "preparing": false,
+      "startupProgress": 1
+    },
+    {
+      "wallMs": 8290,
+      "status": "SIMULATING",
+      "timer": "00.0 s",
+      "elapsed": 0,
+      "startup": null,
+      "preparing": false,
+      "startupProgress": 1
+    },
+    {
+      "wallMs": 8822,
+      "status": "SIMULATING",
+      "timer": "01.9 s",
+      "elapsed": 1.9499999999999955,
+      "startup": null,
+      "preparing": false,
+      "startupProgress": 1
+    }
+  ],
+  "errors": []
+}
