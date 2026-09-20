@@ -51,7 +51,7 @@ jobs:
 
             // Reproduce the reported mobile benchmark symptom directly: before
             // measurement starts, preload must visibly advance instead of reading 0.
-            await page.click('#kinetic-benchmark');await page.selectOption('#kb-preset','art-deco');await page.selectOption('#kb-repeats','1');await page.click('#kb-start');
+            await page.evaluate(()=>document.getElementById('kinetic-benchmark').click());await page.waitForFunction(()=>document.getElementById('kinetic-bench-panel')?.open);await page.selectOption('#kb-preset','art-deco');await page.selectOption('#kb-repeats','1');await page.click('#kb-start');
             const benchStart=Date.now();
             for(let i=0;i<120;i++){
               const row=await page.evaluate(()=>({status:document.getElementById('kb-status')?.textContent??'',value:Number(document.getElementById('kb-progress')?.value??0)}));
