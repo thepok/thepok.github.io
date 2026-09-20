@@ -31,8 +31,8 @@ jobs:
         working-directory: game
         run: |
           mkdir -p artifacts/mobile-startup
-          node --import ./tests/own-env.mjs tests/startup-settling.mjs | tee artifacts/mobile-startup/startup-settling.log
-          node --import ./tests/own-env.mjs tests/startup-generated.mjs | tee artifacts/mobile-startup/startup-generated.log
+          NODE_OPTIONS=--import=./tests/own-env.mjs node tests/startup-settling.mjs | tee artifacts/mobile-startup/startup-settling.log
+          NODE_OPTIONS=--import=./tests/own-env.mjs node tests/startup-generated.mjs | tee artifacts/mobile-startup/startup-generated.log
       - name: Android-style slow-device start test
         working-directory: game
         run: |
