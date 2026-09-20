@@ -86,4 +86,27 @@ assert s.count(old)==1,(s.count(old),old[:80])
 s=s.replace(old,new)
 p.write_text(s)
 
+
+# Benchmark: preparation is real work but not simulated scenario time. Report it
+# explicitly instead of leaving the mobile UI at 0 until measurement begins.
+p=root/'src/benchmark/suite.ts'
+s=p.read_text()
+old=" const notify=(stage:string,completed:number)=>progress({variant,repetition,stage,completed,total:scene.ticks});"
+new=" const notify=(stage:string,completed:number,total=scene.ticks)=>progress({variant,repetition,stage,completed,total});"
+assert s.count(old)==1
+s=s.replace(old,new)
+old="  notify('Gebäude vorspannen',0);const settleStart=performance.now();await sim.settleStartup();const settleMs=performance.now()-settleStart;check();\n  notify('Aufwärmen',0);const warmupStart=performance.now();for(let i=0;i<WARMUP_TICKS;i++){sim.step(scene.dt);if(i%12===11){await new Promise(r=>setTimeout(r,0));check();}}const warmupMs=performance.now()-warmupStart;"
+new="  notify('Gebäude vorspannen',0,120);const settleStart=performance.now();await sim.settleStartup((completed,total)=>notify('Gebäude vorspannen',completed,total));const settleMs=performance.now()-settleStart;check();\n  notify('Aufwärmen',0,WARMUP_TICKS);const warmupStart=performance.now();for(let i=0;i<WARMUP_TICKS;i++){sim.step(scene.dt);if(i%12===11){notify('Aufwärmen',i+1,WARMUP_TICKS);await new Promise(r=>setTimeout(r,0));check();}}const warmupMs=performance.now()-warmupStart;"
+assert s.count(old)==1
+s=s.replace(old,new)
+p.write_text(s)
+
+p=root/'src/benchmark/ui.ts'
+s=p.read_text()
+old="    const m=e.data;if(m.type==='progress'){const p=m.progress;status(\`${p.variant==='reference'?'Referenz':'Optimiert'} · Paar ${p.repetition}/${repeats} · ${p.stage} ${p.stage==='Messen'?\`${p.completed}/${p.total} Schritte\`:''}\`);const slot=(p.repetition-1)*2+((p.repetition%2===1)===(p.variant==='reference')?0:1);$<HTMLProgressElement>('kb-progress').value=(slot+p.completed/p.total)/(2*repeats)*100;}"
+new="    const m=e.data;if(m.type==='progress'){const p=m.progress,ratio=Math.max(0,Math.min(1,p.completed/Math.max(1,p.total))),stageProgress=p.stage==='Gebäude vorspannen'?.15*ratio:p.stage==='Aufwärmen'?.15+.10*ratio:.25+.75*ratio,detail=p.stage==='Messen'?\`${(20*ratio).toFixed(1)} / 20.0 s simuliert\`:\`${p.completed}/${p.total} Schritte\`;status(\`${p.variant==='reference'?'Referenz':'Optimiert'} · Paar ${p.repetition}/${repeats} · ${p.stage} · ${detail}\`);const slot=(p.repetition-1)*2+((p.repetition%2===1)===(p.variant==='reference')?0:1);$<HTMLProgressElement>('kb-progress').value=(slot+stageProgress)/(2*repeats)*100;}"
+assert s.count(old)==1
+s=s.replace(old,new)
+p.write_text(s)
+
 print('Applied mobile startup preload compression and visible progress.')
