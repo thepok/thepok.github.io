@@ -1,0 +1,95 @@
+name: Publish mobile benchmark progress fix
+on:
+  push:
+    branches: [chatgpt-mobile-startup-fix]
+    paths:
+      - tools/mobile-startup-release/**
+      - .github/workflows/mobile-startup-release.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Require successful mobile benchmark/startup regression
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(gh api repos/thepok/thepok.github.io/actions/runs/35501533179 --jq '.conclusion')" = success
+          test "$(gh api repos/thepok/thepok.github.io/actions/runs/35501533179 --jq '.head_sha')" = 51d83369109f94d321455910c005bba53f922326
+      - uses: actions/download-artifact@v4
+        with:
+          name: mobile-startup-fix
+          run-id: 35501533179
+          github-token: ${{ github.token }}
+          path: validated
+      - name: Package exact tested bytes and mobile evidence
+        run: python3 tools/mobile-startup-release/prepare.py
+      - name: Publish only games/loadbearing-own-fast
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin main
+          git switch -C main origin/main
+          cp -a /tmp/loadbearing-own-fast-mobile/. games/loadbearing-own-fast/
+          git add games/loadbearing-own-fast
+          test -z "$(git diff --cached --name-only | grep -v '^games/loadbearing-own-fast/' || true)"
+          if git diff --cached --quiet; then echo 'Already published'; else
+            git commit -m 'fix: show benchmark preparation progress on mobile and shorten safe preload'
+            git push origin main
+          fi
+      - name: Wait for exact public deployment
+        run: |
+          ready=0
+          for i in $(seq 1 60); do
+            if curl -fsS --max-time 15 "https://thepok.github.io/games/loadbearing-own-fast/BUILD.json?mobile=51d8336" -o /tmp/live.json && cmp -s /tmp/live.json /tmp/loadbearing-own-fast-mobile/BUILD.json; then ready=1; break; fi
+            sleep 5
+          done
+          test "$ready" = 1
+      - name: Verify benchmark progress on public HTTPS with throttled phone profile
+        working-directory: validated
+        run: |
+          npm ci
+          cat > tests/mobile-public-progress.mjs <<'EOF'
+          import {chromium} from '@playwright/test';
+          import assert from 'node:assert/strict';
+          import {mkdir,writeFile} from 'node:fs/promises';
+          await mkdir('artifacts/mobile-public',{recursive:true});
+          const browser=await chromium.launch({channel:'chrome',headless:true,args:['--enable-unsafe-swiftshader','--disable-dev-shm-usage']});
+          const context=await browser.newContext({viewport:{width:412,height:915},deviceScaleFactor:2.625,isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (Linux; Android 15; Pixel 8) AppleWebKit/537.36 Chrome/152.0 Mobile Safari/537.36'});
+          const page=await context.newPage(),errors=[],rows=[];page.on('pageerror',e=>errors.push(e.message));
+          const cdp=await context.newCDPSession(page);await cdp.send('Emulation.setCPUThrottlingRate',{rate:4});
+          try{
+            await page.goto('https://thepok.github.io/games/loadbearing-own-fast/');await page.waitForFunction(()=>window.__loadBearing?.ready,{},{timeout:90000});
+            await page.evaluate(()=>document.getElementById('kinetic-benchmark').click());await page.waitForFunction(()=>document.getElementById('kinetic-bench-panel')?.open);
+            await page.selectOption('#kb-preset','art-deco');await page.selectOption('#kb-repeats','1');await page.click('#kb-start');
+            const start=Date.now();let moved;
+            for(let i=0;i<160;i++){const row=await page.evaluate(()=>({status:document.getElementById('kb-status')?.textContent??'',value:Number(document.getElementById('kb-progress')?.value??0)}));rows.push({wallMs:Date.now()-start,...row});if(row.value>.1){moved=rows.at(-1);break;}await page.waitForTimeout(250);}
+            assert.ok(moved,'Public mobile benchmark must visibly advance during preparation');assert.match(moved.status,/vorspannen|Aufwärmen|Messen/i);
+            await page.screenshot({path:'artifacts/mobile-public/progress.png',fullPage:true});
+            await page.click('#kb-cancel');await page.waitForFunction(()=>document.getElementById('kb-status')?.textContent?.includes('Abgebrochen'));
+            assert.deepEqual(errors,[]);
+            await writeFile('artifacts/mobile-public/result.json',JSON.stringify({moved,rows,errors},null,2));
+            console.log('PUBLIC_MOBILE_PROGRESS_PASS '+JSON.stringify(moved));
+          }finally{await browser.close();}
+          EOF
+          node tests/mobile-public-progress.mjs
+      - name: Preserve public phone verification
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-startup-public
+          path: validated/artifacts/mobile-public/
+          retention-days: 14
