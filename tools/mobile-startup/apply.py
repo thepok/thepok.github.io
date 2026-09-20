@@ -103,10 +103,10 @@ p.write_text(s)
 
 p=root/'src/benchmark/ui.ts'
 s=p.read_text()
-old="    const m=e.data;if(m.type==='progress'){const p=m.progress;status(\`${p.variant==='reference'?'Referenz':'Optimiert'} · Paar ${p.repetition}/${repeats} · ${p.stage} ${p.stage==='Messen'?\`${p.completed}/${p.total} Schritte\`:''}\`);const slot=(p.repetition-1)*2+((p.repetition%2===1)===(p.variant==='reference')?0:1);$<HTMLProgressElement>('kb-progress').value=(slot+p.completed/p.total)/(2*repeats)*100;}"
-new="    const m=e.data;if(m.type==='progress'){const p=m.progress,ratio=Math.max(0,Math.min(1,p.completed/Math.max(1,p.total))),stageProgress=p.stage==='Gebäude vorspannen'?.15*ratio:p.stage==='Aufwärmen'?.15+.10*ratio:.25+.75*ratio,detail=p.stage==='Messen'?\`${(20*ratio).toFixed(1)} / 20.0 s simuliert\`:\`${p.completed}/${p.total} Schritte\`;status(\`${p.variant==='reference'?'Referenz':'Optimiert'} · Paar ${p.repetition}/${repeats} · ${p.stage} · ${detail}\`);const slot=(p.repetition-1)*2+((p.repetition%2===1)===(p.variant==='reference')?0:1);$<HTMLProgressElement>('kb-progress').value=(slot+stageProgress)/(2*repeats)*100;}"
-assert s.count(old)==1
-s=s.replace(old,new)
+pattern=r"""    const m=e\.data;if\(m\.type==='progress'\)\{[^\n]*\}"""
+replacement=r"""    const m=e.data;if(m.type==='progress'){const p=m.progress,ratio=Math.max(0,Math.min(1,p.completed/Math.max(1,p.total))),stageProgress=p.stage==='Gebäude vorspannen'?.15*ratio:p.stage==='Aufwärmen'?.15+.10*ratio:.25+.75*ratio,detail=p.stage==='Messen'?`${(20*ratio).toFixed(1)} / 20.0 s simuliert`:`${p.completed}/${p.total} Schritte`;status(`${p.variant==='reference'?'Referenz':'Optimiert'} · Paar ${p.repetition}/${repeats} · ${p.stage} · ${detail}`);const slot=(p.repetition-1)*2+((p.repetition%2===1)===(p.variant==='reference')?0:1);$<HTMLProgressElement>('kb-progress').value=(slot+stageProgress)/(2*repeats)*100;}"""
+s,count=re.subn(pattern,lambda _:replacement,s,count=1)
+assert count==1,count
 p.write_text(s)
 
 print('Applied mobile startup preload compression and visible progress.')
