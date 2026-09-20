@@ -35,7 +35,7 @@ new="""  let steps=0,quiet=0,maxSpeed=Infinity;const started=performance.now(),m
     settings.mNumVelocitySteps=Math.round(velocitySteps+(Math.max(18,velocitySteps)-velocitySteps)*extra);settings.mNumPositionSteps=Math.round(positionSteps+(Math.max(5,positionSteps)-positionSteps)*extra);this.system.SetPhysicsSettings(settings);
     for(const state of bodies){state.motion.SetLinearDamping(state.linear+3*damping);state.motion.SetAngularDamping(state.angular+3*damping);}
     this.world.Step(1/60,1);steps++;onProgress?.(steps,maxSteps);
-    if(i>=55){maxSpeed=0;for(const state of bodies)maxSpeed=Math.max(maxSpeed,state.body.GetLinearVelocity().Length(),state.body.GetAngularVelocity().Length()*4);quiet=maxSpeed<.035?quiet+1:0;if(quiet>=12)break;}
+    if(i>=55){maxSpeed=0;for(const state of bodies)maxSpeed=Math.max(maxSpeed,state.body.GetLinearVelocity().Length(),state.body.GetAngularVelocity().Length()*4);quiet=maxSpeed<.035?quiet+1:0;if(quiet>=15)break;}
     // Yield frequently so mobile browsers can paint progress and service input.
     if(i%3===2)await new Promise<void>(resolve=>setTimeout(resolve,0));
    }
@@ -68,6 +68,16 @@ old="""window.addEventListener('simulation-preparing',()=>{$('status').textConte
 new="""window.addEventListener('simulation-preparing',()=>{$('status').textContent='GEBÄUDE EINREGELN…';$('timer').textContent='0%';$('progress').style.width='0%';});
 window.addEventListener('simulation-preparing-progress',(event:any)=>{const completed=Number(event.detail?.completed??0),total=Math.max(1,Number(event.detail?.total??1)),percent=Math.min(100,Math.round(completed/total*100));$('status').textContent=`GEBÄUDE EINREGELN… ${percent}%`;$('timer').textContent=percent+'%';$('progress').style.width=percent+'%';$('telemetry').textContent=`Vorstabilisierung · ${completed}/${total} Schritte`;});"""
 assert s.count(old)==1
+s=s.replace(old,new)
+p.write_text(s)
+
+# Do not let the regular telemetry frame overwrite the preparation percentage
+# with the scenario clock (which correctly remains at zero until preload ends).
+p=root/'src/main.ts'
+s=p.read_text()
+old="if(sim){$('damage-stats').textContent=`${sim.broken} Verbindungen gebrochen · ${sim.fragments}/${fragmentLimit} Trümmer`; $('timer').textContent=sim.elapsed.toFixed(1).padStart(4,'0')+' s';$('progress').style.width=challenge.rules.sandbox?'100%':Math.min(100,sim.elapsed/sim.duration*100)+'%';$('telemetry').textContent=`${sim.broken} failed joints · ${sim.fragments}/${fragmentLimit} debris · peak ${Math.round(sim.peakStress*100)}% · ${sim.physicsMs.toFixed(1)} ms/step · ${Math.round(scene.fps)} fps${sim.rate<speed*.8?' · '+sim.rate.toFixed(2)+'× realtime':''}`;"
+new="if(sim&&sim.mode!=='starting'){$('damage-stats').textContent=`${sim.broken} Verbindungen gebrochen · ${sim.fragments}/${fragmentLimit} Trümmer`; $('timer').textContent=sim.elapsed.toFixed(1).padStart(4,'0')+' s';$('progress').style.width=challenge.rules.sandbox?'100%':Math.min(100,sim.elapsed/sim.duration*100)+'%';$('telemetry').textContent=`${sim.broken} failed joints · ${sim.fragments}/${fragmentLimit} debris · peak ${Math.round(sim.peakStress*100)}% · ${sim.physicsMs.toFixed(1)} ms/step · ${Math.round(scene.fps)} fps${sim.rate<speed*.8?' · '+sim.rate.toFixed(2)+'× realtime':''}`;"
+assert s.count(old)==1,(s.count(old),old[:80])
 s=s.replace(old,new)
 p.write_text(s)
 
