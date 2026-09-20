@@ -57,7 +57,12 @@ p.write_text(s)
 p=root/'src/simulation-client.ts'
 s=p.read_text()
 old="""}else if(m.type==='preparing'){window.dispatchEvent(new CustomEvent('simulation-preparing'));}else if(m.type==='ready'){"""
-new="""}else if(m.type==='preparing'){window.dispatchEvent(new CustomEvent('simulation-preparing'));}else if(m.type==='preparing-progress'){window.dispatchEvent(new CustomEvent('simulation-preparing-progress',{detail:m}));}else if(m.type==='ready'){"""
+new="""}else if(m.type==='preparing'){this.status.preparing=true;this.status.startupProgress=0;this.status.startupCompleted=0;this.status.startupTotal=1;window.dispatchEvent(new CustomEvent('simulation-preparing'));}else if(m.type==='preparing-progress'){this.status.preparing=true;this.status.startupCompleted=Number(m.completed)||0;this.status.startupTotal=Math.max(1,Number(m.total)||1);this.status.startupProgress=Math.max(0,Math.min(1,this.status.startupCompleted/this.status.startupTotal));window.dispatchEvent(new CustomEvent('simulation-preparing-progress',{detail:m}));}else if(m.type==='ready'){this.status.preparing=false;this.status.startupProgress=1;"""
+assert s.count(old)==1
+s=s.replace(old,new)
+# Persist preparation state so a slow/mobile render loop cannot miss a transient event.
+old=" get paused(){return !!this.status.paused}get startup(){return this.status.startup}"
+new=" get paused(){return !!this.status.paused}get preparing(){return !!this.status.preparing}get startupProgress(){return this.status.startupProgress??0}get startupCompleted(){return this.status.startupCompleted??0}get startupTotal(){return this.status.startupTotal??1}get startup(){return this.status.startup}"
 assert s.count(old)==1
 s=s.replace(old,new)
 p.write_text(s)
@@ -76,7 +81,7 @@ p.write_text(s)
 p=root/'src/main.ts'
 s=p.read_text()
 old="if(sim){$('damage-stats').textContent=`${sim.broken} Verbindungen gebrochen · ${sim.fragments}/${fragmentLimit} Trümmer`; $('timer').textContent=sim.elapsed.toFixed(1).padStart(4,'0')+' s';$('progress').style.width=challenge.rules.sandbox?'100%':Math.min(100,sim.elapsed/sim.duration*100)+'%';$('telemetry').textContent=`${sim.broken} failed joints · ${sim.fragments}/${fragmentLimit} debris · peak ${Math.round(sim.peakStress*100)}% · ${sim.physicsMs.toFixed(1)} ms/step · ${Math.round(scene.fps)} fps${sim.rate<speed*.8?' · '+sim.rate.toFixed(2)+'× realtime':''}`;"
-new="if(sim&&sim.mode!=='starting'){$('damage-stats').textContent=`${sim.broken} Verbindungen gebrochen · ${sim.fragments}/${fragmentLimit} Trümmer`; $('timer').textContent=sim.elapsed.toFixed(1).padStart(4,'0')+' s';$('progress').style.width=challenge.rules.sandbox?'100%':Math.min(100,sim.elapsed/sim.duration*100)+'%';$('telemetry').textContent=`${sim.broken} failed joints · ${sim.fragments}/${fragmentLimit} debris · peak ${Math.round(sim.peakStress*100)}% · ${sim.physicsMs.toFixed(1)} ms/step · ${Math.round(scene.fps)} fps${sim.rate<speed*.8?' · '+sim.rate.toFixed(2)+'× realtime':''}`;"
+new="if(sim?.preparing){const percent=Math.min(100,Math.round(sim.startupProgress*100));$('status').textContent=`GEBÄUDE EINREGELN… ${percent}%`;$('timer').textContent=percent+'%';$('progress').style.width=percent+'%';$('telemetry').textContent=`Vorstabilisierung · ${sim.startupCompleted}/${sim.startupTotal} Schritte`;}else if(sim){$('damage-stats').textContent=`${sim.broken} Verbindungen gebrochen · ${sim.fragments}/${fragmentLimit} Trümmer`; $('timer').textContent=sim.elapsed.toFixed(1).padStart(4,'0')+' s';$('progress').style.width=challenge.rules.sandbox?'100%':Math.min(100,sim.elapsed/sim.duration*100)+'%';$('telemetry').textContent=`${sim.broken} failed joints · ${sim.fragments}/${fragmentLimit} debris · peak ${Math.round(sim.peakStress*100)}% · ${sim.physicsMs.toFixed(1)} ms/step · ${Math.round(scene.fps)} fps${sim.rate<speed*.8?' · '+sim.rate.toFixed(2)+'× realtime':''}`;"
 assert s.count(old)==1,(s.count(old),old[:80])
 s=s.replace(old,new)
 p.write_text(s)
