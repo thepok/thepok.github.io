@@ -5,8 +5,9 @@ Everything in this folder is redistributed under the terms below.
 ## AgentSound (code)
 
 `engine/agentsound.js`, `engine/agentsound.wasm` (the AgentSound engine compiled to WebAssembly),
-`py/repo.zip` (the AgentSound Python composer and the sample-mapping text files it reads), `app.js`, `worker.js`,
-`index.html`.
+`py/repo.zip` (the AgentSound Python composer and the sample-mapping text files it reads), `app.js`,
+`compose-worker.js`, `engine-worker.js`, `index.html`, and `bank/` (set openings pre-composed by the same AgentSound
+composer: note data and render settings, gzipped JSON; no audio).
 
 AgentSound, https://github.com/thepok/AgentSound, MIT License (the full text is `LICENSE` inside `py/repo.zip`).
 The engine bundles nlohmann/json (MIT) and the Music Synthesizer for Android DX7 core (Apache-2.0).

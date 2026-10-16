@@ -1,113 +1,306 @@
-// Endless Piano: the player. The worker composes + renders piece n+1 while piece n plays.
+// Endless Piano - the player.
+//   compose-worker.js: Pyodide + the AgentSound composer (the endless set loop, best of 8 per piece)
+//   engine-worker.js:  the AgentSound engine (WASM): render JSON -> streamed 16-bit PCM
+//   here: the bank (natively pre-composed set openings), the pool of ready pieces, compact storage (Opus via
+//   WebCodecs, else 16-bit PCM), playback with seeking, the history (recipes in localStorage).
+const V = 'web1-1a3505f';           // code version: recipes / links of another version are refused, never misplayed
+const SR = 48000;
+const GAP = 2.5;                    // silence between pieces (the render already ends in its reverb tail)
+const AHEAD = 4;                    // seconds of decoded audio scheduled ahead
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
 const MUTE = params.has('mute');
-const GAP = 2.5;                    // seconds of silence between pieces (the render already ends in its reverb tail)
-const LEAD = 2.0;                   // seconds of audio scheduled ahead
-const FIRST_CANDIDATES = 1, CANDIDATES = 8;   // piece 1 starts fast; later pieces are the best of 8 (the endless default)
+const M = window.__metrics = { events: [], errors: [] };
+const mark = (name, extra) => M.events.push({ name, t: +(performance.now() / 1000).toFixed(2), ...extra });
 
 const GENRES = ['new-age', 'klassik', 'walzer'];
+const GENRE_NAME = { 'new-age': 'New Age', klassik: 'Klassisch', walzer: 'Walzer' };
 const PIANOS = ['beste', 'spar'];
 const FEEL = { flowing: 'fließend', gentle: 'sanft', bright: 'hell', waltz: 'Walzer', nocturne: 'Nocturne' };
-const KEYS = { major: 'Dur', minor: 'Moll' };
+const SECTION = { intro: 'Intro', coda: 'Coda', interlude: 'Zwischenspiel', climax: 'Höhepunkt', build: 'Steigerung', end: 'Ausklang' };
 
+// ---------------------------------------------------------------- capabilities and the memory budget
+const mobile = matchMedia('(pointer: coarse)').matches || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+const devMem = navigator.deviceMemory;          // Chrome only (capped at 8); undefined elsewhere
+let OPUS = false;
+async function probeOpus() {
+  try {
+    if (typeof AudioEncoder === 'undefined' || typeof AudioDecoder === 'undefined') return false;
+    const cfg = { codec: 'opus', sampleRate: SR, numberOfChannels: 2, bitrate: 160000 };
+    const a = await AudioEncoder.isConfigSupported(cfg);
+    const b = await AudioDecoder.isConfigSupported({ codec: 'opus', sampleRate: SR, numberOfChannels: 2 });
+    return !!(a.supported && b.supported);
+  } catch (e) { return false; }
+}
+let POOL = 2, KEEP = 1;
+
+// ---------------------------------------------------------------- state
 const state = {
   genre: GENRES.includes(params.get('genre')) ? params.get('genre') : 'new-age',
   piano: PIANOS.includes(params.get('piano')) ? params.get('piano') : 'beste',
-  seed: params.has('seed') ? Math.abs(parseInt(params.get('seed'), 10) || 0) % 1000000 : Math.floor(Math.random() * 1000000),
-  gen: 0, ready: false, started: false, playing: false,
+  gen: 0, playing: false, clicked: false, session: null,
 };
-$('genre').value = state.genre; $('piano').value = state.piano; $('seed').value = state.seed;
-window.__metrics = { events: [], errors: [] };
-const mark = (name, extra) => window.__metrics.events.push({ name, t: +(performance.now() / 1000).toFixed(2), ...extra });
+$('genre').value = state.genre; $('piano').value = state.piano;
+let ctx = null, out = null, sampleDecoder = null;
+let current = null, player = null;
+let pool = [];                      // the set's next pieces, in order
+let played = [];                    // the last pieces played (newest first), kept for "Zurück"
+let nextId = 1;
+const compressed = new Map();       // Opus sample url -> ArrayBuffer (fetched once per session)
+let bankIndex = null;
 
-// ---------------------------------------------------------------- audio
-let ctx = null, out = null, decoder = null;
-const sources = new Set();
-let pieces = [];          // {id, info, sr, chunks: [{l, r}], frames, done, ok, fails, tune, next: chunk index, t0, t1}
-let cur = 0;              // index into pieces of the piece playing (or about to)
-let until = 0;            // ctx time up to which audio is scheduled
-let nextId = 1, busy = false;
-const compressed = new Map();     // sample url -> ArrayBuffer (the Opus files, kept once per session)
-
-function ensureAudio() {
+function audio() {
   if (ctx) return;
-  ctx = new AudioContext({ latencyHint: 'playback' });
+  ctx = new AudioContext({ latencyHint: 'playback', sampleRate: SR });
   out = ctx.createGain(); out.gain.value = MUTE ? 0 : 1; out.connect(ctx.destination);
-  decoder = new OfflineAudioContext(2, 1, 48000);
 }
+function decoderCtx() { if (!sampleDecoder) sampleDecoder = new OfflineAudioContext(2, 1, SR); return sampleDecoder; }
 
-function schedule() {
-  if (!ctx || !state.playing) return;
-  const now = ctx.currentTime;
-  if (until < now) until = now + 0.1;
-  let guard = 0;
-  while (until < now + LEAD && guard++ < 64) {
-    const p = pieces[cur];
-    if (!p) { maybeRequest(); break; }
-    if (p.next < p.chunks.length) {
-      const c = p.chunks[p.next++];
-      const n = c.l.length;
-      const buf = ctx.createBuffer(2, n, p.sr);
-      const L = buf.getChannelData(0), R = buf.getChannelData(1);
-      for (let i = 0; i < n; i++) { L[i] = c.l[i] / 32768; R[i] = c.r[i] / 32768; }
-      const src = ctx.createBufferSource(); src.buffer = buf; src.connect(out);
-      src.onended = () => { sources.delete(src); src.disconnect(); };
-      if (p.t0 === undefined) { p.t0 = until; onPieceStart(p); }
-      src.start(until); sources.add(src);
-      until += n / p.sr;
-    } else if (p.done) {
-      p.t1 = until;
-      until += GAP;
-      advance();
-    } else {
-      break;                        // still rendering: wait for the stream
+// ---------------------------------------------------------------- compact storage of a rendered piece
+class PcmStore {
+  constructor() { this.kind = 'pcm'; this.chunks = []; this.starts = []; this.frames = 0; this.complete = false; this.bytes = 0; }
+  add(pcm, n) { this.starts.push(this.frames); this.chunks.push(pcm); this.frames += n; this.bytes += pcm.byteLength; }
+  async finish() { this.complete = true; }
+  seconds() { return this.frames / SR; }
+  free() { this.chunks = []; this.starts = []; this.bytes = 0; }
+}
+class OpusStore {
+  constructor() {
+    this.kind = 'opus'; this.packets = []; this.bytes = 0; this.frames = 0; this.until = 0; this.complete = false; this.cfg = null;
+    this.encodeMs = 0;
+    this.enc = new AudioEncoder({
+      output: (chunk, meta) => {
+        const d = new Uint8Array(chunk.byteLength); chunk.copyTo(d);
+        this.packets.push({ ts: chunk.timestamp, dur: chunk.duration || 20000, d });
+        this.bytes += d.byteLength; this.until = (chunk.timestamp + (chunk.duration || 20000)) / 1e6;
+        if (meta && meta.decoderConfig && !this.cfg) this.cfg = meta.decoderConfig;
+      },
+      error: (e) => { this.err = e; M.errors.push('encoder: ' + e); },
+    });
+    this.enc.configure({ codec: 'opus', sampleRate: SR, numberOfChannels: 2, bitrate: 160000 });
+  }
+  add(pcm, n) {
+    const t = performance.now();
+    const ad = new AudioData({ format: 's16', sampleRate: SR, numberOfFrames: n, numberOfChannels: 2,
+                               timestamp: Math.round(this.frames * 1e6 / SR), data: pcm });
+    this.enc.encode(ad); ad.close();
+    this.frames += n;
+    this.encodeMs += performance.now() - t;
+  }
+  async finish() { const t = performance.now(); await this.enc.flush(); this.flushMs = performance.now() - t; this.enc.close(); this.complete = true; }
+  seconds() { return this.until; }
+  free() { this.packets = []; this.bytes = 0; try { this.enc.close(); } catch (e) { /* closed */ } }
+}
+const newStore = () => (OPUS ? new OpusStore() : new PcmStore());
+
+// ---------------------------------------------------------------- playback of one piece (seekable)
+class Player {
+  constructor(piece, offset, startAt) {
+    this.p = piece; this.offset = offset; this.next = startAt; this.t0 = startAt - offset;
+    this.sources = new Set(); this.dead = false; this.endTime = null; this.first = null;
+  }
+  ahead() { return this.next - ctx.currentTime; }
+  position() { if (this.first === null) return this.offset; return Math.max(0, Math.min(ctx.currentTime - this.t0, this.p.info ? this.p.info.seconds + 10 : 1e9)); }
+  play(L, R, n) {
+    const now = ctx.currentTime;
+    if (this.next < now + 0.02) { const s = now + 0.06 - this.next; this.next += s; this.t0 += s; }   // late data: re-anchor
+    const buf = ctx.createBuffer(2, n, SR);
+    buf.copyToChannel(L, 0); buf.copyToChannel(R, 1);
+    const src = ctx.createBufferSource(); src.buffer = buf; src.connect(out);
+    src.onended = () => { this.sources.delete(src); src.disconnect(); };
+    src.start(this.next); this.sources.add(src);
+    if (this.first === null) { this.first = this.next; this.onFirst && this.onFirst(this.next); }
+    this.next += n / SR;
+  }
+  stop() {
+    this.dead = true;
+    for (const s of this.sources) { try { s.stop(); } catch (e) { /* stopped */ } s.disconnect(); }
+    this.sources.clear();
+  }
+}
+class PcmPlayer extends Player {
+  constructor(piece, offset, startAt) { super(piece, offset, startAt); this.pos = Math.round(offset * SR); }
+  pump() {
+    const st = this.p.store;
+    if (this.dead || !st) return;
+    let guard = 0;
+    while (this.ahead() < AHEAD && guard++ < 32) {
+      if (this.pos >= st.frames) { if (st.complete && this.endTime === null) this.endTime = Math.max(this.next, ctx.currentTime); return; }
+      let k = st.starts.length - 1;
+      while (k > 0 && st.starts[k] > this.pos) k--;
+      const c = st.chunks[k], from = this.pos - st.starts[k], n = Math.min(c.length / 2 - from, 24000);
+      const L = new Float32Array(n), R = new Float32Array(n);
+      for (let i = 0, j = 2 * from; i < n; i++) { L[i] = c[j++] / 32768; R[i] = c[j++] / 32768; }
+      this.play(L, R, n); this.pos += n;
     }
   }
 }
-
-function advance() {
-  cur += 1;
-  // keep the piece before (its tail may still sound; its chunks serve the download) - drop everything older
-  const drop = Math.max(0, cur - 1);
-  for (let i = 0; i < drop; i++) pieces[i].chunks = null;
-  pieces = pieces.slice(drop);
-  cur -= drop;
-  maybeRequest();
-}
-
-function onPieceStart(p) {
-  mark('piece-start', { id: p.id, title: p.info.title, at: +(p.t0 - ctx.currentTime).toFixed(2) });
-  if (p.id === 1 && window.__metrics.firstSound === undefined && state.clickAt) {
-    window.__metrics.firstSound = +((performance.now() - state.clickAt) / 1000 + (p.t0 - ctx.currentTime)).toFixed(2);
+class OpusPlayer extends Player {
+  constructor(piece, offset, startAt) {
+    super(piece, offset, startAt);
+    this.trim = offset; this.feed = -1; this.inflight = 0; this.flushing = false; this.drained = false;
+    this.acc = []; this.accN = 0; this.dec = null;
   }
-  maybeRequest();
+  open() {
+    const st = this.p.store;
+    if (!st.packets.length) return false;
+    this.dec = new AudioDecoder({ output: (ad) => this.out(ad), error: (e) => { M.errors.push('decoder: ' + e); } });
+    this.dec.configure(st.cfg || { codec: 'opus', sampleRate: SR, numberOfChannels: 2 });
+    const want = (this.offset - 0.12) * 1e6;     // a little pre-roll: the decoder settles before the seek point
+    let i = 0;
+    while (i < st.packets.length - 1 && st.packets[i + 1].ts <= want) i++;
+    this.feed = this.offset > 0 ? i : 0;
+    return true;
+  }
+  pump() {
+    const st = this.p.store;
+    if (this.dead || !st) return;
+    if (!this.dec && !this.open()) return;
+    while (this.feed < st.packets.length && this.ahead() + (this.inflight * 0.02) + this.accN / SR < AHEAD && this.inflight < 100) {
+      const k = st.packets[this.feed++];
+      this.dec.decode(new EncodedAudioChunk({ type: 'key', timestamp: k.ts, duration: k.dur, data: k.d }));
+      this.inflight++;
+    }
+    if (st.complete && this.feed >= st.packets.length && !this.flushing) {
+      this.flushing = true;
+      this.dec.flush().then(() => { this.flushAcc(); this.drained = true; this.endTime = Math.max(this.next, ctx.currentTime); })
+        .catch(() => {});
+    }
+  }
+  out(ad) {
+    this.inflight--;
+    if (this.dead) { ad.close(); return; }
+    const n = ad.numberOfFrames, t = ad.timestamp / 1e6;
+    const L = new Float32Array(n), R = new Float32Array(n);
+    ad.copyTo(L, { planeIndex: 0, format: 'f32-planar' });
+    if (ad.numberOfChannels > 1) ad.copyTo(R, { planeIndex: 1, format: 'f32-planar' }); else R.set(L);
+    ad.close();
+    let a = 0;
+    if (t + n / SR <= this.trim) return;
+    if (t < this.trim) a = Math.min(n, Math.round((this.trim - t) * SR));
+    this.acc.push([L.subarray(a), R.subarray(a)]); this.accN += n - a;
+    if (this.accN >= 24000) this.flushAcc();
+  }
+  flushAcc() {
+    if (!this.accN || this.dead) return;
+    const L = new Float32Array(this.accN), R = new Float32Array(this.accN);
+    let o = 0;
+    for (const [l, r] of this.acc) { L.set(l, o); R.set(r, o); o += l.length; }
+    this.acc = []; const n = this.accN; this.accN = 0;
+    this.play(L, R, n);
+  }
+}
+const newPlayer = (piece, offset, startAt) => (piece.store && piece.store.kind === 'pcm' ? new PcmPlayer(piece, offset, startAt) : new OpusPlayer(piece, offset, startAt));
+
+// ---------------------------------------------------------------- pieces
+// piece: {id, gen, kind: 'bank'|'set'|'history', status: 'loading'|'composing'|'queued'|'samples'|'rendering'|'ready'|'failed',
+//         info, recipe, hash, tune, render (text until rendered), store, verify}
+function newPiece(kind, extra) {
+  return { id: nextId++, gen: state.gen, kind, status: 'loading', info: null, store: null, urgent: false, ...extra };
+}
+function adopt(piece, o, piano) {
+  piece.info = o.info; piece.recipe = o.recipe; piece.hash = o.hash; piece.tune = o.tune; piece.render = o.render;
+  piece.piano = piano;
+  piece.expected = Math.round((o.info.seconds + 4) * SR);
+}
+function freePiece(p) {
+  if (!p || p === current || pool.includes(p) || played.includes(p)) return;
+  if (p.store) p.store.free();
+  p.store = null; p.render = null; p.dropped = true;
 }
 
-function maybeRequest() {
-  // render ahead: one piece after the one playing
-  if (busy || !state.started) return;
-  if (pieces.some((q, i) => i >= cur && q.t0 === undefined)) return;
-  busy = true;
-  const id = nextId++;
-  pieces.push({ id, info: null, sr: 48000, chunks: [], frames: 0, done: false, next: 0 });
-  worker.postMessage({ cmd: 'next', gen: state.gen, id });
+// ---------------------------------------------------------------- the bank (natively pre-composed set openings)
+async function gunzipJson(url) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`);
+  const s = r.body.pipeThrough(new DecompressionStream('gzip'));
+  return JSON.parse(await new Response(s).text());
+}
+async function bankPiece(genre, piano, n) {
+  if (!bankIndex) bankIndex = await (await fetch('bank/index.json')).json();
+  if (bankIndex.v !== V) throw new Error('bank of another version');
+  const count = bankIndex.counts[genre] || 0;
+  if (!count) throw new Error('empty bank');
+  if (n === undefined || n === null || n < 0 || n >= count) n = Math.floor(Math.random() * count);
+  const e = await gunzipJson(`bank/${genre}/${n}.json.gz`);
+  if (e.v !== V) throw new Error('bank entry of another version');
+  if (piano === 'spar') {                       // the mini cut: the same notes, its own zones
+    const song = JSON.parse(e.render);
+    for (const t of song.tracks) if (e.spar_samples[t.id]) t.instrument.params.samples = e.spar_samples[t.id];
+    e.render = JSON.stringify(song); e.hash = e.hash_spar;
+  }
+  e.recipe = { ...e.recipe, p: piano };
+  e.info = { ...e.info, piano, bank: n };
+  return { e, n };
 }
 
-function stopAll() {
-  for (const s of sources) { try { s.stop(); } catch (e) { /* stopped */ } s.disconnect(); }
-  sources.clear();
+// ---------------------------------------------------------------- workers
+let composer = null, composerReady = false, composeJob = null;
+let engine = null, engineJob = null;
+const composeQueue = [];            // pieces waiting for the composer, urgent first
+const renderQueue = [];             // pieces waiting for the engine, urgent first
+
+function makeComposer() {
+  composer = new Worker(new URL('./compose-worker.js', import.meta.url), { type: 'module' });
+  composerReady = false;
+  composer.onmessage = (e) => {
+    const m = e.data;
+    if (m.type === 'ready') {
+      composerReady = true; mark('composer-ready', { version: m.version });
+      if (m.version !== V) M.errors.push('composer version ' + m.version);
+      return pumpWork();
+    }
+    const p = composeJob && composeJob.id === m.job ? composeJob : null;
+    composeJob = null;
+    if (m.type === 'composed' && p && !p.dropped) {
+      const o = JSON.parse(m.out);
+      adopt(p, o, p.piano || state.piano);
+      if (p.wantHash) {
+        p.verify = p.wantHash === o.hash;
+        if (!p.verify) M.errors.push(`recipe ${JSON.stringify(o.recipe)}: hash ${o.hash}, expected ${p.wantHash}`);
+      }
+      p.status = 'queued';
+      mark('composed', { id: p.id, kind: p.kind, title: o.info.title, ms: m.ms, candidates: o.info.candidates, hash: o.hash, verify: p.verify });
+      renderQueue.push(p);
+    } else if (m.type === 'error') {
+      M.errors.push('composer: ' + m.message);
+      if (p) { p.status = 'failed'; p.error = m.message; pool = pool.filter((q) => q !== p); }
+      if (m.fatal) notice('Der Komponist konnte nicht laden. Die Musik der Bank spielt trotzdem.');
+    }
+    pumpWork(); ui();
+  };
+}
+function makeEngine() {
+  engine = new Worker(new URL('./engine-worker.js', import.meta.url), { type: 'module' });
+  engine.onmessage = (e) => {
+    const m = e.data;
+    if (m.type === 'ready') { mark('engine-ready'); return; }
+    const p = engineJob && engineJob.id === m.job ? engineJob : null;
+    if (m.type === 'chunk') {
+      if (p && p.store && !p.dropped) { p.store.add(m.pcm, m.frames); if (p.status !== 'rendering') p.status = 'rendering'; }
+      if (p === current && player) player.pump();
+      return;
+    }
+    if (p || m.job === undefined) engineJob = null;
+    if (m.type === 'done' && p) {
+      mark('rendered', { id: p.id, render_s: m.render_s, first_chunk_s: m.first_chunk_s, realtime_x: m.realtime_x, heapMB: m.heapMB });
+      p.render = null;
+      if (p.store) p.store.finish().then(() => { p.status = 'ready'; memory(); ui(); });
+    } else if (m.type === 'error') {
+      M.errors.push('engine: ' + m.message);
+      if (p) { p.status = 'failed'; pool = pool.filter((q) => q !== p); }
+    }
+    pumpWork(); ui();
+  };
 }
 
-// ---------------------------------------------------------------- samples: Opus -> 16-bit WAV for the engine
 function wav16(ab) {
-  const n = ab.length, ch = 2, sr = ab.sampleRate;
-  const buf = new ArrayBuffer(44 + n * ch * 2), v = new DataView(buf);
+  const n = ab.length, sr = ab.sampleRate;
+  const buf = new ArrayBuffer(44 + n * 4), v = new DataView(buf);
   const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
-  w(0, 'RIFF'); v.setUint32(4, 36 + n * ch * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
-  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, ch, true); v.setUint32(24, sr, true);
-  v.setUint32(28, sr * ch * 2, true); v.setUint16(32, ch * 2, true); v.setUint16(34, 16, true);
-  w(36, 'data'); v.setUint32(40, n * ch * 2, true);
+  w(0, 'RIFF'); v.setUint32(4, 36 + n * 4, true); w(8, 'WAVE'); w(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 2, true); v.setUint32(24, sr, true);
+  v.setUint32(28, sr * 4, true); v.setUint16(32, 4, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 4, true);
   const a = ab.getChannelData(0), b = ab.numberOfChannels > 1 ? ab.getChannelData(1) : a;
   const pcm = new Int16Array(buf, 44);
   for (let i = 0, o = 0; i < n; i++) {
@@ -116,211 +309,497 @@ function wav16(ab) {
   }
   return buf;
 }
+const safe = (base) => base.replace(/ /g, '_').replace(/#/g, 's');
 
-async function provide(m) {
-  ensureAudio();
-  const t0 = performance.now();
-  const files = {};
+async function samplesFor(p) {
+  const song = JSON.parse(p.render);
+  const names = new Set();
+  for (const t of song.tracks) for (const z of (t.instrument.params.samples || [])) names.add(safe(z.file.split('/').pop().replace(/\.wav$/i, '')));
+  const files = {}, list = [...names];
   let fetched = 0, bytes = 0;
-  const queue = m.names.slice();
+  const t0 = performance.now();
   async function one() {
-    while (queue.length) {
-      const name = queue.shift();
-      const url = `samples/${state.piano}/${name}.opus`;
+    while (list.length) {
+      const name = list.shift();
+      const url = `samples/${p.piano}/${name}.opus`;
       let data = compressed.get(url);
       if (!data) {
         const r = await fetch(url);
         if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`);
-        data = await r.arrayBuffer();
-        compressed.set(url, data); fetched++; bytes += data.byteLength;
+        data = await r.arrayBuffer(); compressed.set(url, data); fetched++; bytes += data.byteLength;
       }
-      const ab = await decoder.decodeAudioData(data.slice(0));
-      files[name] = wav16(ab);
+      files[name] = wav16(await decoderCtx().decodeAudioData(data.slice(0)));
     }
   }
-  try {
-    await Promise.all(Array.from({ length: 6 }, one));
-  } catch (e) {
-    showState('Die Klavierklänge konnten nicht geladen werden: ' + e.message);
-    window.__metrics.errors.push(String(e));
-    throw e;
-  }
-  mark('samples', { id: m.id, n: m.names.length, fetched, MB: +(bytes / 1e6).toFixed(2), s: +((performance.now() - t0) / 1000).toFixed(2) });
-  worker.postMessage({ cmd: 'files', nid: m.nid, files }, Object.values(files));
+  await Promise.all(Array.from({ length: 6 }, one));
+  mark('samples', { id: p.id, n: names.size, fetched, MB: +(bytes / 1e6).toFixed(2), s: +((performance.now() - t0) / 1000).toFixed(2) });
+  return files;
 }
 
-// ---------------------------------------------------------------- worker
-const worker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
-worker.onmessage = (e) => {
-  const m = e.data;
-  if (m.gen !== undefined && m.gen !== state.gen) {                // a stream of an earlier start
-    if (m.type === 'need') worker.postMessage({ cmd: 'files', nid: m.nid, files: null });   // (the worker drops it)
-    return;
-  }
-  const p = m.id !== undefined ? pieces.find((q) => q.id === m.id) : null;
-  if (m.type === 'ready') {
-    state.ready = true; mark('ready');
-    $('play').disabled = false; $('play').textContent = 'Abspielen';
-    showState('');
-  } else if (m.type === 'status') {
-    if (!state.playing || !pieces[cur] || pieces[cur].t0 === undefined) showState(m.text);
-  } else if (m.type === 'need') {
-    provide(m).catch(() => {});
-  } else if (m.type === 'piece' && p) {
-    p.info = m.info; p.sr = m.sampleRate; p.pending = false;
-    mark('composed', { id: m.id, title: m.info.title, compose_s: m.info.compose_s, candidates: m.info.candidates });
-    schedule();
-  } else if (m.type === 'chunk' && p && p.chunks) {
-    p.chunks.push({ l: m.l, r: m.r }); p.frames += m.l.length;
-    schedule();
-  } else if (m.type === 'done' && p) {
-    busy = false;
-    p.done = true; p.ok = m.ok; p.fails = m.fails; p.tune = m.tune;
-    mark('rendered', { id: m.id, ok: m.ok, fails: m.fails, render_s: m.render_s, first_chunk_s: m.first_chunk_s, realtime_x: m.realtime_x, heapMB: m.heapMB, lufs: m.lufs });
-    if (!m.ok && p.t0 === undefined) {          // the gate rejected it before it was heard: the slot's next candidate
-      const j = pieces.indexOf(p);
-      pieces.splice(j, 1);
-      if (j < cur) cur -= 1;
+const byUrgency = (a, b) => (b.urgent - a.urgent);
+// the engine renders a piece nobody waits for any more (skipped while it rendered), or the playing piece waits for
+// the engine: that render stops - a pool piece renders again later, a piece already left behind is let go
+function preemptEngine() {
+  const p = engineJob;
+  if (!p || p === current) return;
+  const waiting = current && !current.dropped && renderQueue.includes(current);
+  if (!waiting && pool.includes(p)) return;      // a pool piece renders on; a piece left behind stops
+  engine.terminate(); makeEngine(); engineJob = null;
+  mark('preempt', { id: p.id, for: current && current.id });
+  if (p.store) p.store.free();
+  p.store = null;
+  if (pool.includes(p)) { p.status = 'queued'; p.urgent = false; renderQueue.push(p); }
+  else { played = played.filter((q) => q !== p); p.dropped = true; p.render = null; }
+}
+async function pumpWork() {
+  preemptEngine();
+  // the engine: one piece at a time, the urgent (playing / asked for) first
+  if (!engineJob) {
+    renderQueue.sort(byUrgency);
+    while (renderQueue.length && renderQueue[0].dropped) renderQueue.shift();
+    const p = renderQueue.shift();
+    if (p) {
+      engineJob = p; p.status = 'samples';
+      try {
+        const files = await samplesFor(p);
+        if (engineJob !== p) return;                   // preempted while its samples loaded
+        if (p.dropped) { engineJob = null; return pumpWork(); }
+        p.store = newStore(); p.status = 'rendering';
+        engine.postMessage({ job: p.id, render: p.render, files }, Object.values(files));
+      } catch (err) {
+        M.errors.push(String(err)); p.status = 'failed'; engineJob = null;
+        notice('Die Klavierklänge konnten nicht geladen werden: ' + err.message);
+      }
     }
-    maybeRequest(); schedule(); render();
-  } else if (m.type === 'error') {
-    busy = false;
-    window.__metrics.errors.push(m.message);
-    showState('Fehler: ' + m.message);
   }
-};
+  // the composer: one job at a time; the set's next piece only after a click and while the pool has room
+  if (composerReady && !composeJob) {
+    composeQueue.sort(byUrgency);
+    while (composeQueue.length && composeQueue[0].dropped) composeQueue.shift();
+    let p = composeQueue.shift();
+    if (!p && state.clicked && state.session && state.session.ready && pool.length < POOL &&
+        !renderQueue.length && pool.every((q) => q.status !== 'composing')) {
+      p = newPiece('set', { piano: state.piano, status: 'composing' });
+      pool.push(p);
+      p.cmd = { cmd: 'next' };
+    }
+    if (p) {
+      composeJob = p; p.status = 'composing';
+      composer.postMessage({ ...p.cmd, job: p.id });
+    }
+  }
+  ui();
+}
 
-// ---------------------------------------------------------------- controls
-function restart() {
-  stopAll();
+// ---------------------------------------------------------------- sessions (a set: the bank's opening, then the composer)
+async function startSession(opts = {}) {
   state.gen += 1;
-  pieces = []; cur = 0; until = 0; busy = false; nextId = 1; shownId = null;
-  state.genre = $('genre').value; state.piano = $('piano').value;
-  state.seed = Math.abs(parseInt($('seed').value, 10) || 0) % 1000000; $('seed').value = state.seed;
-  state.started = true;
-  worker.postMessage({ cmd: 'start', gen: state.gen, genre: state.genre, seed: state.seed, piano: state.piano,
-                       first: FIRST_CANDIDATES, candidates: CANDIDATES });
-  maybeRequest();
-  render();
+  const gen = state.gen;
+  for (const p of pool) { p.dropped = true; freePiece(p); }
+  pool = [];
+  // a job of the old set still running: restart that worker (the playing piece is never one of them)
+  if (composeJob && composeJob !== current) { composeJob.dropped = true; composer.terminate(); composeJob = null; makeComposer(); }
+  if (engineJob && engineJob !== current) { engineJob.dropped = true; engine.terminate(); engineJob = null; makeEngine(); }
+  for (let i = composeQueue.length - 1; i >= 0; i--) if (composeQueue[i] !== current) composeQueue.splice(i, 1);
+  for (let i = renderQueue.length - 1; i >= 0; i--) if (renderQueue[i] !== current) renderQueue.splice(i, 1);
+  const genre = state.genre, piano = state.piano;
+  state.session = { gen, genre, piano, ready: false, seed: null, bank: null };
+  let first;
+  if (opts.seed !== undefined && opts.seed !== null) {        // a typed seed: the composer makes the set's first piece
+    state.session.seed = opts.seed;
+    composer.postMessage({ cmd: 'start', genre, seed: opts.seed, piano });
+    state.session.ready = true;
+    first = newPiece('set', { piano, status: 'composing', cmd: { cmd: 'next' }, urgent: true });
+    composeQueue.push(first);
+  } else {
+    first = newPiece('bank', { piano, status: 'loading', urgent: true });
+    try {
+      const { e, n } = await bankPiece(genre, piano, opts.bank);
+      if (gen !== state.gen) return;
+      adopt(first, e, piano);
+      first.status = 'queued';
+      state.session.seed = e.S; state.session.bank = n;
+      composer.postMessage({ cmd: 'start', genre, seed: e.S, piano, afterKey: e.info.key });
+      state.session.ready = true;
+      renderQueue.push(first);
+    } catch (err) {                                            // no bank: compose the opening live
+      M.errors.push('bank: ' + err.message);
+      const seed = Math.floor(Math.random() * 900000) + 100000;
+      state.session.seed = seed;
+      composer.postMessage({ cmd: 'start', genre, seed, piano });
+      state.session.ready = true;
+      first.kind = 'set'; first.status = 'composing'; first.cmd = { cmd: 'next' };
+      composeQueue.push(first);
+    }
+  }
+  $('seed').value = state.session.seed;
+  // before the first click the waiting opening is replaced (another genre / piano); a playing piece plays on
+  if (current && !state.clicked && current.kind === 'bank') { const old = current; current = null; old.dropped = true; freePiece(old); }
+  if (!current) setCurrent(first);
+  else pool.unshift(first);
+  mark('session', { genre, piano, seed: state.session.seed, bank: state.session.bank });
+  pumpWork();
+}
+
+// ---------------------------------------------------------------- transport
+function setCurrent(p, offset = 0, startAt = null) {
+  if (player) player.stop();
+  player = null;
+  current = p;
+  if (p) { p.urgent = true; resort(); }
+  if (p && state.playing && ctx) startPlayer(offset, startAt);
+  ui();
+}
+function resort() { renderQueue.sort(byUrgency); composeQueue.sort(byUrgency); }
+function startPlayer(offset = 0, startAt = null) {
+  if (!current || !ctx) return;
+  if (player) player.stop();
+  const at = startAt === null ? ctx.currentTime + 0.05 : startAt;
+  const p = current;
+  player = newPlayer(p, offset, at);
+  player.onFirst = (when) => {
+    if (!p.heard) { p.heard = true; remember(p); mark('piece-start', { id: p.id, kind: p.kind, title: p.info && p.info.title }); }
+    if (state.waitClick !== undefined) {
+      M.firstSound = +((performance.now() - state.waitClick) / 1000 + (when - ctx.currentTime)).toFixed(3);
+      mark('first-sound', { s: M.firstSound }); state.waitClick = undefined;
+    }
+    if (state.skipAt !== undefined) {
+      const s = +((performance.now() - state.skipAt) / 1000 + (when - ctx.currentTime)).toFixed(3);
+      (M.skips = M.skips || []).push(s); mark('skip-sound', { s }); state.skipAt = undefined;
+    }
+  };
+  if (p.store) player.pump();
+}
+function canPlay(p) { return p && p.store && (p.store.kind === 'pcm' ? p.store.frames > 0 : p.store.packets.length > 0); }
+
+function advance(startAt = null) {
+  const old = current;
+  if (old) { played.unshift(old); }
+  while (played.length > KEEP) freePiece(played.pop()) || null;
+  played = played.slice(0, KEEP);
+  let next = pool.shift() || null;
+  // an empty pool: the set's next piece is still being composed - a piece from the bank starts at once instead
+  if (next && !canPlay(next) && next.status === 'composing' && bankIndex) {
+    pool.unshift(next);
+    next = newPiece('bank', { piano: state.piano, status: 'loading', urgent: true });
+    const p = next, gen = state.gen;
+    bankPiece(state.genre, state.piano).then(({ e }) => {
+      if (p.dropped || gen !== state.gen) return;
+      adopt(p, e, state.piano); p.status = 'queued'; renderQueue.push(p); pumpWork();
+    }).catch((err) => { M.errors.push('bank: ' + err.message); p.status = 'failed'; });
+  }
+  setCurrent(next, 0, startAt);
+  pumpWork();
 }
 
 $('play').onclick = async () => {
-  ensureAudio();
-  if (!state.started) {
-    state.clickAt = performance.now();
-    state.playing = true;
+  audio();
+  if (!state.clicked) {
+    state.clicked = true; state.playing = true; state.waitClick = performance.now();
     await ctx.resume();
-    restart();
+    if (!current && state.session === null) await startSession();
+    startPlayer(0);
+    pumpWork();
   } else if (state.playing) {
     state.playing = false; await ctx.suspend();
   } else {
-    state.playing = true; await ctx.resume(); schedule();
+    state.playing = true; await ctx.resume();
+    if (!player && current) startPlayer(0);
   }
-  render();
+  ui();
 };
-
 $('skip').onclick = () => {
-  if (!state.started || !ctx) return;
-  const heard = playingPiece();
-  stopAll();
-  const h = pieces.indexOf(heard);
-  pieces.forEach((q, i) => { if (i > h && q.t0 !== undefined) { q.t0 = undefined; q.next = 0; } });   // re-schedule
-  if (heard && heard === pieces[cur]) advance();
-  until = ctx.currentTime + 0.15;
-  mark('skip', { from: heard && heard.id });
-  schedule(); render();
+  if (!state.clicked) return;
+  state.skipAt = performance.now();
+  mark('skip', { from: current && current.id, ready: pool.filter(canPlay).length });
+  advance();
+};
+$('back').onclick = () => {
+  if (!player || !current) return;
+  if (player.position() > 3 || !played.length) { seek(0); return; }
+  const prev = played.shift();
+  pool.unshift(current); current.urgent = false;
+  setCurrent(prev);
+};
+function seek(t) {
+  if (!current || !state.clicked) return;
+  const max = Math.max(0, (current.store ? current.store.seconds() : 0) - 0.3);
+  t = Math.max(0, Math.min(t, max));
+  mark('seek', { to: +t.toFixed(2) });
+  startPlayer(t);
+}
+
+for (const id of ['genre', 'piano']) $(id).onchange = () => {
+  state.genre = $('genre').value; state.piano = $('piano').value;
+  if (state.clicked || current) startSession();
+};
+$('restart').onclick = () => {
+  audio();
+  const s = parseInt($('seed').value, 10);
+  state.clicked = true; state.playing = true; ctx.resume();
+  const old = current; current = null; if (player) player.stop(); player = null;
+  if (old) { played.unshift(old); played = played.slice(0, KEEP); }
+  state.genre = $('genre').value; state.piano = $('piano').value;
+  startSession(Number.isFinite(s) && s !== state.session?.seed ? { seed: Math.abs(s) % 1000000 } : {});
 };
 
-for (const id of ['genre', 'piano']) $(id).onchange = () => { if (state.started) restart(); };
-$('restart').onclick = () => { if (!state.ready) return; ensureAudio(); state.playing = true; ctx.resume(); restart(); };
+// seeking: the bar (click / drag, touch) and the form's sections
+(() => {
+  const bar = $('seek');
+  let drag = false;
+  const at = (ev) => {
+    const r = bar.getBoundingClientRect();
+    return Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)) * (current && current.info ? current.info.seconds : 0);
+  };
+  bar.addEventListener('pointerdown', (ev) => { if (!current || !current.info) return; drag = true; bar.setPointerCapture(ev.pointerId); state.dragT = at(ev); ui(); });
+  bar.addEventListener('pointermove', (ev) => { if (drag) { state.dragT = at(ev); ui(); } });
+  const end = (ev) => { if (!drag) return; drag = false; const t = at(ev); state.dragT = undefined; seek(t); };
+  bar.addEventListener('pointerup', end);
+  bar.addEventListener('pointercancel', () => { drag = false; state.dragT = undefined; });
+  bar.addEventListener('keydown', (ev) => {
+    if (!player) return;
+    if (ev.key === 'ArrowRight') seek(player.position() + 10);
+    if (ev.key === 'ArrowLeft') seek(player.position() - 10);
+  });
+  $('form').addEventListener('click', (ev) => {
+    const d = ev.target.closest('div[data-start]');
+    if (d && !d.classList.contains('off')) seek(+d.dataset.start);
+  });
+})();
 
-$('share').onclick = async () => {
-  const u = new URL(location.href);
-  u.search = ''; u.hash = '';
-  u.searchParams.set('seed', $('seed').value); u.searchParams.set('genre', $('genre').value);
-  if ($('piano').value !== 'beste') u.searchParams.set('piano', $('piano').value);
-  const link = u.toString();
-  try { await navigator.clipboard.writeText(link); $('share-out').textContent = 'Link kopiert: ' + link; }
-  catch (e) { $('share-out').textContent = link; }
-};
-
+// ---------------------------------------------------------------- downloads
 function download(blob, name) {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob); a.download = name;
   document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+  setTimeout(() => URL.revokeObjectURL(a.href), 20000);
 }
-const fileName = (p, ext) => `${(p.info.title || 'stueck').replace(/[^\w\- äöüÄÖÜß]+/g, '').trim().replace(/\s+/g, '-')}-${p.info.seed}.${ext}`;
-
-$('wav').onclick = () => {
-  const p = playingPiece();
-  if (!p || !p.done || !p.chunks) return;
-  const n = p.frames, sr = p.sr;
-  const buf = new ArrayBuffer(44 + n * 4), v = new DataView(buf);
+const fileName = (p, ext) => `${(p.info.title || 'stueck').replace(/[^\w\- äöüÄÖÜß]+/g, '').trim().replace(/\s+/g, '-')}.${ext}`;
+async function pcmOf(p) {
+  const st = p.store;
+  if (st.kind === 'pcm') {
+    const outp = new Int16Array(st.frames * 2); let o = 0;
+    for (const c of st.chunks) { outp.set(c, o); o += c.length; }
+    return outp;
+  }
+  const outp = new Int16Array(Math.ceil((st.until + 1) * SR) * 2);
+  let o = 0;
+  await new Promise((resolve, reject) => {
+    const dec = new AudioDecoder({
+      output: (ad) => {
+        const n = ad.numberOfFrames, L = new Float32Array(n), R = new Float32Array(n);
+        ad.copyTo(L, { planeIndex: 0, format: 'f32-planar' }); ad.copyTo(R, { planeIndex: 1, format: 'f32-planar' }); ad.close();
+        for (let i = 0; i < n && o < outp.length; i++) { outp[o++] = Math.max(-32768, Math.min(32767, Math.round(L[i] * 32767))); outp[o++] = Math.max(-32768, Math.min(32767, Math.round(R[i] * 32767))); }
+      }, error: reject });
+    dec.configure(st.cfg || { codec: 'opus', sampleRate: SR, numberOfChannels: 2 });
+    for (const k of st.packets) dec.decode(new EncodedAudioChunk({ type: 'key', timestamp: k.ts, duration: k.dur, data: k.d }));
+    dec.flush().then(() => { dec.close(); resolve(); }, reject);
+  });
+  return outp.subarray(0, o);
+}
+$('wav').onclick = async () => {
+  const p = current;
+  if (!p || p.status !== 'ready') return;
+  const pcm = await pcmOf(p), n = pcm.length / 2;
+  const head = new ArrayBuffer(44), v = new DataView(head);
   const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
   w(0, 'RIFF'); v.setUint32(4, 36 + n * 4, true); w(8, 'WAVE'); w(12, 'fmt ');
-  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 2, true); v.setUint32(24, sr, true);
-  v.setUint32(28, sr * 4, true); v.setUint16(32, 4, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 4, true);
-  const pcm = new Int16Array(buf, 44);
-  let o = 0;
-  for (const c of p.chunks) for (let i = 0; i < c.l.length; i++) { pcm[o++] = c.l[i]; pcm[o++] = c.r[i]; }
-  download(new Blob([buf], { type: 'audio/wav' }), fileName(p, 'wav'));
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 2, true); v.setUint32(24, SR, true);
+  v.setUint32(28, SR * 4, true); v.setUint16(32, 4, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 4, true);
+  download(new Blob([head, pcm], { type: 'audio/wav' }), fileName(p, 'wav'));
 };
 $('notes').onclick = () => {
-  const p = playingPiece();
-  if (p && p.tune) download(new Blob([p.tune], { type: 'application/json' }), fileName(p, 'json'));
+  const p = current;
+  if (p && p.tune) download(new Blob([JSON.stringify({ recipe: p.recipe, hash: p.hash, ...p.tune }, null, 1)], { type: 'application/json' }), fileName(p, 'json'));
 };
+
+// ---------------------------------------------------------------- share links
+const b64u = (s) => btoa(String.fromCharCode(...new TextEncoder().encode(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const unb64u = (s) => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0)));
+function pieceLink(recipe, hash) {
+  const u = new URL(location.href); u.search = ''; u.hash = '';
+  u.searchParams.set('r', b64u(JSON.stringify(recipe)));
+  if (hash) u.searchParams.set('h', hash);
+  return u.toString();
+}
+async function copy(link, label) {
+  try { await navigator.clipboard.writeText(link); $('share-out').textContent = `${label} kopiert: ${link}`; }
+  catch (e) { $('share-out').textContent = link; }
+}
+$('share').onclick = () => {
+  const u = new URL(location.href); u.search = ''; u.hash = '';
+  const s = state.session;
+  if (s && s.bank !== null && s.bank !== undefined) u.searchParams.set('set', String(s.bank)); else if (s) u.searchParams.set('seed', String(s.seed));
+  u.searchParams.set('genre', state.genre);
+  if (state.piano !== 'beste') u.searchParams.set('piano', state.piano);
+  if (current && current.recipe) copy(pieceLink(current.recipe, current.hash), 'Link zu diesem Stück');
+  else copy(u.toString(), 'Link');
+};
+
+// ---------------------------------------------------------------- history (recipes only, in localStorage)
+const HKEY = 'endless-piano-history';
+let history = [];
+function loadHistory() { try { history = JSON.parse(localStorage.getItem(HKEY) || '[]'); if (!Array.isArray(history)) history = []; } catch (e) { history = []; } }
+function saveHistory() {
+  history.sort((a, b) => (b.fav - a.fav) || (b.at - a.at));
+  while (history.length > 200) { const i = history.map((h) => !h.fav).lastIndexOf(true); if (i < 0) break; history.splice(i, 1); }
+  try { localStorage.setItem(HKEY, JSON.stringify(history)); } catch (e) { /* no storage: the list lives for this visit */ }
+}
+function remember(p) {
+  if (!p.recipe || !p.info) return;
+  const old = history.find((h) => h.h === p.hash);
+  if (old) { old.at = Date.now(); }
+  else history.push({ h: p.hash, v: V, recipe: p.recipe, title: p.info.title, genre: p.info.genre, piano: p.recipe.p,
+                      key: p.info.key, tempo: p.info.tempo, meter: p.info.meter, at: Date.now(), fav: false });
+  saveHistory(); drawHistory();
+}
+function heldPiece(hash) { return [current, ...played, ...pool].find((q) => q && q.hash === hash && q.store && !q.dropped); }
+function playRecipe(recipe, wantHash) {
+  if (recipe.v !== V) { notice('Dieses Stück stammt von einer anderen Version der Seite und kann so nicht mehr erzeugt werden.'); return; }
+  audio(); ctx.resume(); state.clicked = true; state.playing = true;
+  const held = wantHash && heldPiece(wantHash);
+  if (held && held === current) { mark('history-play', { from: 'memory', hash: wantHash }); startPlayer(0); return; }
+  if (held) { pool = pool.filter((q) => q !== held); played = played.filter((q) => q !== held); }
+  if (current) { played.unshift(current); while (played.length > KEEP) freePiece(played.pop()); }
+  if (held) {
+    mark('history-play', { from: 'memory', hash: wantHash });
+    setCurrent(held); return;
+  }
+  const p = newPiece('history', { piano: recipe.p, status: 'composing', urgent: true, cmd: { cmd: 'recipe', recipe }, wantHash });
+  composeQueue.unshift(p);
+  mark('history-play', { from: 'compose', hash: wantHash });
+  setCurrent(p);
+  pumpWork();
+}
+function drawHistory() {
+  const ul = $('history');
+  ul.textContent = '';
+  $('hist-empty').style.display = history.length ? 'none' : 'block';
+  for (const h of history.slice(0, 200)) {
+    const li = document.createElement('li');
+    if (current && current.hash === h.h) li.className = 'playing';
+    const what = document.createElement('div'); what.className = 'what';
+    const t = document.createElement('span'); t.className = 't'; t.textContent = h.title;
+    const m = document.createElement('span'); m.className = 'm';
+    const when = new Date(h.at);
+    m.textContent = `${GENRE_NAME[h.genre] || h.genre} · ${keyName(h.key)} · ${h.tempo} BPM · ${when.toLocaleDateString('de-DE')} ${when.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}` + (h.v !== V ? ' · andere Version' : '');
+    what.append(t, m);
+    what.onclick = () => playRecipe(h.recipe, h.h);
+    const fav = document.createElement('button'); fav.className = 'fav' + (h.fav ? ' on' : ''); fav.textContent = '♥';
+    fav.title = h.fav ? 'Favorit entfernen' : 'Als Favorit merken'; fav.setAttribute('aria-pressed', h.fav ? 'true' : 'false');
+    fav.onclick = () => { h.fav = !h.fav; saveHistory(); drawHistory(); };
+    const link = document.createElement('button'); link.textContent = 'Link';
+    link.onclick = () => copy(pieceLink(h.recipe, h.h), 'Link');
+    li.append(what, fav, link);
+    ul.appendChild(li);
+  }
+}
 
 // ---------------------------------------------------------------- display
 function showState(t) { $('state').textContent = t; }
-function playingPiece() {
-  if (!ctx) return null;
-  const now = ctx.currentTime;
-  let best = null;
-  for (const p of pieces) if (p.t0 !== undefined && p.t0 <= now + 0.05) best = p;
-  return best;
-}
+function notice(t) { state.notice = t; state.noticeAt = Date.now(); showState(t); }   // shown for a minute
 const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
-function keyName(k) { const [n, q] = (k || '').split(' '); return `${n}-${KEYS[q] || q || ''}`; }
-const SECTION = { intro: 'Intro', coda: 'Coda', interlude: 'Zwischenspiel', climax: 'Höhepunkt', build: 'Steigerung' };
+function keyName(k) { const [n, q] = (k || '').split(' '); return `${n}-${{ major: 'Dur', minor: 'Moll' }[q] || q || ''}`; }
 let shownId = null;
-
-function render() {
-  $('play').textContent = !state.ready ? 'Lade…' : (state.playing ? 'Pause' : (state.started ? 'Weiter' : 'Abspielen'));
-  $('skip').disabled = !state.started;
-  const p = playingPiece();
-  if (!p || !p.info) {
-    if (state.started && state.playing) showState('Das erste Stück wird komponiert…');
-    return;
-  }
-  const i = p.info;
-  if (shownId !== p.id) {
+function progressOf(p) {
+  if (!p) return '';
+  if (p.status === 'loading') return 'wird geladen…';
+  if (p.status === 'composing') return composeJob === p ? 'wird komponiert…' : 'wartet auf den Komponisten…';
+  if (p.status === 'queued' || p.status === 'samples') return 'Klänge werden geladen…';
+  if (p.status === 'rendering') return `wird vorbereitet… ${Math.min(99, Math.round(100 * (p.store ? p.store.frames : 0) / p.expected))} %`;
+  return '';
+}
+function memory() {
+  const all = [current, ...played, ...pool].filter(Boolean);
+  const per = all.map((p) => ({ id: p.id, kind: p.kind, where: p === current ? 'current' : (pool.includes(p) ? 'pool' : 'played'),
+                                 store: p.store ? p.store.kind : null, MB: p.store ? +(p.store.bytes / 1e6).toFixed(2) : 0,
+                                 seconds: p.store ? +p.store.seconds().toFixed(1) : 0 }));
+  M.mem = { per, totalMB: +per.reduce((s, x) => s + x.MB, 0).toFixed(2), samplesMB: +([...compressed.values()].reduce((s, b) => s + b.byteLength, 0) / 1e6).toFixed(2) };
+  if (performance.memory) M.mem.jsHeapMB = Math.round(performance.memory.usedJSHeapSize / 1048576);
+}
+function ui() {
+  $('play').textContent = state.playing ? 'Pause' : (state.clicked ? 'Weiter' : 'Abspielen');
+  $('skip').disabled = !state.clicked; $('back').disabled = !state.clicked || !current;
+  const p = current, i = p && p.info;
+  if (!i) {
+    $('title').textContent = p ? 'Das nächste Stück entsteht…' : 'Noch nichts gespielt';
+    $('meta').textContent = p ? progressOf(p) : 'Drück auf Abspielen.';
+  } else if (shownId !== p.id) {
     shownId = p.id;
     $('title').textContent = i.title;
-    $('meta').textContent = `${keyName(i.key)} · ${i.tempo} BPM · ${i.meter} · ${FEEL[i.feel] || i.feel} · Stück ${i.index}` +
+    $('meta').textContent = `${GENRE_NAME[i.genre] || ''} · ${keyName(i.key)} · ${i.tempo} BPM · ${i.meter}${(FEEL[i.feel] || i.feel) !== GENRE_NAME[i.genre] ? ' · ' + (FEEL[i.feel] || i.feel) : ''}` +
       (i.candidates > 1 ? ` · bestes von ${i.candidates}` : '');
-    const form = $('form');
-    form.querySelectorAll('div').forEach((d) => d.remove());
-    const total = i.sections.length ? i.sections[i.sections.length - 1].end : i.seconds;
+    const form = $('form'); form.textContent = '';
     for (const s of i.sections) {
       const d = document.createElement('div');
       d.style.flex = `${Math.max(0.001, s.end - s.start)} 1 0`;
-      d.textContent = SECTION[s.name] || s.name; d.title = `${s.name} ${fmt(s.start)}`;
+      d.textContent = SECTION[s.name] || s.name; d.title = `${SECTION[s.name] || s.name} ab ${fmt(s.start)}`;
       d.dataset.start = s.start; d.dataset.end = s.end;
       form.appendChild(d);
     }
-    form.dataset.total = total;
-    $('playhead').style.display = 'block';
+    drawHistory();
   }
-  const t = Math.max(0, ctx.currentTime - p.t0);
-  const total = +$('form').dataset.total || i.seconds;
-  $('time').textContent = `${fmt(Math.min(t, total))} / ${fmt(total)}`;
-  $('playhead').style.left = `${Math.min(100, 100 * t / total)}%`;
-  $('form').querySelectorAll('div').forEach((d) => d.classList.toggle('now', t >= +d.dataset.start && t < +d.dataset.end));
-  $('wav').disabled = !(p.done && p.chunks);
-  $('notes').disabled = !p.tune;
-  const next = pieces.find((q) => q.t0 === undefined);
-  showState(state.playing ? (next && !next.done ? 'Das nächste Stück entsteht…' : (next && next.done ? `Als Nächstes: ${next.info.title}` : '')) : 'Pausiert');
+  const total = i ? i.seconds : 0;
+  const t = state.dragT !== undefined ? state.dragT : (player && ctx && state.clicked ? player.position() : 0);
+  const buf = p && p.store ? Math.min(total, p.store.seconds()) : 0;
+  $('time').textContent = i ? `${fmt(Math.min(t, total))} / ${fmt(total)}` : '';
+  const pct = (x) => `${total ? Math.min(100, 100 * x / total) : 0}%`;
+  document.querySelector('#seek .played').style.width = pct(t);
+  document.querySelector('#seek .knob').style.left = pct(t);
+  document.querySelector('#seek .buf').style.width = pct(buf);
+  $('form').querySelectorAll('div').forEach((d) => {
+    d.classList.toggle('now', t >= +d.dataset.start && t < +d.dataset.end);
+    d.classList.toggle('off', +d.dataset.start > buf - 0.3);
+  });
+  $('wav').disabled = !(p && p.status === 'ready'); $('notes').disabled = !(p && p.tune);
+  // the pool
+  const ready = pool.filter((q) => q.status === 'ready').length;
+  $('dots').textContent = Array.from({ length: POOL }, (_, k) => (k < ready ? '●' : (k < pool.length ? '◐' : '○'))).join('');
+  const making = pool.find((q) => q.status !== 'ready');
+  $('pool-text').textContent = state.clicked ? `${ready === 1 ? '1 Stück' : ready + ' Stücke'} bereit` + (making ? ` · nächstes: ${progressOf(making)}` : '') : '';
+  $('upnext').textContent = pool.filter((q) => q.info).length ? 'Als Nächstes: ' + pool.filter((q) => q.info).map((q) => q.info.title).join(' · ') : '';
+  if (p && !canPlay(p)) showState(progressOf(p));
+  else if (!state.playing && state.clicked) showState('Pausiert');
+  else showState(state.notice && Date.now() - state.noticeAt < 60000 ? state.notice : '');
 }
 
-setInterval(() => { schedule(); render(); }, 250);
+// for tests: the page's inner state, read only
+window.__dbg = { get current() { return current; }, get pool() { return pool; }, get played() { return played; },
+                 get player() { return player; }, get ctx() { return ctx; }, pcmOf, state };
+
+// ---------------------------------------------------------------- the clock
+setInterval(() => {
+  if (player && state.playing) {
+    player.pump();
+    if (player.endTime !== null && ctx.currentTime >= player.endTime - 0.05) advance(player.endTime + GAP);
+  } else if (!player && current && state.playing && ctx) startPlayer(0);
+  pumpWork().catch(() => {});
+  memory();
+  ui();
+}, 200);
+
+// ---------------------------------------------------------------- start: on load, the first piece renders silently
+(async () => {
+  OPUS = await probeOpus();
+  POOL = OPUS ? (mobile ? (devMem >= 6 ? 3 : 2) : 4) : (mobile ? 1 : 2);
+  KEEP = OPUS ? 2 : 1;
+  M.config = { opus: OPUS, pool: POOL, keep: KEEP, mobile, deviceMemory: devMem };
+  mark('config', M.config);
+  loadHistory(); drawHistory();
+  makeComposer(); makeEngine();
+  let shared = null;
+  if (params.has('r')) {
+    try { shared = JSON.parse(unb64u(params.get('r'))); } catch (e) { shared = null; }
+    if (shared && shared.v !== V) { notice('Dieser Link stammt von einer anderen Version der Seite und kann nicht abgespielt werden.'); shared = null; }
+    else if (shared) { state.genre = shared.g; state.piano = shared.p; $('genre').value = shared.g; $('piano').value = shared.p; }
+  }
+  const seed = params.has('seed') ? Math.abs(parseInt(params.get('seed'), 10) || 0) % 1000000 : null;
+  const bank = params.has('set') ? parseInt(params.get('set'), 10) : undefined;
+  if (shared) {
+    const p = newPiece('history', { piano: shared.p, status: 'composing', urgent: true, cmd: { cmd: 'recipe', recipe: shared }, wantHash: params.get('h') || undefined });
+    composeQueue.push(p); setCurrent(p);
+    startSession({});
+  } else {
+    startSession(seed !== null ? { seed } : { bank });
+  }
+})();

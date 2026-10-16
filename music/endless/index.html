@@ -8,33 +8,43 @@
 <style>
   :root {
     --bg: #f6f4ef; --fg: #1f1f1f; --muted: #6a6a6a; --line: #d9d5cc; --card: #ffffff;
-    --accent: #2e5c86; --accent-fg: #ffffff; --sec: #e8e3d8; --sec-now: #c9d8e6;
+    --accent: #2e5c86; --accent-fg: #ffffff; --sec: #e8e3d8; --sec-now: #c9d8e6; --buf: #d3dde6; --fav: #b4424d;
   }
   @media (prefers-color-scheme: dark) {
     :root { --bg: #15171a; --fg: #ebe8e2; --muted: #9b9890; --line: #33363b; --card: #1e2125;
-            --accent: #86b4de; --accent-fg: #10161c; --sec: #2a2d32; --sec-now: #35506a; }
+            --accent: #86b4de; --accent-fg: #10161c; --sec: #2a2d32; --sec-now: #35506a; --buf: #3a434d; --fav: #e07a84; }
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--bg); color: var(--fg); }
   body { font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; overflow-x: hidden; }
   main { max-width: 680px; margin: 0 auto; padding: 28px 16px 24px; }
   h1 { font-size: 1.7rem; font-weight: 650; margin: 0; letter-spacing: -0.01em; }
+  h2 { font-size: 1.05rem; font-weight: 600; margin: 28px 0 8px; }
   .sub { color: var(--muted); margin: 4px 0 24px; }
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px 16px; }
   #title { font-size: 1.25rem; font-weight: 600; margin: 0; min-height: 1.5em; overflow-wrap: anywhere; }
   #meta { color: var(--muted); margin: 2px 0 14px; min-height: 1.5em; }
-  .transport { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .transport { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   button { font: inherit; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--fg);
-           padding: 10px 16px; cursor: pointer; min-height: 44px; }
-  button.primary { background: var(--accent); color: var(--accent-fg); border-color: transparent; font-weight: 600; min-width: 128px; }
+           padding: 10px 14px; cursor: pointer; min-height: 44px; touch-action: manipulation; }
+  button.primary { background: var(--accent); color: var(--accent-fg); border-color: transparent; font-weight: 600; min-width: 112px; }
   button:disabled { opacity: .45; cursor: default; }
   #time { color: var(--muted); font-variant-numeric: tabular-nums; margin-left: auto; }
-  .form { display: flex; gap: 2px; margin: 16px 0 4px; height: 30px; position: relative; }
+  #seek { position: relative; height: 32px; margin: 14px 0 0; cursor: pointer; touch-action: none; }
+  #seek .track { position: absolute; left: 0; right: 0; top: 13px; height: 6px; border-radius: 3px; background: var(--sec); }
+  #seek .buf { position: absolute; left: 0; top: 13px; height: 6px; border-radius: 3px; background: var(--buf); width: 0; }
+  #seek .played { position: absolute; left: 0; top: 13px; height: 6px; border-radius: 3px; background: var(--accent); width: 0; }
+  #seek .knob { position: absolute; top: 7px; width: 18px; height: 18px; margin-left: -9px; border-radius: 50%;
+                background: var(--accent); left: 0; box-shadow: 0 0 0 3px var(--card); }
+  .form { display: flex; gap: 2px; margin: 6px 0 4px; height: 30px; }
   .form div { background: var(--sec); border-radius: 4px; font-size: 11px; color: var(--muted); overflow: hidden;
-              white-space: nowrap; text-overflow: ellipsis; padding: 6px 4px 0; min-width: 0; }
+              white-space: nowrap; text-overflow: ellipsis; padding: 6px 4px 0; min-width: 0; cursor: pointer; }
   .form div.now { background: var(--sec-now); color: var(--fg); }
-  #playhead { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--accent); left: 0; display: none; }
+  .form div.off { opacity: .45; cursor: default; }
   #state { color: var(--muted); font-size: 14px; margin: 10px 0 0; min-height: 1.4em; }
+  #pool { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 14px; margin-top: 4px; flex-wrap: wrap; }
+  #dots { letter-spacing: 3px; color: var(--accent); }
+  #upnext { color: var(--muted); font-size: 13px; margin: 2px 0 0; overflow-wrap: anywhere; min-height: 1.2em; }
   .settings { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
   label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: var(--muted); min-width: 0; }
   select, input { font: inherit; padding: 9px 10px; border-radius: 10px; border: 1px solid var(--line);
@@ -42,6 +52,16 @@
   .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
   .row button { flex: 1 1 140px; }
   #share-out { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; margin-top: 8px; min-height: 1.2em; }
+  #history { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+  #history li { display: flex; gap: 8px; align-items: center; border-bottom: 1px solid var(--line); padding: 8px 0; }
+  #history .what { flex: 1; min-width: 0; cursor: pointer; }
+  #history .t { display: block; font-weight: 550; overflow-wrap: anywhere; }
+  #history .m { display: block; color: var(--muted); font-size: 13px; }
+  #history button { min-height: 40px; padding: 6px 10px; font-size: 14px; }
+  #history .fav { color: var(--muted); }
+  #history .fav.on { color: var(--fav); }
+  #history li.playing .t { color: var(--accent); }
+  #hist-empty { color: var(--muted); font-size: 14px; }
   footer { color: var(--muted); font-size: 13px; margin-top: 28px; line-height: 1.5; }
   footer a { color: inherit; }
   @media (max-width: 420px) { .settings { grid-template-columns: 1fr; } }
@@ -56,12 +76,18 @@
     <p id="title">Noch nichts gespielt</p>
     <p id="meta">Drück auf Abspielen.</p>
     <div class="transport">
-      <button id="play" class="primary" disabled>Lade…</button>
+      <button id="back" disabled aria-label="Zurück">Zurück</button>
+      <button id="play" class="primary">Abspielen</button>
       <button id="skip" disabled>Überspringen</button>
       <span id="time"></span>
     </div>
-    <div class="form" id="form" aria-label="Form des Stücks"><span id="playhead"></span></div>
+    <div id="seek" role="slider" aria-label="Position im Stück" tabindex="0">
+      <div class="track"></div><div class="buf"></div><div class="played"></div><div class="knob"></div>
+    </div>
+    <div class="form" id="form" aria-label="Form des Stücks"></div>
     <p id="state"></p>
+    <div id="pool"><span id="dots"></span><span id="pool-text"></span></div>
+    <p id="upnext"></p>
   </section>
 
   <section class="settings">
@@ -92,6 +118,10 @@
     <button id="notes" disabled>Noten (JSON)</button>
   </div>
   <p id="share-out"></p>
+
+  <h2>Verlauf</h2>
+  <ul id="history"></ul>
+  <p id="hist-empty">Noch nichts gehört.</p>
 
   <footer>
     Komponiert und gespielt live in deinem Browser von AgentSound
