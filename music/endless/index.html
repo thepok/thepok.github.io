@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Endless Piano</title>
+<meta name="description" content="Endlose Klaviermusik, live im Browser komponiert und gespielt von AgentSound.">
+<style>
+  :root {
+    --bg: #f6f4ef; --fg: #1f1f1f; --muted: #6a6a6a; --line: #d9d5cc; --card: #ffffff;
+    --accent: #2e5c86; --accent-fg: #ffffff; --sec: #e8e3d8; --sec-now: #c9d8e6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #15171a; --fg: #ebe8e2; --muted: #9b9890; --line: #33363b; --card: #1e2125;
+            --accent: #86b4de; --accent-fg: #10161c; --sec: #2a2d32; --sec-now: #35506a; }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); }
+  body { font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; overflow-x: hidden; }
+  main { max-width: 680px; margin: 0 auto; padding: 28px 16px 24px; }
+  h1 { font-size: 1.7rem; font-weight: 650; margin: 0; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); margin: 4px 0 24px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px 16px; }
+  #title { font-size: 1.25rem; font-weight: 600; margin: 0; min-height: 1.5em; overflow-wrap: anywhere; }
+  #meta { color: var(--muted); margin: 2px 0 14px; min-height: 1.5em; }
+  .transport { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  button { font: inherit; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--fg);
+           padding: 10px 16px; cursor: pointer; min-height: 44px; }
+  button.primary { background: var(--accent); color: var(--accent-fg); border-color: transparent; font-weight: 600; min-width: 128px; }
+  button:disabled { opacity: .45; cursor: default; }
+  #time { color: var(--muted); font-variant-numeric: tabular-nums; margin-left: auto; }
+  .form { display: flex; gap: 2px; margin: 16px 0 4px; height: 30px; position: relative; }
+  .form div { background: var(--sec); border-radius: 4px; font-size: 11px; color: var(--muted); overflow: hidden;
+              white-space: nowrap; text-overflow: ellipsis; padding: 6px 4px 0; min-width: 0; }
+  .form div.now { background: var(--sec-now); color: var(--fg); }
+  #playhead { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--accent); left: 0; display: none; }
+  #state { color: var(--muted); font-size: 14px; margin: 10px 0 0; min-height: 1.4em; }
+  .settings { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
+  label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: var(--muted); min-width: 0; }
+  select, input { font: inherit; padding: 9px 10px; border-radius: 10px; border: 1px solid var(--line);
+                  background: var(--card); color: var(--fg); width: 100%; min-width: 0; min-height: 44px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  .row button { flex: 1 1 140px; }
+  #share-out { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; margin-top: 8px; min-height: 1.2em; }
+  footer { color: var(--muted); font-size: 13px; margin-top: 28px; line-height: 1.5; }
+  footer a { color: inherit; }
+  @media (max-width: 420px) { .settings { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Endless Piano</h1>
+  <p class="sub">Endlose Klaviermusik, Stück für Stück neu komponiert.</p>
+
+  <section class="card" aria-live="polite">
+    <p id="title">Noch nichts gespielt</p>
+    <p id="meta">Drück auf Abspielen.</p>
+    <div class="transport">
+      <button id="play" class="primary" disabled>Lade…</button>
+      <button id="skip" disabled>Überspringen</button>
+      <span id="time"></span>
+    </div>
+    <div class="form" id="form" aria-label="Form des Stücks"><span id="playhead"></span></div>
+    <p id="state"></p>
+  </section>
+
+  <section class="settings">
+    <label>Stil
+      <select id="genre">
+        <option value="new-age">New Age</option>
+        <option value="klassik">Klassisch (Nocturne und Walzer)</option>
+        <option value="walzer">Walzer</option>
+      </select>
+    </label>
+    <label>Klavier
+      <select id="piano">
+        <option value="beste">Flügel</option>
+        <option value="spar">Sparmodus (weniger Daten)</option>
+      </select>
+    </label>
+    <label>Seed
+      <input id="seed" type="number" inputmode="numeric" min="0" max="999999">
+    </label>
+    <label>&nbsp;
+      <button id="restart">Neu starten</button>
+    </label>
+  </section>
+
+  <div class="row">
+    <button id="share">Link teilen</button>
+    <button id="wav" disabled>WAV laden</button>
+    <button id="notes" disabled>Noten (JSON)</button>
+  </div>
+  <p id="share-out"></p>
+
+  <footer>
+    Komponiert und gespielt live in deinem Browser von AgentSound
+    (<a href="https://github.com/thepok/AgentSound">github.com/thepok/AgentSound</a>, MIT).
+    Flügel: Splendid Grand Piano (Public Domain).
+    Raumhall: Voxengo IM Reverbs. <a href="LICENSES.md">Lizenzen</a>
+  </footer>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>
