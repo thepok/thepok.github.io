@@ -8,6 +8,13 @@ import {
 } from "./engine";
 import { botAction } from "./bots";
 import { Relay } from "./relay";
+import type { Directory } from "./directory";
+export type TableOptions = {
+  title?: string;
+  password?: string;
+  directory?: Directory;
+  listed?: boolean;
+};
 export { selfId };
 export class Table {
   state: State | null = null;
@@ -34,19 +41,27 @@ export class Table {
     public creator: boolean,
     public update: () => void,
     host: string,
+    public options: TableOptions = {},
   ) {
     this.host = creator ? selfId : host;
     if (creator) this.state = initial(selfId, name);
-    this.room = joinRoom({ appId: "thepok.github.io.poker.v1" }, roomId, {
-      onJoinError: ({ peerId }) => {
-        if (!creator && peerId === this.host && !this.state) {
-          this.status =
-            "Direkte Verbindung gescheitert · versuche verschlüsselten Relay-Fallback …";
-          this.pulse();
-          this.update();
-        }
+    this.room = joinRoom(
+      {
+        appId: "thepok.github.io.poker.v2",
+        password: options.password || undefined,
       },
-    });
+      roomId,
+      {
+        onJoinError: ({ peerId }) => {
+          if (!creator && peerId === this.host && !this.state) {
+            this.status =
+              "Direkte Verbindung gescheitert · versuche verschlüsselten Relay-Fallback …";
+            this.pulse();
+            this.update();
+          }
+        },
+      },
+    );
     this.wire = this.room.makeAction<any>("poker");
     this.wire.onMessage = (m, { peerId }) => this.receive(m, peerId, false);
     this.relay = new Relay(
@@ -60,6 +75,7 @@ export class Table {
           this.update();
         }
       },
+      { password: options.password },
     );
     this.room.onPeerJoin = (peer) => {
       this.direct.add(peer);
@@ -80,6 +96,30 @@ export class Table {
     this.timer = setInterval(() => this.tick(), 500);
     this.describe();
     this.update();
+    if (creator && options.listed && options.directory)
+      options.directory.advertise(() => {
+        const seated =
+          this.state?.players.filter((p) => p && !p.bot).length || 1;
+        const reserved =
+          this.state?.pending.filter(
+            (c) =>
+              c.type === "join" &&
+              !this.state?.players.some((p) => p?.id === c.id),
+          ).length || 0;
+        const humans = Math.min(6, seated + reserved);
+        return {
+          room: this.roomId,
+          host: selfId,
+          title: options.title || "Freundesrunde",
+          locked: !!options.password,
+          humans,
+          bots: Math.min(
+            6 - humans,
+            this.state?.players.filter((p) => p?.bot).length || 0,
+          ),
+          phase: this.state?.phase || "Bereit",
+        };
+      });
   }
   touch(peer: string) {
     this.peers.add(peer);
@@ -215,6 +255,14 @@ export class Table {
       this.error = this.relay.ready.size
         ? "Der Spielleiter antwortet nicht. Laptop-Tisch geöffnet lassen und auf beiden Geräten die aktuelle Seite laden."
         : "Keine Relay-Verbindung. Prüfe Internetzugang und öffne den Link in Chrome oder Firefox statt im eingebauten Messenger-Browser.";
+    if (
+      !this.creator &&
+      !this.state &&
+      this.options.password &&
+      now - this.began > 20000
+    )
+      this.error =
+        "Beitritt nicht möglich. Prüfe das Tischpasswort und ob der Tisch noch geöffnet ist.";
     if (this.creator && this.state) {
       const p = this.state.players[this.state.turn];
       if (
@@ -280,6 +328,7 @@ export class Table {
   }
   async close() {
     this.closed = true;
+    if (this.creator) await this.options.directory?.withdraw();
     clearInterval(this.timer);
     clearTimeout(this.botTimer);
     await Promise.allSettled([

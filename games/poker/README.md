@@ -2,7 +2,17 @@
 
 Live: https://thepok.github.io/games/poker/
 
-Privaten Tisch eröffnen, Namen eingeben und **Karten geben** anklicken. Fünf Bots sitzen sofort bereit. Über **Freunde einladen** den vollständigen Link inklusive `#room=…&host=…` teilen. Ein Gast ersetzt einen Bot (oder nimmt einen freien Platz). Während einer Hand werden alle Sitzplatzänderungen bis **Nächste Hand** vorgemerkt. Jeder sitzende Mensch kann Bots hinzufügen und entfernen; entfernte Bots werden nicht automatisch aufgefüllt.
+Die Startseite zeigt **Offene Tische**. Einen Tisch auswählen, Spielernamen und gegebenenfalls das Tischpasswort eingeben und beitreten. Alternativ einen eigenen Tisch mit frei wählbarem **Tischnamen** und **optionalem Passwort** eröffnen. Standardmäßig erscheint er im öffentlichen Verzeichnis; die Checkbox **In der öffentlichen Tischliste anzeigen** kann für eine private Einladungsrunde deaktiviert werden.
+
+Fünf Bots sitzen sofort bereit. **Karten geben** startet die Runde. **Freunde einladen** kopiert weiterhin einen vollständigen Link inklusive Raum, Host, Titel und Passwort-Markierung; **das Passwort selbst steht niemals im Link** und muss separat mitgeteilt werden. Ein Gast ersetzt einen Bot (oder nimmt einen freien Platz). Während einer Hand werden alle Sitzplatzänderungen bis **Nächste Hand** vorgemerkt. Jeder sitzende Mensch kann Bots hinzufügen und entfernen; entfernte Bots werden nicht automatisch aufgefüllt.
+
+## Tischliste und Passwörter
+
+- `source/src/directory.ts` verwaltet ein gemeinsames öffentliches Verzeichnis über die bereits verwendeten Relays. Hosts melden alle acht Sekunden Tischname, Raum-/Hostkennung, Passwortpflicht, reservierte menschliche Plätze, Bots und Spielphase. Neue Besucher fragen nach aktiven Tischen. Ohne frische Meldung wird ein Eintrag nach etwa 35 Sekunden aus dem lokalen Browser-Verzeichnis entfernt; freiwilliges Schließen sendet zusätzlich eine Abmeldung. Es gibt keine eigene Datenbank, keinen Registrierungsschritt und keine gespeicherte Tischliste auf GitHub Pages.
+- Die Ankündigungen sind bewusst öffentlich. **Keine Passwörter, Spielernamen einzelner Teilnehmer, Karten, Decks oder Chipstände** werden angekündigt. Spieler- und Spielnachrichten bleiben vom Verzeichnis getrennt. Ungültige Meldungen werden verworfen; die Anzeige ist auf 200 Einträge begrenzt. Öffentliche Meldungen sind kein verifiziertes Identitätsverzeichnis und können durch Fremde erzeugt werden.
+- Ein Passwort wird bei Trystero für den Zugang zum P2P-Raum verwendet. Zusätzlich wird der Schlüssel des verschlüsselten Daten-Fallbacks mit **PBKDF2-SHA256, 120.000 Iterationen**, getrenntem raumspezifischem Salt und AES-256-GCM aus dem Passwort abgeleitet. Nur die Kennzeichnung **Mit Passwort** ist öffentlich. Ohne korrektes Passwort werden auch im Relay-Fallback keine Spielstände entschlüsselt. Kurze, leicht erratbare Passwörter bleiben leicht erratbar; das bisherige Vertrauensmodell zwischen zugelassenen Spielern bleibt bestehen.
+- Das Tischverzeichnis ist eine flüchtige Live-Liste. Öffentliche Relay-Ausfälle, unterschiedliche erreichbare Anbieter oder stark gedrosselte Hintergrund-Tabs können Einträge verzögern oder zeitweise verschwinden lassen. Der Einladungslink bleibt als Alternative vorhanden. Ein alter Eintrag kann kurz nach dem Schließen noch sichtbar sein, bis die Abmeldung oder das Zeitlimit greift.
+- Nach diesem Update alle Browser neu laden und neue Tische eröffnen. Die neue App verwendet einen getrennten P2P-Namensraum für passwortfähige Tische; vorher laufende Tische werden nicht nachträglich öffentlich gemacht.
 
 ## Architektur
 
@@ -46,6 +56,8 @@ node browser-test.mjs
 Das Skript verwendet den installierten Microsoft Edge über Playwright. Für andere Systeme `channel: 'msedge'` anpassen oder Chromium über Playwright installieren. `TEST_URL` kann auf die Live-URL zeigen. Screenshots und JSON-Ergebnisse landen in `source/evidence/` (nicht eingecheckt). Tests verwenden unabhängige Browser-Kontexte und echte öffentliche Signaling-Relays, keinen simulierten Netzwerktransport.
 
 Zusätzliche Testoptionen als Umgebungsvariablen: `BLOCK_WEBRTC=1` entfernt alle ICE-Kandidaten des zweiten Clients und prüft den echten Relay-Fallback. `NOSTR_ONLY=1` blockiert zusätzlich die MQTT-WebSockets und prüft Datenübertragung ausschließlich über Port 443. `JOIN_DELAY_MS=65000` verzögert den zweiten Beitritt; mit `NO_RELAY=1` wird der direkte Beitritt ohne Daten-Fallback geprüft.
+
+`node lobby-test.mjs` prüft zusätzlich Entdeckung ohne Einladungslink, Passwortschutz, offene und nicht gelistete Tische, Abmeldung und mobile Darstellung. Bei diesem Test blockiert `BLOCK_WEBRTC=1` die direkten Verbindungen aller Teilnehmer; `NOSTR_ONLY=1` erzwingt zusätzlich Port-443-Relays.
 
 ## Regeln und Bedienung
 

@@ -4,7 +4,7 @@ Stand: 19. Oktober 2026. Windows, Node.js 24.18.0, Microsoft Edge über Playwrig
 
 ## Automatisiert
 
-`npm test`: **22 bestandene Unit-Tests**:
+`npm test`: **26 bestandene Unit-Tests**:
 
 - Alle neun Handkategorien, Wheel, beste fünf von sieben, zwei Drillinge als Full House, Kicker.
 - 52 unterschiedliche Karten im gemischten Deck.
@@ -20,6 +20,8 @@ Stand: 19. Oktober 2026. Windows, Node.js 24.18.0, Microsoft Edge über Playwrig
 - Eine lokale Bot-Partie über bis zu 100 Hände mit Chip-Erhalt und begrenzter Zugzahl pro Hand.
 - Freigabe freiwillig verlassener menschlicher Sitze, bei laufender Hand erst an der Handgrenze.
 - AES-GCM-Raumtrennung, frische Nonces, manipulierte Pakete, Deduplizierung und Empfängerfilter des Relay-Transports.
+- Verzeichnis-Metadaten, Kapazitätsgrenzen, Updates und Abmeldung durch denselben Host sowie Ablauf nach fehlendem Lebenszeichen.
+- Geschützte Relay-Spielstände können mit dem richtigen Passwort entschlüsselt werden; falsches und fehlendes Passwort werden zurückgewiesen.
 
 `npm run build`: TypeScript-Prüfung und Vite-Produktionsbuild erfolgreich.
 
@@ -51,6 +53,21 @@ Der Daten-Fallback wurde mit echten öffentlichen Diensten geprüft: Für einen 
 Ein vorheriger Lauf mit blockiertem WebRTC, aber erlaubten MQTT-WebSockets, bestand ebenfalls. Das absichtliche Blockieren des WebRTC-Transports wird im Testskript durch `iceTransportPolicy: relay` bei gleichzeitig leerer ICE-Serverliste erzwungen; eine lokale direkte Loopback-Verbindung ist damit nicht möglich.
 
 Ein weiterer vollständiger Browserlauf verzögerte den zweiten Beitritt um **65 Sekunden** und blockierte beim beitretenden Client die Daten-Fallback-Endpunkte. Ergebnis: **P2P verbunden**, erfolgreiche gemeinsame Botverwaltung und abgeschlossene Hand, keine JavaScript-Page-Errors. Damit wurde der verzögerte Direktbeitritt mit 0.26.0 tatsächlich ausgeführt.
+
+## Öffentliche Tischliste und optionale Passwörter
+
+`node lobby-test.mjs` bestand mit unabhängigen Browser-Kontexten und echten öffentlichen Relays:
+
+- Ein benannter Tisch wird auf der Startseite eines zweiten Browsers ohne Einladungslink gefunden.
+- Passwortpflicht ist sichtbar; das Passwort erscheint nicht im URL-Fragment.
+- Ein falsches Passwort erhält keinen Spielzustand; das richtige Passwort ermöglicht den Beitritt und ersetzt einen Bot.
+- Freiwillig geschlossene Tische verschwinden aus einem zuschauenden Browser.
+- Ein nicht gelisteter Tisch wird nicht öffentlich angezeigt.
+- Ein offener Tisch kann ohne Passwort über die Liste betreten werden.
+- Desktop und 390-Pixel-Mobilansicht wurden gerendert und visuell geprüft, ohne horizontalen Überlauf.
+- Keine JavaScript-Page-Errors.
+
+Der Ablauf bestand sowohl mit **P2P verbunden** als auch mit **Relay-Verbindung · verschlüsselt**. Für den zweiten Lauf waren WebRTC-Kandidaten bei allen Teilnehmern verhindert und MQTT-WebSockets blockiert; Tischliste, Passwortprüfung und Spielzustände liefen damit über die öffentlichen Port-443-Relays. Der bestehende vollständige Hand-/Botverwaltungs-Browsertest bestand ebenfalls erneut mit dem neuen Startbildschirm und blockiertem WebRTC.
 
 ## Aussagegrenzen
 

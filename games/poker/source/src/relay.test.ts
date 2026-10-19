@@ -1,6 +1,17 @@
 import { describe, it, expect, vi } from "vitest";
 import { roomCrypto, Relay } from "./relay";
 describe("Verschlüsselter Relay-Transport", () => {
+  it("schützt geschützte Räume auch im Relay-Fallback mit dem Tischpasswort", async () => {
+    const host = await roomCrypto("public-room", "richtig"),
+      right = await roomCrypto("public-room", "richtig"),
+      wrong = await roomCrypto("public-room", "falsch"),
+      open = await roomCrypto("public-room");
+    const message = await host.seal({ cards: [12, 25] });
+    expect(await right.open(message)).toEqual({ cards: [12, 25] });
+    await expect(wrong.open(message)).rejects.toThrow();
+    await expect(open.open(message)).rejects.toThrow();
+    expect(host.topic).toBe(wrong.topic);
+  });
   it("verschlüsselt Nachrichten und trennt Räume kryptografisch", async () => {
     const a = await roomCrypto("room-a"),
       b = await roomCrypto("room-b");

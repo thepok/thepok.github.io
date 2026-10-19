@@ -666,3 +666,237 @@ h1 span {
     top: 18%;
   }
 }
+.lobby-browser {
+  display: block;
+  min-height: 100vh;
+  padding: 0 32px 30px;
+  overflow: visible;
+}
+.lobby-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 26px 0;
+  border-bottom: 1px solid #ffffff18;
+}
+.lobby-top > span {
+  font-size: 11px;
+  color: var(--muted);
+}
+.lobby-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(290px, 1fr);
+  gap: 64px;
+  padding-top: 45px;
+}
+.lobby-browser h1 {
+  font-size: clamp(40px, 4.8vw, 66px);
+  margin: 18px 0;
+}
+.lobby-browser h2 {
+  font:
+    500 26px "Playfair Display",
+    serif;
+  margin: 12px 0 20px;
+}
+.lobby-browser p {
+  font-size: 13px;
+  line-height: 1.7;
+}
+.directory-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #ffffff20;
+  margin-top: 35px;
+}
+.directory-heading h2 {
+  font-size: 23px;
+  margin-bottom: 15px;
+}
+.directory-heading > span {
+  font-size: 11px;
+  color: var(--gold);
+}
+.directory-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 0;
+  border-bottom: 1px solid #ffffff14;
+}
+.table-symbol {
+  font: 26px Georgia;
+  color: var(--gold);
+  width: 28px;
+}
+.directory-name {
+  flex: 1;
+  min-width: 0;
+}
+.directory-name b {
+  display: block;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+.directory-name small,
+.occupancy small {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--muted);
+  margin-top: 6px;
+}
+.occupancy {
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+}
+.directory-row button {
+  font-size: 12px;
+  padding: 10px 14px;
+}
+.directory-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 35px 0;
+}
+.directory-empty > span {
+  font: 35px Georgia;
+  color: var(--gold);
+  margin-bottom: 12px;
+}
+.directory-empty b {
+  font-size: 15px;
+}
+.directory-empty p {
+  max-width: 360px;
+  color: var(--muted);
+  margin-bottom: 0;
+}
+.lobby-browser .directory-note {
+  font-size: 10px;
+  color: var(--muted);
+}
+.join-panel {
+  border-left: 1px solid #ffffff18;
+  padding: 10px 0 0 32px;
+  align-self: start;
+}
+.lobby-browser form {
+  width: 100%;
+  margin-top: 22px;
+  gap: 9px;
+}
+.lobby-browser form label:not(.listing-toggle) {
+  margin-top: 8px;
+  font-size: 12px;
+}
+.lobby-browser input:not([type="checkbox"]) {
+  min-height: 44px;
+  width: 100%;
+}
+.password-note {
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.listing-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px !important;
+  line-height: 1.5;
+  margin: 14px 0;
+}
+.listing-toggle input {
+  accent-color: var(--gold);
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.lobby-browser .trust-note {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 20px;
+}
+.back-to-create {
+  border: 0;
+  padding: 0;
+  min-height: 30px;
+  font-size: 11px;
+  background: none;
+  color: var(--gold);
+}
+@media (max-width: 900px) {
+  .lobby-layout {
+    gap: 28px;
+    grid-template-columns: minmax(0, 1.3fr) minmax(270px, 1fr);
+  }
+  .join-panel {
+    padding-left: 22px;
+  }
+  .directory-row {
+    gap: 9px;
+    flex-wrap: wrap;
+  }
+  .directory-row .occupancy {
+    margin-left: 37px;
+  }
+  .directory-row button {
+    margin-left: auto;
+  }
+  .directory-name {
+    flex-basis: 75%;
+  }
+}
+@media (max-width: 650px) {
+  .lobby-browser {
+    padding: 0 18px 25px;
+  }
+  .lobby-top {
+    padding: 20px 0;
+    flex-wrap: wrap;
+  }
+  .lobby-top > span {
+    font-size: 10px;
+  }
+  .lobby-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    padding-top: 25px;
+  }
+  .lobby-browser h1 {
+    font-size: 43px;
+  }
+  .join-panel {
+    border-left: 0;
+    border-top: 1px solid #ffffff20;
+    padding: 25px 0 0;
+    width: 100%;
+  }
+  .directory-empty {
+    padding: 22px 0;
+  }
+  .directory-row .occupancy {
+    margin-left: 37px;
+  }
+  .lobby-browser .fine {
+    letter-spacing: 1px;
+  }
+  .directory-heading {
+    margin-top: 25px;
+  }
+}
+.join-panel h2 {
+  overflow-wrap: anywhere;
+}
+.table-meta > span:first-child {
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

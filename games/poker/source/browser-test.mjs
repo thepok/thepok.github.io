@@ -18,7 +18,7 @@ await fs.mkdir("evidence", { recursive: true });
 try {
   await a.goto(base);
   await a.locator("#name").fill("Marcel");
-  await a.getByRole("button", { name: "Privaten Tisch eröffnen" }).click();
+  await a.getByRole("button", { name: "Tisch eröffnen" }).click();
   await a.getByRole("button", { name: "Karten geben" }).waitFor();
   assert.equal(await a.locator(".seat").count(), 6);
   assert.equal(await a.getByRole("button", { name: /entfernen/ }).count(), 5);

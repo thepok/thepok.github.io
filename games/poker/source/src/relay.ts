@@ -16,7 +16,7 @@ const base64 = (data: Uint8Array) =>
   btoa(Array.from(data, (b) => String.fromCharCode(b)).join(""));
 const bytes = (data: string) =>
   Uint8Array.from(atob(data), (c) => c.charCodeAt(0));
-export async function roomCrypto(room: string) {
+export async function roomCrypto(room: string, password = "") {
   const digest = async (s: string) =>
     new Uint8Array(await crypto.subtle.digest("SHA-256", encoder.encode(s)));
   const topic =
@@ -24,13 +24,32 @@ export async function roomCrypto(room: string) {
     Array.from(await digest("freundesrunde:topic:v1:" + room), (b) =>
       b.toString(16).padStart(2, "0"),
     ).join("");
-  const key = await crypto.subtle.importKey(
-    "raw",
-    await digest("freundesrunde:key:v1:" + room),
-    "AES-GCM",
-    false,
-    ["encrypt", "decrypt"],
-  );
+  const key = password
+    ? await crypto.subtle.deriveKey(
+        {
+          name: "PBKDF2",
+          salt: encoder.encode("freundesrunde:password:v1:" + room),
+          iterations: 120000,
+          hash: "SHA-256",
+        },
+        await crypto.subtle.importKey(
+          "raw",
+          encoder.encode(password),
+          "PBKDF2",
+          false,
+          ["deriveKey"],
+        ),
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["encrypt", "decrypt"],
+      )
+    : await crypto.subtle.importKey(
+        "raw",
+        await digest("freundesrunde:key:v1:" + room),
+        "AES-GCM",
+        false,
+        ["encrypt", "decrypt"],
+      );
   return {
     topic,
     async seal(value: unknown) {
@@ -73,12 +92,19 @@ export class Relay {
     public self: string,
     public receive: (body: any, from: string) => void,
     public changed: () => void,
+    public options: { password?: string; publicChannel?: boolean } = {},
   ) {
     void this.start();
   }
   async start() {
     try {
-      this.codec = await roomCrypto(this.room);
+      this.codec = this.options.publicChannel
+        ? {
+            topic: "thepok/poker/directory/v1",
+            seal: async (value: unknown) => JSON.stringify(value),
+            open: async (value: string) => JSON.parse(value),
+          }
+        : await roomCrypto(this.room, this.options.password);
       void this.startNostr();
       const { default: mqtt } = await import("mqtt");
       if (this.closed) return;
@@ -142,18 +168,20 @@ export class Relay {
           const channel: NostrChannel = {
             nostr: true,
             url,
-            send: (data) => !relay.connected ? Promise.reject(new Error('Relay getrennt')) :
-              relay.publish(
-                finalizeEvent(
-                  {
-                    kind: 20001,
-                    created_at: Math.floor(Date.now() / 1000),
-                    tags: [["d", this.codec!.topic]],
-                    content: data,
-                  },
-                  secret,
-                ),
-              ),
+            send: (data) =>
+              !relay.connected
+                ? Promise.reject(new Error("Relay getrennt"))
+                : relay.publish(
+                    finalizeEvent(
+                      {
+                        kind: 20001,
+                        created_at: Math.floor(Date.now() / 1000),
+                        tags: [["d", this.codec!.topic]],
+                        content: data,
+                      },
+                      secret,
+                    ),
+                  ),
             close: () => relay.close(),
           };
           const retry = () => {
