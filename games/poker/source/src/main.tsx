@@ -136,8 +136,8 @@ function App() {
           {copied ? "Link kopiert ✓" : "Freunde einladen ↗"}
         </button>
         <button
-          onClick={() => {
-            table.close();
+          onClick={async () => {
+            await table.close();
             location.href = location.pathname;
           }}
         >
@@ -363,7 +363,7 @@ function App() {
           </section>
           <footer>
             RAUM {table.roomId.slice(0, 12)} · {table.peers.size}{" "}
-            P2P-VERBINDUNG(EN) <span>Virtuelle Chips. Echte Gesellschaft.</span>
+            VERBINDUNG(EN) <span>Virtuelle Chips. Echte Gesellschaft.</span>
           </footer>
         </>
       )}

@@ -29,7 +29,7 @@ export type State = {
   waiting: string[];
 };
 export type Command = {
-  type: "join" | "remove" | "add" | "next" | "rebuy" | "act";
+  type: "join" | "leave" | "remove" | "add" | "next" | "rebuy" | "act";
   id?: string;
   name?: string;
   seat?: number;
@@ -263,6 +263,13 @@ function progress(s: State, after: number) {
   else s.turn = next(s, s.dealer, can);
 }
 function seats(s: State, c: Command) {
+  if (c.type === "leave") {
+    const i = s.players.findIndex((p) => p?.id === c.id);
+    if (i >= 0) {
+      note(s, `${s.players[i]!.name} verlässt den Tisch.`);
+      s.players[i] = null;
+    }
+  }
   if (c.type === "join") {
     if (s.players.some((p) => p?.id === c.id)) return;
     let i = s.players.findIndex((p) => !p);
@@ -297,7 +304,7 @@ export function transition(original: State, c: Command): State {
     if (!Number.isInteger(c.seat) || c.seat! < 0 || c.seat! > 5)
       throw Error("Ungültiger Sitzplatz.");
   }
-  if (["join", "remove", "add", "rebuy"].includes(c.type)) {
+  if (["join", "leave", "remove", "add", "rebuy"].includes(c.type)) {
     if (playing(s)) {
       if (c.type === "join" && s.players.some((p) => p?.id === c.id))
         return original;
@@ -313,6 +320,7 @@ export function transition(original: State, c: Command): State {
       note(s, "Sitzplatzänderung für die nächste Hand vorgemerkt.");
     } else seats(s, c);
   } else if (c.type === "next") {
+    if(c.version!==undefined&&c.version!==s.version)throw Error('Aktion veraltet.');
     if (playing(s)) throw Error("Die Hand läuft noch.");
     for (const p of s.pending) seats(s, p);
     s.pending = [];

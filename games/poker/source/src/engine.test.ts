@@ -60,6 +60,21 @@ describe("Handbewertung", () => {
   });
 });
 describe("Spielablauf", () => {
+  it("gibt freiwillig verlassene Plätze zwischen Händen frei", () => {
+    let s = initial("me", "Ich");
+    s = transition(s, { type: "join", id: "friend", name: "Freund" });
+    s = transition(s, { type: "leave", id: "friend" });
+    expect(s.players.some((p) => p?.id === "friend")).toBe(false);
+    expect(s.players.filter((p) => !p)).toHaveLength(1);
+  });
+  it("entfernt Menschen während einer Hand erst an der Handgrenze", () => {
+    let s = transition(initial("me", "Ich"), { type: "next" });
+    s = transition(s, { type: "leave", id: "me" });
+    expect(s.players[0]?.id).toBe("me");
+    while (playing(s)) s = action(s, "fold");
+    s = transition(s, { type: "next" });
+    expect(s.players[0]).toBeNull();
+  });
   it("kurzes All-in öffnet abgeschlossene Raises nicht erneut", () => {
     let s = initial("me", "Ich");
     s = transition(s, { type: "next" });
