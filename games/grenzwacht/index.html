@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#19211a" />
+    <title>Grenzwacht · Menschen gegen Orks</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main id="game">
+      <header class="topbar">
+        <a class="brand" href="./"
+          >GRENZWACHT<span>CHRONIK DER DREI BRÜCKEN</span></a
+        >
+        <div class="resources">
+          <strong id="gold">420</strong
+          ><span>GOLD <b id="income">+6,0/s</b></span>
+        </div>
+        <div class="clock" id="clock">00:00</div>
+        <button
+          id="pause"
+          title="Pause (Leertaste)"
+          aria-label="Spiel pausieren"
+        >
+          Ⅱ</button
+        ><button id="sound" aria-label="Ton einschalten" title="Ton">♪</button
+        ><button id="help" aria-label="Spielhilfe">?</button>
+      </header>
+      <section class="battle">
+        <div class="map-shell">
+          <div class="castle-bars">
+            <div class="human">
+              <span>⚑ MENSCHEN</span
+              ><progress id="human-hp" max="2400" value="2400"></progress>
+            </div>
+            <span class="versus">DIE GRENZE HÄLT.</span>
+            <div class="orc">
+              <span>ORKS ⚑</span
+              ><progress id="orc-hp" max="2400" value="2400"></progress>
+            </div>
+          </div>
+          <canvas
+            id="map"
+            aria-label="Schlachtfeld mit drei Wegen. Gebäude auswählen und einen markierten Bauplatz antippen."
+            tabindex="0"
+          ></canvas>
+          <div class="map-tools">
+            <button
+              id="zoom-in"
+              aria-label="Karte vergrößern"
+              title="Vergrößern"
+            >
+              +</button
+            ><button
+              id="zoom-out"
+              aria-label="Karte verkleinern"
+              title="Verkleinern"
+            >
+              −</button
+            ><button
+              id="overview"
+              title="Ganze Karte"
+              aria-label="Kartenübersicht"
+            >
+              ⊞
+            </button>
+          </div>
+          <div id="toast" role="status" aria-live="polite"></div>
+          <div id="paused" hidden>PAUSE<span>Ein Moment zum Planen.</span></div>
+          <div class="map-caption">
+            <span>DEIN REICH <b>◆</b> DREI BRÜCKEN <b>◆</b> EIN SIEG</span
+            ><span id="army">0 Truppen</span>
+          </div>
+        </div>
+        <aside class="command">
+          <div class="panel-title">
+            <span>BAUMEISTER</span><small>01 — 05</small>
+          </div>
+          <div id="palette" class="palette"></div>
+          <section id="detail" class="detail"></section>
+          <footer class="tip">
+            Deine Truppen kämpfen selbstständig.<br />Deine Entscheidungen
+            gewinnen die Schlacht.
+          </footer>
+        </aside>
+      </section>
+    </main>
+    <dialog id="setup">
+      <form id="setup-form">
+        <span class="eyebrow">EIN REICH. DREI WEGE. DEINE STRATEGIE.</span>
+        <h1>Grenzwacht</h1>
+        <p class="intro">
+          Jenseits des Flusses sammeln sich die Orks.<br />Errichte deine
+          Verteidigung. Schicke deine Armee.<br />Bringe ihr Schloss zu Fall.
+        </p>
+        <div class="factions">
+          <span>⚑ <b>MENSCHEN</b><small>Du führst die blaue Krone</small></span
+          ><i>gegen</i
+          ><span>⚑ <b>ORKS</b><small>Die rote Horde · KI</small></span>
+        </div>
+        <label
+          >Gegner<select id="difficulty">
+            <option value="easy">Entspannt · Zeit zum Lernen</option>
+            <option value="normal" selected>
+              Normal · Eine würdige Schlacht
+            </option>
+            <option value="hard">Schwer · Kein Zögern</option>
+          </select></label
+        >
+        <div class="handicaps">
+          <label
+            >Dein Einkommen <output id="player-factor">100 %</output
+            ><input
+              id="handicap"
+              type="range"
+              min="50"
+              max="150"
+              step="10"
+              value="100" /></label
+          ><label
+            >KI-Einkommen <output id="enemy-factor">100 %</output
+            ><input
+              id="enemy-handicap"
+              type="range"
+              min="50"
+              max="150"
+              step="10"
+              value="100"
+          /></label>
+        </div>
+        <p class="fine">
+          Mehr Einkommen hilft beim Einstieg. Beide Seiten starten mit drei
+          Kasernen und 420 Gold. Eine Runde dauert meist 5–10 Minuten.
+          Einheitenwerte und Gebäude-Lebenspunkte sowie Produktionszeiten werden
+          je Partie um ±15 % gewürfelt — identisch für beide Seiten.
+        </p>
+        <button class="primary" type="submit">
+          DIE GRENZE VERTEIDIGEN <span>→</span>
+        </button>
+        <div class="modal-foot">
+          SOLO GEGEN KI · DIREKT IM BROWSER · AUCH AUF DEM HANDY
+        </div>
+      </form>
+    </dialog>
+    <dialog id="help-dialog">
+      <h2>Dein Plan entscheidet.</h2>
+      <p>
+        Wähle unten oder rechts ein Gebäude und tippe auf einen freien, blau
+        markierten Bauplatz. Deine drei Kasernen sind bereits einsatzbereit.
+      </p>
+      <p>
+        <b>Kaserne:</b> Nahkämpfer halten die Front.
+        <b>Schießstand:</b> Fernkämpfer unterstützen sie.
+        <b>Werkstatt:</b> Katapulte zerstören Gebäude. <b>Türme:</b> sichern
+        einen Weg. <b>Banken:</b> verzinsen dein gespartes Gold.
+      </p>
+      <p>
+        Tippe ein eigenes Gebäude an, um es aufzuwerten oder für bis zu 60 % des
+        investierten Goldes zu verkaufen. Maximal Stufe 3. Banken zahlen 0,3 %
+        deines Goldes pro Sekunde, begrenzt auf 2 Gold/s je Stufe.
+      </p>
+      <p>
+        <b>Karte:</b> Ziehen verschiebt die Ansicht. Auf dem Handy mit zwei
+        Fingern zoomen, am PC mit dem Mausrad. Die Übersichtstaste zeigt die
+        ganze Karte. Kurzes Antippen baut oder wählt ein Gebäude.
+      </p>
+      <p>
+        <b>Forschung:</b> Öffne dein Schloss oder den Forschungsbutton.
+        Bogenschießen, Steinbau und Belagerungstechnik schalten Gebäude frei;
+        Veteranen- und Meisterausbildung ermöglichen höhere Gebäudestufen. Die
+        Schlacht läuft während der Forschung weiter.
+      </p>
+      <p>
+        <b>Schlossverteidigung:</b> Dein Schloss beschießt Angreifer auf allen
+        drei Wegen. Zerstöre das gegnerische Schloss. Nach 10 Minuten verlieren
+        beide Schlösser langsam Lebenspunkte. Die Partie pausiert, wenn du den
+        Tab verlässt.
+      </p>
+      <p class="fine" id="seed-label"></p>
+      <p class="fine">
+        Tastatur: 1–5 Gebäude · Escape Auswahl aufheben · Leertaste Pause
+      </p>
+      <button class="primary" id="help-close">VERSTANDEN</button>
+    </dialog>
+    <dialog id="result">
+      <span class="eyebrow">DIE CHRONIK IST GESCHRIEBEN</span>
+      <h2 id="result-title"></h2>
+      <p id="result-text"></p>
+      <div id="stats"></div>
+      <button class="primary" id="restart">NEUE SCHLACHT →</button>
+    </dialog>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
