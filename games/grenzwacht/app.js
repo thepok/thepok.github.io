@@ -111,6 +111,11 @@ function mapTap(e) {
     x = e.clientX - rect.left,
     y = e.clientY - rect.top,
     slot = renderer.slotAt(x, y);
+  if (renderer.scale < 0.4) {
+    const p = renderer.world(x, y);
+    renderer.focusWorld(p.x, p.y, true);
+    return;
+  }
   if (building && slot) {
     const r = submit({ type: "build", slot, building });
     if (r.ok) toast(`${E.TYPES[building].name} errichtet`);
@@ -216,6 +221,23 @@ canvas.addEventListener(
 $("#zoom-in").onclick = () => renderer.zoomAt(renderer.zoom * 1.3);
 $("#zoom-out").onclick = () => renderer.zoomAt(renderer.zoom / 1.3);
 $("#overview").onclick = () => renderer.overview();
+$("#home-view").onclick = () => renderer.focusWorld(450, E.H / 2, true);
+$("#minimap").onclick = (e) => {
+  const r = e.currentTarget.getBoundingClientRect(),
+    u = (e.clientX - r.left) / r.width,
+    v = (e.clientY - r.top) / r.height;
+  renderer.focusWorld(
+    renderer.portrait ? E.W * (1 - v) : E.W * u,
+    renderer.portrait ? E.H * u : E.H * v,
+    true,
+  );
+};
+$("#minimap").onkeydown = (e) => {
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    renderer.focusWorld(450, E.H / 2, true);
+  }
+};
 $("#detail").addEventListener("click", (e) => {
   if (e.target.closest("[data-upgrade]"))
     submit({ type: "upgrade", id: selected });
@@ -356,6 +378,7 @@ $("#setup-form").onsubmit = (e) => {
     difficulty: $("#difficulty").value,
     seed: initialSeed,
   });
+  renderer.focusWorld(450, E.H / 2, true);
   running = true;
   ended = false;
   selected = null;
@@ -441,11 +464,11 @@ let researchKey = "";
 function updateResearch() {
   if (!E.RESEARCH) return;
   const active = game.researching?.[0];
-  $("#research-button").textContent = active
-    ? `⚒ ${E.RESEARCH[active.id].name} · ${Math.ceil(active.remaining)} s`
-    : "⚒ SCHLOSS · FORSCHUNG";
-  $("#research-button").innerHTML =
-    `${icon(active?.id || "mastery", "research-entry-icon")}<span>${active ? `${E.RESEARCH[active.id].name} · ${Math.ceil(active.remaining)} s` : "SCHLOSS · FORSCHUNG"}</span>`;
+  const label = active
+    ? `FORSCHUNG · ${E.RESEARCH[active.id].name} · ${Math.ceil(active.remaining)} s`
+    : "FORSCHUNG";
+  const labelNode = researchButton.querySelector("span");
+  if (labelNode.textContent !== label) labelNode.textContent = label;
   if (!$("#research-dialog").open) return;
   const key = JSON.stringify([
     game.research,
@@ -477,7 +500,9 @@ function updateResearch() {
 }
 const researchButton = document.createElement("button");
 researchButton.id = "research-button";
-researchButton.textContent = "⚒ SCHLOSS · FORSCHUNG";
+researchButton.type = "button";
+researchButton.setAttribute("aria-label", "Forschung öffnen");
+researchButton.innerHTML = `${icon("research", "research-entry-icon")}<span>FORSCHUNG</span>`;
 researchButton.onclick = showResearch;
 $(".command").insertBefore(researchButton, $("#palette"));
 const researchDialog = document.createElement("dialog");
@@ -510,8 +535,9 @@ researchDialog.addEventListener("click", (e) => {
   }
   const b = e.target.closest("[data-research]");
   if (b) {
-    submit({ type: "research", research: b.dataset.research });
+    const result = submit({ type: "research", research: b.dataset.research });
     researchKey = "";
     updateResearch();
+    if (result.ok) researchDialog.close();
   }
 });

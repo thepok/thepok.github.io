@@ -13,9 +13,6 @@
   <body>
     <main id="game">
       <header class="topbar">
-        <a class="brand" href="./"
-          >GRENZWACHT<span>CHRONIK DER DREI BRÜCKEN</span></a
-        >
         <div class="resources">
           <strong id="gold">420</strong
           ><span>GOLD <b id="income">+6,0/s</b></span>
@@ -48,7 +45,21 @@
             aria-label="Schlachtfeld mit drei Wegen. Gebäude auswählen und einen markierten Bauplatz antippen."
             tabindex="0"
           ></canvas>
+          <canvas
+            id="minimap"
+            width="156"
+            height="104"
+            aria-label="Minikarte: antippen, um dorthin zu springen"
+            tabindex="0"
+          ></canvas>
           <div class="map-tools">
+            <button
+              id="home-view"
+              aria-label="Zum eigenen Schloss"
+              title="Eigenes Schloss"
+            >
+              ⌂
+            </button>
             <button
               id="zoom-in"
               aria-label="Karte vergrößern"

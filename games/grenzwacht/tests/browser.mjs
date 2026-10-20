@@ -25,8 +25,24 @@ async function open(mobile = false) {
       Object.values(window.__view.sheets).every(
         (x) => x.img.complete && x.img.naturalWidth,
       ) &&
-      window.__view.buildingRects,
+      window.__view.buildingRects &&
+      window.__view.upgradeRects &&
+      window.__view.upgrades.every((x) => x.complete && x.naturalWidth) &&
+      window.__view.sceneryRects &&
+      window.__view.sceneryImage.naturalWidth,
   );
+  await p.locator("#home-view").click();
+  await p.waitForTimeout(100);
+  assert.equal(
+    await p
+      .locator(".brand")
+      .isVisible()
+      .catch(() => false),
+    false,
+  );
+  const canvasBounds = await p.locator("#map").boundingBox();
+  assert.ok(canvasBounds.width >= (mobile ? 389 : 1439));
+  assert.ok(canvasBounds.height >= (mobile ? 843 : 999));
   return { context, p };
 }
 async function tapWorld(p, x, y, touch = false) {
@@ -43,8 +59,24 @@ async function tapWorld(p, x, y, touch = false) {
 }
 try {
   const { context, p } = await open();
+  const mapRules = await p.evaluate(async () => {
+    const E = await import("./engine.js");
+    return {
+      width: E.W,
+      height: E.H,
+      playerSlots: E.slots(0).length,
+      enemySlots: E.slots(1).length,
+    };
+  });
+  assert.deepEqual(mapRules, {
+    width: 3420,
+    height: 2280,
+    playerSlots: 30,
+    enemySlots: 30,
+  });
+  report.map = mapRules;
   await p.locator('[data-build="bank"]').click();
-  await tapWorld(p, 241, 222);
+  await tapWorld(p, 370, 1204);
   assert.equal(
     await p.evaluate(
       () =>
@@ -53,7 +85,7 @@ try {
     ),
     1,
   );
-  await tapWorld(p, 241, 222);
+  await tapWorld(p, 370, 1204);
   assert.match(await p.locator("#detail h3").innerText(), /Bank/);
   await p.locator("[data-sell]").click();
   assert.equal(
@@ -94,6 +126,10 @@ try {
   assert.equal(await p.evaluate(() => window.__spoken.lang), "de-DE");
   assert.equal(await p.evaluate(() => window.__game.researching[0]), null);
   assert.ok((await p.evaluate(() => window.__game.gold[0])) >= goldBeforeVoice);
+  assert.equal(
+    await p.locator("#research-dialog").evaluate((x) => x.open),
+    true,
+  );
   report.childResearch = {
     ninePictograms: true,
     picturePrerequisites: true,
@@ -105,6 +141,15 @@ try {
     await p.evaluate(() => window.__game.researching[0].id),
     "archery",
   );
+  assert.equal(
+    await p.locator("#research-dialog").evaluate((x) => x.open),
+    false,
+  );
+  await p.locator("#research-button svg").click();
+  assert.equal(
+    await p.locator("#research-dialog").evaluate((x) => x.open),
+    true,
+  );
   await p.locator("#research-close").click();
   await p.evaluate(() => window.__advance(19));
   assert.equal(
@@ -112,7 +157,7 @@ try {
     true,
   );
   await p.locator('[data-build="range"]').click();
-  await tapWorld(p, 241, 222);
+  await tapWorld(p, 370, 1204);
   assert.equal(
     await p.evaluate(
       () =>
@@ -134,6 +179,12 @@ try {
   assert.ok(await p.evaluate(() => window.__view.zoom > 1));
   await p.locator("#overview").click();
   assert.equal(await p.evaluate(() => window.__view.zoom), 1);
+  const mini = await p.locator("#minimap").boundingBox();
+  const prevPan = await p.evaluate(() => window.__view.panX);
+  await p.mouse.click(mini.x + mini.width * 0.8, mini.y + mini.height * 0.5);
+  assert.notEqual(await p.evaluate(() => window.__view.panX), prevPan);
+  await p.locator("#home-view").click();
+  assert.ok(await p.evaluate(() => window.__view.zoom > 1));
   await p.screenshot({ path: "evidence/desktop.png", fullPage: true });
   // Complete a legal match using only affordable build/research/upgrade commands, no state edits.
   const result = await p.evaluate(async () => {
@@ -207,12 +258,27 @@ try {
     help: true,
     zoom: true,
     completeMatch: true,
+    fullscreen: true,
+    minimapJump: true,
+    home: true,
+    researchAutoCloses: true,
     restart: true,
   };
   await context.close();
   const mobile = await open(true),
     m = mobile.p;
   assert.ok(await m.evaluate(() => window.__view.zoom > 1));
+  const minimapBounds = await m.locator("#minimap").boundingBox();
+  const homePan = await m.evaluate(() => window.__view.panY);
+  await m.touchscreen.tap(
+    minimapBounds.x + minimapBounds.width * 0.5,
+    minimapBounds.y + minimapBounds.height * 0.15,
+  );
+  assert.notEqual(await m.evaluate(() => window.__view.panY), homePan);
+  await m.locator("#home-view").tap();
+  assert.ok(
+    Math.abs((await m.evaluate(() => window.__view.panY)) - homePan) < 2,
+  );
   const bounds = await m.locator("#map").boundingBox();
   const count = await m.evaluate(
       () => window.__game.buildings.filter((x) => x.side === 0).length,
@@ -267,8 +333,9 @@ try {
     count,
   );
   await m.locator("#overview").tap();
+  await m.locator("#home-view").tap();
   await m.locator('[data-build="bank"]').tap();
-  await tapWorld(m, 241, 222, true);
+  await tapWorld(m, 370, 1204, true);
   assert.equal(
     await m.evaluate(
       () =>
@@ -307,6 +374,9 @@ try {
   );
   report.mobile = {
     touchBuild: true,
+    minimapJump: true,
+    home: true,
+    fullscreen: true,
     drag: true,
     pinch: true,
     noAccidentalBuild: true,

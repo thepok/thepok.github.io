@@ -18,6 +18,8 @@ import {
   buildingStats,
   unitStats,
   CASTLE,
+  W,
+  H,
 } from "../engine.js";
 
 const run = (s, seconds, options = { aiEnabled: false }) => {
@@ -50,7 +52,7 @@ test("equal opening armies and distinct legal construction slots", () => {
   const s = createGame();
   assert.deepEqual(s.gold, [420, 420]);
   assert.equal(s.buildings.length, 6);
-  assert.equal(new Set([...slots(0), ...slots(1)].map((p) => p.id)).size, 24);
+  assert.equal(new Set([...slots(0), ...slots(1)].map((p) => p.id)).size, 60);
   for (let side = 0; side < 2; side++)
     assert.deepEqual(
       s.buildings.filter((b) => b.side === side).map((b) => b.lane),
@@ -179,7 +181,7 @@ test("ranged damage lands only after projectile travel and awards each kill once
 
 test("siege projectile triples structure damage and can end the game", () => {
   const s = empty();
-  s.units = [unit(100, 0, "siege", 900)];
+  s.units = [unit(100, 0, "siege", W - 228)];
   s.castles[1].hp = 90;
   run(s, 2);
   assert.equal(s.winner, 0);
@@ -195,7 +197,7 @@ test("tower shoots enemies in range but does not hit friendly units", () => {
   s.research[0].push("masonry");
   s.gold[0] = 500;
   assert.equal(build(s, 0, "tower", "0-1-3").ok, true);
-  s.units = [unit(100, 0, "soldier", 450), unit(101, 1, "soldier", 480)];
+  s.units = [unit(100, 0, "soldier", 680), unit(101, 1, "soldier", 710)];
   s.units.forEach((u) => {
     u.speed = 0;
     u.damage = 0;
@@ -245,7 +247,7 @@ function mixedPolicy(s) {
     .filter((p) => !s.buildings.some((b) => b.slot === p.id))
     .sort((a, b) => a.col - b.col);
   const p = free[0],
-    type = ["barracks", "range", "workshop", "tower"][p?.col || 0];
+    type = ["barracks", "range", "workshop", "tower"][(p?.col || 0) % 4];
   if (p && buildingUnlocked(s, 0, type))
     command(s, 0, { type: "build", slot: p.id, building: type });
   else {
@@ -426,6 +428,8 @@ test("castle defensive arrows cover each lane and leave distant armies alone", (
     unit(101, 1, "soldier", 200, 2),
     unit(102, 1, "soldier", 500, 1),
   ];
+  s.units[0].y = H / 2 - 100;
+  s.units[1].y = H / 2 + 100;
   s.units.forEach((u) => (u.speed = 0));
   run(s, 1);
   assert.equal(s.units[0].hp, 110 - CASTLE.damage);
@@ -449,4 +453,92 @@ test("infantry can pass friendly archers; same-kind troops preserve frontage", (
   t.units[1].speed = 0;
   run(t, 1);
   assert.ok(t.units[0].x <= 400.01);
+});
+
+test("outer lanes follow their merge point and approach the actual castle before melee damage", () => {
+  for (const side of [0, 1])
+    for (const lane of [0, 2]) {
+      const s = empty(),
+        c = s.castles[1 - side],
+        merge = side === 0 ? W - 450 : 450,
+        dir = side === 0 ? 1 : -1;
+      c.cooldown = 10000;
+      const u = unit(100, side, "soldier", merge - dir * 100, lane);
+      s.units = [u];
+      let crossed = false,
+        damaged = false;
+      for (let i = 0; i < 1000; i++) {
+        const oldX = u.x;
+        step(s, { aiEnabled: false });
+        if (!crossed && dir * (u.x - merge) >= 0) {
+          crossed = true;
+          assert.ok(dir * (oldX - merge) < 0);
+          assert.ok(Math.abs(u.y - LANES[lane]) < 2);
+        }
+        if (c.hp < c.maxHp) {
+          damaged = true;
+          assert.ok(Math.hypot(u.x - c.x, u.y - c.y) <= u.range + 30);
+          break;
+        }
+        if (Math.hypot(u.x - c.x, u.y - c.y) > u.range + 30)
+          assert.equal(c.hp, c.maxHp);
+      }
+      assert.equal(crossed, true);
+      assert.equal(damaged, true);
+      assert.ok(Math.abs(u.y - c.y) < 60);
+    }
+});
+
+test("matching castle X on a distant outer lane gives neither attack nor defensive range", () => {
+  for (const side of [0, 1])
+    for (const lane of [0, 2]) {
+      const s = empty(),
+        c = s.castles[1 - side];
+      const u = unit(100, side, "siege", c.x, lane);
+      u.speed = 0;
+      s.units = [u];
+      run(s, 4);
+      assert.equal(c.hp, c.maxHp);
+      assert.equal(u.hp, u.maxHp);
+      assert.equal(s.shots.length, 0);
+    }
+});
+
+test("siege projectiles physically arrive at the real castle location", () => {
+  const s = empty(),
+    c = s.castles[1];
+  c.cooldown = 10000;
+  const u = unit(100, 0, "siege", c.x - 128, 0);
+  u.y = c.y - 100;
+  s.units = [u];
+  step(s, { aiEnabled: false });
+  let shot = s.shots.find((p) => p.target === c.id);
+  assert.ok(shot);
+  assert.ok(shot.y > shot.originY);
+  let last;
+  for (let i = 0; i < 40 && c.hp === c.maxHp; i++) {
+    last = { ...shot };
+    step(s, { aiEnabled: false });
+    shot = s.shots.find((p) => p.target === c.id);
+  }
+  assert.equal(c.hp, c.maxHp - UNIT.siege.damage * 3);
+  assert.ok(Math.hypot(last.x - c.x, last.y - c.y) < 205 * STEP + 8);
+});
+
+test("castle arrows originate at the visible castle for every attacking lane", () => {
+  const s = empty(),
+    c = s.castles[0];
+  s.units = [0, 1, 2].map((lane) => {
+    const u = unit(100 + lane, 1, "soldier", c.x + 150, lane);
+    u.y = c.y + (lane - 1) * 60;
+    u.speed = 0;
+    return u;
+  });
+  step(s, { aiEnabled: false });
+  const arrows = s.shots.filter((p) => p.side === 0);
+  assert.equal(arrows.length, 3);
+  for (const p of arrows) {
+    assert.equal(p.originX, c.x);
+    assert.equal(p.originY, c.y - 12);
+  }
 });

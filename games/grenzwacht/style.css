@@ -979,6 +979,290 @@ input[type="range"] {
   display: flex;
   gap: 4px;
 }
+
+/* The battlefield is the whole screen; controls float over it. */
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+#game {
+  max-width: none;
+  padding: 0;
+  width: 100%;
+  height: 100dvh;
+}
+.battle {
+  display: block;
+  margin: 0;
+}
+.map-shell {
+  position: fixed;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  width: 100%;
+  height: 100%;
+}
+#map {
+  width: 100vw;
+  height: 100dvh;
+  max-height: none;
+  min-height: 0;
+  aspect-ratio: auto;
+}
+.topbar {
+  position: fixed;
+  z-index: 3;
+  top: max(8px, env(safe-area-inset-top));
+  left: 8px;
+  right: 8px;
+  height: 44px;
+  border: 0;
+  gap: 6px;
+  pointer-events: none;
+}
+.topbar > * {
+  pointer-events: auto;
+}
+.resources {
+  margin: 0;
+  gap: 7px;
+  padding: 4px 10px;
+  background: #132219e8;
+  border: 1px solid #62734c;
+  border-radius: 4px;
+  height: 44px;
+}
+.resources strong {
+  font-size: 24px;
+}
+.resources > span {
+  font-size: 8px;
+}
+.resources b {
+  font-size: 11px;
+}
+.clock {
+  margin: 0 auto 0 0;
+  padding: 10px;
+  background: #132219df;
+  border-radius: 4px;
+  font-size: 13px;
+}
+.topbar > button {
+  width: 44px;
+  min-height: 44px;
+  background: #132219e8;
+}
+.castle-bars {
+  position: absolute;
+  z-index: 2;
+  top: 60px;
+  left: 8px;
+  width: 212px;
+  height: 36px;
+  padding: 5px 8px;
+  background: #132219df;
+  border: 1px solid #526547;
+  gap: 10px;
+  border-radius: 4px;
+}
+.castle-bars > div {
+  min-width: 0;
+}
+.castle-bars span {
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+.castle-bars .versus,
+.map-caption,
+.panel-title,
+.tip {
+  display: none;
+}
+.command {
+  position: fixed;
+  z-index: 3;
+  bottom: max(8px, env(safe-area-inset-bottom));
+  right: 8px;
+  width: 430px;
+  max-height: 48dvh;
+  overflow: auto;
+  padding: 8px;
+  background: #132219ed;
+  border: 1px solid #6d7550;
+  border-radius: 5px;
+}
+#research-button {
+  min-height: 36px;
+  margin: 0 0 6px;
+}
+.palette {
+  display: flex;
+  gap: 5px;
+}
+.build-card {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 78px;
+  padding: 3px;
+  flex-direction: column;
+  text-align: center;
+  gap: 1px;
+}
+.build-icon {
+  width: 40px;
+  height: 40px;
+}
+.build-card strong {
+  font-size: 11px;
+}
+.build-card small {
+  font-size: 11px;
+}
+.key {
+  display: none;
+}
+.detail {
+  min-height: 0;
+  margin-top: 6px;
+  padding: 6px 2px 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 3px 8px;
+}
+.detail h3 {
+  font-size: 12px;
+  margin: 0;
+}
+.detail p {
+  font-size: 11px;
+  line-height: 1.3;
+  margin: 0;
+}
+.detail small {
+  font-size: 10px;
+}
+.detail .actions {
+  grid-column: 2;
+  grid-row: 1 / span 4;
+  margin: 0;
+  align-items: center;
+}
+.detail .actions button {
+  font-size: 11px;
+  min-height: 44px;
+}
+.detail progress,
+.detail > small {
+  grid-column: 1/-1;
+}
+.map-tools {
+  position: fixed;
+  top: 60px;
+  right: 8px;
+  gap: 4px;
+}
+.map-tools button {
+  width: 44px;
+  height: 44px;
+}
+#minimap {
+  position: fixed;
+  left: 8px;
+  bottom: 8px;
+  width: 156px;
+  height: 104px;
+  border: 2px solid #9f9a64;
+  background: #172719;
+  z-index: 2;
+  cursor: crosshair;
+  touch-action: none;
+  box-shadow: 0 2px 8px #0009;
+}
+#toast {
+  position: fixed;
+  bottom: 260px;
+  z-index: 4;
+}
+#paused {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+}
+@media (max-width: 700px) {
+  #game {
+    padding: 0;
+  }
+  #map {
+    height: 100dvh;
+    max-height: none;
+    min-height: 0;
+  }
+  .topbar {
+    height: 44px;
+    gap: 4px;
+  }
+  .topbar > button {
+    width: 42px;
+    min-height: 44px;
+  }
+  .resources {
+    padding: 4px 7px;
+  }
+  .resources strong {
+    font-size: 22px;
+  }
+  .clock {
+    font-size: 12px;
+    padding: 9px 6px;
+  }
+  .castle-bars {
+    top: 59px;
+    width: 174px;
+    height: 34px;
+  }
+  .map-tools {
+    top: 100px;
+    right: 8px;
+    flex-direction: column;
+  }
+  .command {
+    left: 6px;
+    right: 6px;
+    bottom: 6px;
+    width: auto;
+    padding: 5px;
+    max-height: 35dvh;
+  }
+  .build-card {
+    min-height: 72px;
+  }
+  .build-icon {
+    width: 35px;
+    height: 35px;
+  }
+  .build-card strong,
+  .build-card small {
+    font-size: 10px;
+  }
+  .detail p {
+    font-size: 10px;
+  }
+  #minimap {
+    top: 102px;
+    bottom: auto;
+    width: 78px;
+    height: 117px;
+  }
+  #toast {
+    bottom: 230px;
+  }
+}
 .map-tools button {
   width: 44px;
   height: 44px;
@@ -989,8 +1273,8 @@ input[type="range"] {
 }
 @media (max-width: 700px) {
   .map-tools {
-    top: 45px;
-    right: 9px;
+    top: 100px;
+    right: 8px;
   }
   .map-tools button {
     width: 44px;

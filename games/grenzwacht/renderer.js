@@ -6,7 +6,7 @@ const load = (src) => {
 };
 export class Renderer {
   constructor(canvas) {
-    this.zoom = matchMedia("(max-width:700px)").matches ? 1.5 : 1;
+    this.zoom = 1;
     this.panX = 0;
     this.panY = 0;
     this.firstView = true;
@@ -17,6 +17,20 @@ export class Renderer {
     this.castleHits = [];
     this.buildingHits = [];
     this.slotHits = [];
+    this.minimap = document.querySelector("#minimap");
+    this.upgrades = [
+      load("assets/human-upgrades.png"),
+      load("assets/orc-upgrades.png"),
+    ];
+    fetch("assets/upgrade-manifest.json")
+      .then((r) => r.json())
+      .then((m) => (this.upgradeRects = m.sides))
+      .catch(() => {});
+    this.sceneryImage = load("assets/scenery.png");
+    fetch("assets/scenery-manifest.json")
+      .then((r) => r.json())
+      .then((m) => (this.sceneryRects = m))
+      .catch(() => {});
     fetch("assets/building-manifest.json")
       .then((r) => (r.ok ? r.json() : null))
       .then((m) => (this.buildingRects = m?.rows || m))
@@ -41,7 +55,26 @@ export class Renderer {
       (n = (Math.imul(n, 1664525) + 1013904223) >>> 0) / 4294967296;
     c.fillStyle = "#425c32";
     c.fillRect(0, 0, W, H);
-    for (let i = 0; i < 18000; i++) {
+    for (let i = 0; i < 460; i++) {
+      const x = rand() * W,
+        y = rand() * H,
+        r = 60 + rand() * 140;
+      c.fillStyle = ["#48603a", "#506b3d", "#364f31", "#5b6e3b", "#52623b"][
+        i % 5
+      ];
+      c.beginPath();
+      for (let j = 0; j < 12; j++) {
+        const a = (j / 12) * Math.PI * 2,
+          rad = r * (0.65 + rand() * 0.35);
+        const px = x + Math.cos(a) * rad,
+          py = y + Math.sin(a) * rad * 0.65;
+        if (!j) c.moveTo(px, py);
+        else c.lineTo(px, py);
+      }
+      c.closePath();
+      c.fill();
+    }
+    for (let i = 0; i < 180000; i++) {
       c.fillStyle = ["#4a6537", "#3b562f", "#4c6639", "#486134", "#3e592e"][
         i % 5
       ];
@@ -57,69 +90,99 @@ export class Renderer {
       c.fillRect(0, y - 30, W, 60);
       c.fillStyle = "#8a8150";
       c.fillRect(0, y - 19, W, 38);
-      for (let i = 0; i < 350; i++) {
+      for (let i = 0; i < 1100; i++) {
         c.fillStyle = i % 2 ? "#9b8d5e" : "#7c7548";
         c.fillRect(rand() * W, y - 17 + rand() * 34, rand() * 9 + 2, 2);
       }
     }
+    // Roads meet at the visible castle courtyard, matching unit routing.
+    for (const lane of LANES)
+      for (const side of [0, 1]) {
+        const x = side ? W - 100 : 100,
+          merge = side ? W - 450 : 450;
+        c.lineJoin = "round";
+        c.lineCap = "round";
+        for (const [color, width] of [
+          ["#52613b", 62],
+          ["#8a8150", 38],
+        ]) {
+          c.strokeStyle = color;
+          c.lineWidth = width;
+          c.beginPath();
+          c.moveTo(merge, lane);
+          c.lineTo(x, H / 2);
+          c.stroke();
+        }
+      }
+    for (const x of [100, W - 100]) {
+      c.fillStyle = "#7e8058";
+      c.beginPath();
+      c.ellipse(x, H / 2, 92, 112, 0, 0, Math.PI * 2);
+      c.fill();
+      for (let i = 0; i < 130; i++) {
+        const dx = (rand() - 0.5) * 150,
+          dy = (rand() - 0.5) * 180;
+        c.fillStyle = i % 2 ? "#939371" : "#6b7757";
+        c.fillRect(x + dx, H / 2 + dy, 7 + rand() * 8, 4);
+      }
+    }
     c.fillStyle = "#263e37";
     c.beginPath();
-    c.moveTo(498, 0);
-    c.bezierCurveTo(475, 200, 542, 400, 502, H);
-    c.lineTo(584, H);
-    c.bezierCurveTo(605, 400, 535, 200, 582, 0);
+    c.moveTo(W / 2 - 42, 0);
+    c.bezierCurveTo(W / 2 - 65, H * 0.28, W / 2 + 2, H * 0.56, W / 2 - 38, H);
+    c.lineTo(W / 2 + 44, H);
+    c.bezierCurveTo(W / 2 + 65, H * 0.56, W / 2 - 5, H * 0.28, W / 2 + 42, 0);
     c.fill();
     c.fillStyle = "#416965";
     c.beginPath();
-    c.moveTo(511, 0);
-    c.bezierCurveTo(490, 200, 556, 400, 516, H);
-    c.lineTo(570, H);
-    c.bezierCurveTo(590, 400, 524, 200, 568, 0);
+    c.moveTo(W / 2 - 29, 0);
+    c.bezierCurveTo(W / 2 - 50, H * 0.28, W / 2 + 16, H * 0.56, W / 2 - 24, H);
+    c.lineTo(W / 2 + 30, H);
+    c.bezierCurveTo(W / 2 + 50, H * 0.56, W / 2 - 16, H * 0.28, W / 2 + 28, 0);
     c.fill();
     for (const y of LANES) {
       c.fillStyle = "#313d2c";
-      c.fillRect(480, y - 30, 115, 66);
+      c.fillRect(W / 2 - 60, y - 30, 115, 66);
       c.fillStyle = "#9b9876";
-      c.fillRect(483, y - 27, 109, 54);
-      for (let x = 485; x < 590; x += 13) {
+      c.fillRect(W / 2 - 57, y - 27, 109, 54);
+      for (let x = W / 2 - 55; x < W / 2 + 50; x += 13) {
         c.fillStyle = "#686e54";
         c.fillRect(x, y - 26, 2, 52);
         c.fillStyle = "#b1a88a";
         c.fillRect(x + 2, y - 25, 10, 3);
       }
       c.fillStyle = "#c5b690";
-      c.fillRect(480, y - 30, 115, 5);
-      c.fillRect(480, y + 25, 115, 5);
+      c.fillRect(W / 2 - 60, y - 30, 115, 5);
+      c.fillRect(W / 2 - 60, y + 25, 115, 5);
     }
-    for (let i = 0; i < 170; i++) {
-      const x = rand() * W,
-        y = rand() * H;
-      if (
-        LANES.some((l) => Math.abs(y - l) < 85) ||
-        Math.abs(x - 540) < 75 ||
-        x < 105 ||
-        x > 975
-      )
-        continue;
-      const h = 14 + rand() * 20;
-      c.fillStyle = "#243d25";
-      c.fillRect(x + 3, y + 6, 13, 7);
-      c.fillStyle = "#5b4930";
-      c.fillRect(x + 5, y - 4, 5, 13);
-      c.fillStyle = "#213e27";
-      c.beginPath();
-      c.moveTo(x - 9, y);
-      c.lineTo(x + 8, y - h);
-      c.lineTo(x + 23, y);
-      c.fill();
-      c.fillStyle = "#315032";
-      c.beginPath();
-      c.moveTo(x - 5, y - 9);
-      c.lineTo(x + 7, y - h - 5);
-      c.lineTo(x + 17, y - 9);
-      c.fill();
-      c.fillStyle = "#46613a";
-      c.fillRect(x + 4, y - h + 3, 4, 7);
+    this.scenery = [];
+    const occupied = new Set();
+    for (let cluster = 0; cluster < 85; cluster++) {
+      const cx = rand() * W,
+        cy = rand() * H;
+      for (let j = 0; j < 28; j++) {
+        const x = cx + (rand() - 0.5) * 420,
+          y = cy + (rand() - 0.5) * 350,
+          key = `${Math.floor(x / 35)},${Math.floor(y / 35)}`;
+        if (
+          x < 50 ||
+          x > W - 50 ||
+          y < 65 ||
+          y > H - 35 ||
+          Math.abs(x - W / 2) < 95 ||
+          LANES.some((l) => Math.abs(y - l) < 115) ||
+          ((x < 540 || x > W - 540) &&
+            y > LANES[0] - 110 &&
+            y < LANES[2] + 110) ||
+          occupied.has(key)
+        )
+          continue;
+        occupied.add(key);
+        const kind =
+            rand() < 0.72 ? Math.floor(rand() * 3) : 3 + Math.floor(rand() * 3),
+          height = kind < 3 ? 70 + rand() * 65 : 25 + rand() * 40;
+        this.scenery.push({ x, y, kind, height });
+      }
     }
   }
   sizing() {
@@ -138,13 +201,20 @@ export class Renderer {
     const worldW = this.portrait ? H : W,
       worldH = this.portrait ? W : H;
     this.fit = Math.min(rect.width / worldW, rect.height / worldH);
-    this.scale = this.fit * this.zoom;
-    const maxX = Math.max(0, (worldW * this.scale - rect.width) / 2),
-      maxY = Math.max(0, (worldH * this.scale - rect.height) / 2);
-    if (this.firstView && this.portrait) {
-      this.panY = -maxY;
+    if (this.firstView) {
+      this.zoom = Math.max(1, (this.portrait ? 0.7 : 1) / this.fit);
+      const scale = this.fit * this.zoom;
+      this.panX =
+        -(this.portrait ? H / 2 - worldW / 2 : 450 - worldW / 2) * scale;
+      this.panY =
+        -(this.portrait ? W - 450 - worldH / 2 : H / 2 - worldH / 2) * scale;
       this.firstView = false;
     }
+    this.scale = this.fit * this.zoom;
+    const maxX = Math.max(0, (worldW * this.scale - rect.width) / 2),
+      maxY =
+        Math.max(0, (worldH * this.scale - rect.height) / 2) +
+        (this.portrait && this.zoom > 1 ? 190 : 0);
     this.panX = Math.max(-maxX, Math.min(maxX, this.panX));
     this.panY = Math.max(-maxY, Math.min(maxY, this.panY));
     this.ox = (rect.width - worldW * this.scale) / 2 + this.panX;
@@ -155,7 +225,7 @@ export class Renderer {
   }
   zoomAt(value, x = this.viewW / 2, y = this.viewH / 2) {
     const old = this.zoom,
-      next = Math.max(1, Math.min(4, value));
+      next = Math.max(1, Math.min(16, value));
     this.panX =
       (this.panX + this.viewW / 2 - x) * (next / old) - this.viewW / 2 + x;
     this.panY =
@@ -174,6 +244,62 @@ export class Renderer {
     this.panY = 0;
     this.firstView = false;
     this.sizing();
+  }
+  focusWorld(x, y, close = false) {
+    if (close) this.zoom = Math.max(1, (this.portrait ? 0.7 : 1) / this.fit);
+    const scale = this.fit * this.zoom,
+      ww = this.portrait ? H : W,
+      wh = this.portrait ? W : H;
+    this.panX = -((this.portrait ? y : x) - ww / 2) * scale;
+    this.panY = -((this.portrait ? W - x : y) - wh / 2) * scale;
+    if (this.portrait && close) this.panY -= 110;
+    this.sizing();
+  }
+  drawMinimap(s) {
+    const m = this.minimap;
+    if (!m) return;
+    const mw = this.portrait ? 104 : 156,
+      mh = this.portrait ? 156 : 104;
+    if (m.width !== mw) {
+      m.width = mw;
+      m.height = mh;
+    }
+    const c = m.getContext("2d"),
+      ww = this.portrait ? H : W,
+      wh = this.portrait ? W : H,
+      k = mw / ww;
+    c.save();
+    c.scale(k, k);
+    if (this.portrait) {
+      c.translate(0, W);
+      c.rotate(-Math.PI / 2);
+    }
+    c.drawImage(this.bg, 0, 0);
+    c.restore();
+    const point = (x, y) =>
+      this.portrait ? { x: y * k, y: (W - x) * k } : { x: x * k, y: y * k };
+    c.fillStyle = "#233e24";
+    for (const tree of this.scenery) {
+      if (tree.kind > 2) continue;
+      const p = point(tree.x, tree.y);
+      c.fillRect(p.x - 1, p.y - 1, 2, 2);
+    }
+    for (const e of [...s.units, ...s.buildings, ...s.castles]) {
+      const p = point(e.x, e.y),
+        size = typeof e.id === "string" ? 6 : e.slot ? 3 : 2;
+      c.fillStyle = e.side === 0 ? "#8ed0ff" : "#ff927b";
+      c.fillRect(p.x - size / 2, p.y - size / 2, size, size);
+    }
+    const x = (-this.ox / this.scale) * k,
+      y = (-this.oy / this.scale) * k;
+    c.strokeStyle = "#ffe6a4";
+    c.lineWidth = 1.5;
+    c.strokeRect(
+      x,
+      y,
+      (this.viewW / this.scale) * k,
+      (this.viewH / this.scale) * k,
+    );
   }
   point(x, y) {
     return this.portrait
@@ -266,9 +392,8 @@ export class Renderer {
     c.restore();
   }
   drawBuilding(e) {
-    const idx = e.isCastle ? 0 : TYPES[e.type].icon,
-      b = this.buildingRects?.[e.side]?.[idx];
-    if (!b || !this.buildings.complete) return;
+    const { image, b } = this.buildingArt(e);
+    if (!b || !image.complete) return;
     const c = this.ctx,
       p = this.point(e.x, e.y),
       ratio =
@@ -292,10 +417,67 @@ export class Renderer {
             Math.min(this.oy + worldH * this.scale - h, p.y - h / 2),
           )
         : p.y - h + 8 * this.scale;
-    c.drawImage(this.buildings, b.x, b.y, b.w, b.h, left, top, w, h);
+    c.drawImage(image, b.x, b.y, b.w, b.h, left, top, w, h);
     if (e.isCastle) this.castleHits[e.side] = { x: left, y: top, w, h };
     else
       this.buildingHits.push({ id: e.id, side: e.side, x: left, y: top, w, h });
+  }
+  buildingArt(e) {
+    const idx = e.isCastle ? 0 : TYPES[e.type].icon;
+    const upgraded =
+      !e.isCastle &&
+      e.level > 1 &&
+      this.upgradeRects?.[e.side]?.[e.level - 2]?.[idx - 1];
+    return upgraded
+      ? { image: this.upgrades[e.side], b: upgraded }
+      : { image: this.buildings, b: this.buildingRects?.[e.side]?.[idx] };
+  }
+  drawScenery() {
+    if (
+      !this.sceneryRects ||
+      !this.sceneryImage.complete ||
+      !this.sceneryImage.naturalWidth
+    )
+      return;
+    const c = this.ctx;
+    const visible = this.scenery
+      .map((t) => ({ ...t, p: this.point(t.x, t.y) }))
+      .filter(
+        (t) =>
+          t.p.x > -100 &&
+          t.p.x < this.viewW + 100 &&
+          t.p.y > -100 &&
+          t.p.y < this.viewH + 150,
+      )
+      .sort((a, b) => a.p.y - b.p.y);
+    for (const t of visible) {
+      const b = this.sceneryRects[t.kind],
+        h = t.height * this.scale,
+        w = (h * b.w) / b.h;
+      c.fillStyle = "#172b1940";
+      c.beginPath();
+      c.ellipse(
+        t.p.x + 8 * this.scale,
+        t.p.y,
+        w * 0.4,
+        9 * this.scale,
+        0,
+        0,
+        Math.PI * 2,
+      );
+      c.fill();
+      c.drawImage(
+        this.sceneryImage,
+        b.x,
+        b.y,
+        b.w,
+        b.h,
+        t.p.x - w / 2,
+        t.p.y - h,
+        w,
+        h,
+      );
+    }
   }
   slotAt(x, y) {
     return this.slotHits.find(
@@ -345,16 +527,17 @@ export class Renderer {
     c.drawImage(this.bg, 0, 0);
     c.strokeStyle = "#8eb7a440";
     c.lineWidth = 2;
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 60; i++) {
       const y = (i * 43 + s.time * 12) % H;
       if (LANES.some((l) => Math.abs(y - l) < 35)) continue;
-      const x = 540 + Math.sin(y * 0.014) * 17;
+      const x = W / 2 + Math.sin(y * 0.014) * 17;
       c.beginPath();
       c.moveTo(x - 12, y);
       c.lineTo(x + 8, y);
       c.stroke();
     }
     c.restore();
+    this.drawScenery();
     for (const slot of SLOTS) {
       if (s.buildings.some((b) => b.slot === slot.id)) continue;
       const p = this.point(slot.x, slot.y),
@@ -494,5 +677,6 @@ export class Renderer {
       }
       c.globalAlpha = 1;
     }
+    this.drawMinimap(s);
   }
 }

@@ -1,8 +1,8 @@
 // Fixed-step, serializable simulation. UI and transport submit commands; neither owns game rules.
 export const STEP = 0.05;
-export const W = 1080,
-  H = 720,
-  LANES = [170, 360, 550];
+export const W = 3420,
+  H = 2280,
+  LANES = [540, 1140, 1740];
 export const TYPES = {
   barracks: {
     name: "Kaserne",
@@ -176,13 +176,13 @@ export function researchStatus(s, side, id) {
 }
 export function slots(side) {
   return LANES.flatMap((y, lane) =>
-    [0, 1, 2, 3].map((col) => ({
+    Array.from({ length: 10 }, (_, col) => ({
       id: `${side}-${lane}-${col}`,
       side,
       lane,
       col,
-      x: side === 0 ? 155 + col * 86 : 925 - col * 86,
-      y: y + 52,
+      x: side === 0 ? 230 + col * 140 : W - 230 - col * 140,
+      y: y + 64,
     })),
   );
 }
@@ -209,8 +209,8 @@ export function createGame({
       {
         id: "castle0",
         side: 0,
-        x: 52,
-        y: 360,
+        x: 100,
+        y: H / 2,
         hp: CASTLE.hp,
         maxHp: CASTLE.hp,
         cooldown: 0,
@@ -218,8 +218,8 @@ export function createGame({
       {
         id: "castle1",
         side: 1,
-        x: 1028,
-        y: 360,
+        x: W - 100,
+        y: H / 2,
         hp: CASTLE.hp,
         maxHp: CASTLE.hp,
         cooldown: 0,
@@ -396,7 +396,10 @@ function fire(s, from, target, amount, kind) {
 }
 function findTarget(s, u) {
   const enemies = s.units.filter(
-    (e) => e.side !== u.side && e.lane === u.lane && e.hp > 0,
+    (e) =>
+      e.side !== u.side &&
+      e.hp > 0 &&
+      (e.lane === u.lane || Math.hypot(e.x - u.x, e.y - u.y) < 240),
   );
   let target = null,
     best = Infinity;
@@ -418,7 +421,7 @@ function findTarget(s, u) {
     }
   }
   const castle = s.castles[1 - u.side],
-    d = Math.abs(castle.x - u.x) + 25;
+    d = Math.hypot(castle.x - u.x, castle.y - u.y);
   if (d < best) target = castle;
   return target || castle;
 }
@@ -446,7 +449,7 @@ function ai(s) {
     free = slots(1).filter((x) => !own.some((b) => b.slot === x.id));
   const threat = LANES.map(
     (_, lane) =>
-      s.units.filter((u) => u.side === 0 && u.lane === lane && u.x > 540)
+      s.units.filter((u) => u.side === 0 && u.lane === lane && u.x > W / 2)
         .length *
         2 +
       s.buildings.filter(
@@ -537,17 +540,14 @@ export function step(s, { aiEnabled = true } = {}) {
             u.side !== c.side &&
             u.lane === lane &&
             u.hp > 0 &&
-            Math.abs(u.x - c.x) < CASTLE.range,
+            Math.hypot(u.x - c.x, u.y - c.y) < CASTLE.range,
         )
-        .sort((a, b) => Math.abs(a.x - c.x) - Math.abs(b.x - c.x))[0];
+        .sort(
+          (a, b) =>
+            Math.hypot(a.x - c.x, a.y - c.y) - Math.hypot(b.x - c.x, b.y - c.y),
+        )[0];
       if (target) {
-        fire(
-          s,
-          { side: c.side, x: c.x, y: LANES[lane] },
-          target,
-          CASTLE.damage,
-          "arrow",
-        );
+        fire(s, c, target, CASTLE.damage, "arrow");
         fired = true;
       }
     }
@@ -615,20 +615,25 @@ export function step(s, { aiEnabled = true } = {}) {
     const target = findTarget(s, u),
       castle = typeof target.id === "string";
     const tx = target.x,
-      ty = castle ? LANES[u.lane] : target.y;
+      ty = target.y;
     const dx = tx - u.x,
       dy = ty - u.y,
       dist = Math.hypot(dx, dy),
       range = u.range + (target.slot ? 20 : castle ? 30 : 0);
     u.moving = dist > range;
     if (u.moving) {
+      // Outer roads merge into the physical castle, never an invisible lane proxy.
+      const mergeX = u.side === 0 ? W - 450 : 450;
+      const beforeMerge =
+        castle && (u.side === 0 ? u.x < mergeX : u.x > mergeX);
+      const moveX = beforeMerge ? mergeX - u.x : dx;
       const goalY =
-          Math.abs(dx) > 210
+          beforeMerge || (!castle && Math.abs(dx) > 210)
             ? LANES[u.lane] + (u.formation || 0)
             : ty + (u.formation || 0) * 0.6,
         vy = goalY - u.y,
-        len = Math.hypot(dx, vy) || 1;
-      let mx = (dx / len) * u.speed * STEP,
+        len = Math.hypot(moveX, vy) || 1;
+      let mx = (moveX / len) * u.speed * STEP,
         my = (vy / len) * u.speed * STEP;
       // Friendly troops keep a small frontage instead of stacking unlimited melee damage.
       for (const ally of s.units) {
@@ -671,10 +676,7 @@ export function step(s, { aiEnabled = true } = {}) {
     p.life += STEP;
     const target = targets.get(p.target);
     if (!target || target.hp <= 0 || p.life > 5) return false;
-    const ty =
-      typeof target.id === "string"
-        ? Math.max(130, Math.min(590, p.originY))
-        : target.y;
+    const ty = target.y;
     const dx = target.x - p.x,
       dy = ty - p.y,
       dist = Math.hypot(dx, dy),

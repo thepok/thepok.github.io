@@ -1,5 +1,7 @@
 // Original, high-contrast pictograms: the same image labels actions and prerequisites.
 const shapes = {
+  research:
+    '<path d="M32 15Q20 7 5 13V51Q20 45 32 54Q44 45 59 51V13Q44 7 32 15Z" fill="#ffe8a6" stroke="#b78b47" stroke-width="3"/><path d="M32 15V54M12 23L25 25M12 32L25 34M39 25L52 23M39 34L52 32" fill="none" stroke="#88633c" stroke-width="3"/>',
   archery:
     '<path d="M18 7Q57 32 18 57" fill="none" stroke="#d49b54" stroke-width="6"/><path d="M18 7 30 32 18 57" fill="none" stroke="#fff0c7" stroke-width="2"/><path d="M9 32H57M48 24 57 32 48 40" fill="none" stroke="#e9f3f5" stroke-width="4"/>',
   masonry:
