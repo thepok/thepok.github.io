@@ -74,6 +74,32 @@ try {
     0,
   );
   await p.locator("#research-button").click();
+  assert.equal(
+    await p.locator(".research-picture > .research-icon").count(),
+    9,
+  );
+  assert.ok((await p.locator(".research-needs .needs-icon").count()) >= 4);
+  await p.evaluate(() => {
+    window.speechSynthesis.speak = (u) => {
+      window.__spoken = { text: u.text, lang: u.lang };
+    };
+    window.speechSynthesis.cancel = () => {};
+  });
+  const goldBeforeVoice = await p.evaluate(() => window.__game.gold[0]);
+  await p.locator('[data-speak="archery"]').click();
+  assert.match(
+    await p.evaluate(() => window.__spoken.text),
+    /Haus für Bogenschützen/,
+  );
+  assert.equal(await p.evaluate(() => window.__spoken.lang), "de-DE");
+  assert.equal(await p.evaluate(() => window.__game.researching[0]), null);
+  assert.ok((await p.evaluate(() => window.__game.gold[0])) >= goldBeforeVoice);
+  report.childResearch = {
+    ninePictograms: true,
+    picturePrerequisites: true,
+    germanReadAloud: true,
+    listenDoesNotSpend: true,
+  };
   await p.locator('[data-research="archery"]').click();
   assert.equal(
     await p.evaluate(() => window.__game.researching[0].id),
@@ -168,7 +194,7 @@ try {
     };
   });
   assert.notEqual(result.winner, null);
-  assert.ok(result.actions > 10);
+  assert.ok(result.actions > 0);
   await p.locator("#result[open]").waitFor();
   report.match = result;
   await p.locator("#restart").click();

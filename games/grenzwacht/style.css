@@ -29,6 +29,7 @@ input {
   font: inherit;
 }
 button {
+  -webkit-tap-highlight-color: transparent;
   cursor: pointer;
   color: inherit;
   background: linear-gradient(#3a4030, #252c22);
@@ -818,6 +819,151 @@ input[type="range"] {
 .research-node {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.research-card {
+  position: relative;
+  min-width: 0;
+}
+.research-card .research-node {
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  text-align: center;
+  padding: 12px 9px;
+  gap: 8px;
+  min-height: 250px;
+}
+.research-picture {
+  position: relative;
+  display: block;
+  width: 88px;
+  height: 82px;
+  padding: 7px;
+  background: radial-gradient(ellipse, #52654666, transparent 72%);
+}
+.research-icon {
+  width: 72px;
+  height: 72px;
+  filter: drop-shadow(0 3px 2px #0008);
+}
+.research-badge {
+  position: absolute;
+  bottom: 0;
+  right: -2px;
+  width: 29px;
+  height: 29px;
+  background: #17251bec;
+  border: 1px solid #777a51;
+  border-radius: 50%;
+  padding: 2px;
+}
+.research-card .research-name {
+  font:
+    700 15px Barlow,
+    sans-serif;
+  overflow-wrap: normal;
+  hyphens: auto;
+  color: #f0d89d;
+}
+.research-description {
+  font-size: 12px;
+  color: #bbc9b0;
+  line-height: 1.4;
+  font-weight: 400;
+}
+.research-price,
+.research-needs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.research-price {
+  margin-top: auto;
+  color: #f3db8d;
+  font-size: 15px;
+}
+.research-needs {
+  color: #b9c9a9;
+}
+.mini-icon {
+  width: 25px;
+  height: 25px;
+  flex-shrink: 0;
+}
+.needs-icon {
+  position: relative;
+  display: flex;
+  padding: 2px;
+  background: #18251e;
+  border: 1px solid #575b40;
+}
+.needs-icon.met {
+  border-color: #8bb76b;
+}
+.tiny-check {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 16px;
+  height: 16px;
+  background: #203020;
+}
+.speak-research {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  width: 44px;
+  height: 44px;
+  padding: 8px;
+  z-index: 1;
+  background: #1c3028;
+  border-color: #6e8d83;
+}
+.speaker-icon {
+  width: 26px;
+  height: 26px;
+}
+.inline-icon {
+  width: 23px;
+  height: 23px;
+  vertical-align: middle;
+}
+#research-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.research-entry-icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+@media (max-width: 700px) {
+  .research-card .research-node {
+    min-height: 245px;
+    padding: 10px 6px;
+    gap: 6px;
+  }
+  .research-card .research-name {
+    font-size: 14px;
+  }
+  .research-description {
+    font-size: 11px;
+  }
+  .research-picture {
+    margin-top: 22px;
+  }
+  .research-price {
+    font-size: 13px;
+  }
+  .mini-icon {
+    width: 22px;
+    height: 22px;
+  }
 }
 #research-close {
   position: sticky;

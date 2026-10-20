@@ -1,5 +1,6 @@
 import * as E from "./engine.js";
 import { Renderer } from "./renderer.js";
+import { icon, spoken } from "./icons.js";
 const $ = (s) => document.querySelector(s),
   canvas = $("#map"),
   renderer = new Renderer(canvas),
@@ -443,18 +444,34 @@ function updateResearch() {
   $("#research-button").textContent = active
     ? `⚒ ${E.RESEARCH[active.id].name} · ${Math.ceil(active.remaining)} s`
     : "⚒ SCHLOSS · FORSCHUNG";
+  $("#research-button").innerHTML =
+    `${icon(active?.id || "mastery", "research-entry-icon")}<span>${active ? `${E.RESEARCH[active.id].name} · ${Math.ceil(active.remaining)} s` : "SCHLOSS · FORSCHUNG"}</span>`;
   if (!$("#research-dialog").open) return;
   const key = JSON.stringify([
     game.research,
     active && [active.id, Math.ceil(active.remaining)],
-    Math.floor(game.gold[0]),
+    Object.keys(E.RESEARCH).map((id) => E.researchStatus(game, 0, id).canStart),
   ]);
   if (key === researchKey) return;
   researchKey = key;
   $("#research-tree").innerHTML = Object.entries(E.RESEARCH)
     .map(([id, r]) => {
       const status = E.researchStatus(game, 0, id);
-      return `<button class="research-node ${status.state}" data-research="${id}" ${status.canStart ? "" : "disabled"}><span class="research-name">${status.state === "done" ? "✓ " : status.state === "active" ? "⌛ " : ""}${r.name}</span><span>${r.desc}</span><small>${r.requires.length ? "↑ " + r.requires.map((k) => E.RESEARCH[k].name).join(" + ") : "Grundforschung"}</small><b>${status.state === "done" ? "Abgeschlossen" : status.state === "active" ? `${Math.ceil(status.remaining)} s verbleiben` : `${r.cost} Gold · ${r.duration} s`}</b>${status.state !== "done" && status.reason ? `<em>${status.reason}</em>` : ""}</button>`;
+      const badge =
+        status.state === "done"
+          ? "check"
+          : status.state === "active"
+            ? "clock"
+            : status.state === "locked"
+              ? "lock"
+              : null;
+      const needs = r.requires
+        .map(
+          (k) =>
+            `<span class="needs-icon ${game.research[0].includes(k) ? "met" : ""}" title="${E.RESEARCH[k].name}">${icon(k, "mini-icon")}${game.research[0].includes(k) ? icon("check", "tiny-check") : ""}</span>`,
+        )
+        .join('<span aria-hidden="true">+</span>');
+      return `<article class="research-card ${status.state}"><button class="research-node ${status.state}" data-research="${id}" aria-label="${r.name}: ${r.desc} ${status.reason || r.cost + " Gold, " + r.duration + " Sekunden"}" ${status.canStart ? "" : "disabled"}><span class="research-picture">${icon(id)}${badge ? icon(badge, "research-badge") : ""}</span><span class="research-name">${r.name}</span><span class="research-description">${r.desc}</span>${needs ? `<span class="research-needs" aria-label="Benötigt: ${r.requires.map((k) => E.RESEARCH[k].name).join(", ")}">${needs}<span aria-hidden="true">→</span>${icon(id, "mini-icon")}</span>` : ""}<span class="research-price">${status.state === "done" ? icon("check", "mini-icon") : status.state === "active" ? `${icon("clock", "mini-icon")} ${Math.ceil(status.remaining)}` : `${icon("coin", "mini-icon")} ${r.cost} <span>·</span> ${icon("clock", "mini-icon")} ${r.duration}`}</span></button><button class="speak-research" data-speak="${id}" aria-label="${r.name} vorlesen" title="Vorlesen">${icon("speaker", "speaker-icon")}</button></article>`;
     })
     .join("");
 }
@@ -465,11 +482,32 @@ researchButton.onclick = showResearch;
 $(".command").insertBefore(researchButton, $("#palette"));
 const researchDialog = document.createElement("dialog");
 researchDialog.id = "research-dialog";
-researchDialog.innerHTML =
-  '<span class="eyebrow">DAS WISSEN DEINES REICHES</span><h2>Schloss & Forschung</h2><p>Entwickle deine Armee. Eine Forschung zur Zeit, während die Schlacht weitergeht.</p><div id="research-tree"></div><button class="primary" id="research-close">ZURÜCK ZUR SCHLACHT</button>';
+researchDialog.innerHTML = `<span class="eyebrow">DAS WISSEN DEINES REICHES</span><h2>Schloss & Forschung</h2><p>Bild antippen zum Forschen. ${icon("speaker", "inline-icon")} erklärt dir die Wirkung. Eine Forschung zur Zeit.</p><div id="research-tree"></div><button class="primary" id="research-close">${icon("back", "inline-icon")} ZURÜCK ZUR SCHLACHT</button>`;
 document.body.append(researchDialog);
 $("#research-close").onclick = () => researchDialog.close();
 researchDialog.addEventListener("click", (e) => {
+  const speak = e.target.closest("[data-speak]");
+  if (speak) {
+    if (!("speechSynthesis" in window)) {
+      toast("Dein Browser kann leider nicht vorlesen.");
+      return;
+    }
+    const id = speak.dataset.speak,
+      r = E.RESEARCH[id],
+      status = E.researchStatus(game, 0, id);
+    const needs = r.requires.filter((k) => !game.research[0].includes(k));
+    const text = `${r.name}. ${spoken[id]} ${status.state === "done" ? "Das hast du schon erforscht." : status.state === "active" ? "Das wird gerade erforscht." : `Das kostet ${r.cost} Gold und dauert ${r.duration} Sekunden.`} ${needs.length ? "Erforsche zuerst: " + needs.map((k) => E.RESEARCH[k].name).join(" und ") + "." : ""}`;
+    speechSynthesis.cancel();
+    const line = new SpeechSynthesisUtterance(text);
+    line.lang = "de-DE";
+    line.rate = 0.9;
+    const voice = speechSynthesis
+      .getVoices()
+      .find((v) => v.lang.startsWith("de"));
+    if (voice) line.voice = voice;
+    speechSynthesis.speak(line);
+    return;
+  }
   const b = e.target.closest("[data-research]");
   if (b) {
     submit({ type: "research", research: b.dataset.research });

@@ -8,6 +8,8 @@ Gebäude wählen und auf einen eigenen Bauplatz tippen. Truppen laufen und kämp
 
 Im Schloss gibt es neun Forschungen mit Voraussetzungen und Forschungszeit. Bogenschießen, Steinbau und Belagerung schalten Gebäude frei; Waffen, Rüstung und Logistik verbessern Einheiten/Produktion; Veteranen und Meister erlauben Stufe 2/3; Bankwesen hebt die Zinsobergrenze. Beide Seiten bezahlen dieselben Kosten. Die KI erhält keinen versteckten Geldbonus.
 
+Jede Forschung hat ein großes eigenes Bildsymbol. Voraussetzungen verwenden dieselben Bilder, erledigte Forschungen zeigen einen Haken, gesperrte ein Schloss. Die Lautsprechertaste erklärt die Wirkung mit einfachen deutschen Sätzen, ohne Forschung zu kaufen. Dafür wird die Vorlesestimme des Browsers genutzt; die Verfügbarkeit und Offlinefähigkeit hängt von Browser und installierter Stimme ab. Erwachsene können die Beschreibungen weiterhin lesen.
+
 Vor Beginn sind Schwierigkeit und Einkommensfaktoren (50–150 %) einstellbar. Jede Partie würfelt Einheit-LP, Schaden, Tempo sowie Gebäude-LP und Produktionsintervalle innerhalb ±15 %. Die Werte sind für beide Fraktionen gleich und bleiben fest. Tatsächliche Werte stehen in den Gebäude-Beschreibungen; die Schlachtkennung steht in der Hilfe. Kosten, Reichweiten und Forschung sind konstant. Eine typische aktive Partie dauert etwa 5–10 Minuten; frühe Niederlagen sind möglich. Nach 10 Minuten beginnt Schlossverfall.
 
 Am Handy: kurzer Tipp zum Bauen/Auswählen, Ziehen zum Verschieben, zwei Finger zum Zoomen. Am PC: Ziehen und Mausrad. +/− und Übersicht funktionieren auf beiden. Ein Gebäudetipp erlaubt Upgrades oder Verkauf mit Bestätigung. Pause: Schaltfläche/Leertaste. Tab-Wechsel pausiert automatisch. Hochformat zeigt das eigene Gebiet unten.
