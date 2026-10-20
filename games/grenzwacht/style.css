@@ -1281,3 +1281,34 @@ body {
     height: 44px;
   }
 }
+
+/* Keep the live wallet above the scrollable research cards, including on phones. */
+.research-wallet {
+  position: sticky;
+  top: -1px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  margin: -1px 0 16px;
+  background: #222f20;
+  border: 1px solid #8c8150;
+  box-shadow: 0 4px 12px #0008;
+  color: #efd279;
+}
+.research-wallet strong {
+  font-size: 24px;
+  font-variant-numeric: tabular-nums;
+}
+#research-income {
+  margin-left: auto;
+  color: #b4d67d;
+}
+.research-reason {
+  font-size: 11px;
+  color: #d7cca8;
+}
+.research-node:not(:disabled) .research-reason {
+  color: #b4df85;
+}

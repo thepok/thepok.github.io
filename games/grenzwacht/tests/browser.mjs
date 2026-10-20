@@ -395,6 +395,52 @@ try {
     landscape: true,
   };
   await mobile.context.close();
+  const wallet = await open(true);
+  const w = wallet.p;
+  await w.evaluate(() => {
+    window.__game.gold[0] = 110;
+  });
+  await w.locator("#research-button").tap();
+  assert.equal(await w.locator('[data-research="archery"]').isDisabled(), true);
+  await w.evaluate(() => {
+    window.__researchNode = document.querySelector('[data-research="archery"]');
+  });
+  await w.waitForFunction(
+    () => !document.querySelector('[data-research="archery"]').disabled,
+  );
+  assert.ok(Number(await w.locator("#research-gold").innerText()) >= 120);
+  assert.ok(
+    await w.evaluate(
+      () =>
+        window.__researchNode ===
+        document.querySelector('[data-research="archery"]'),
+    ),
+  );
+  await w.locator("#research-dialog").evaluate((el) => {
+    el.scrollTop = el.scrollHeight;
+  });
+  const walletBounds = await w.locator(".research-wallet").boundingBox();
+  assert.ok(walletBounds.y >= 0 && walletBounds.y + walletBounds.height < 844);
+  await w.screenshot({ path: "evidence/mobile-research-wallet.png" });
+  await w.locator('[data-research="archery"]').click({ delay: 450 });
+  assert.equal(
+    await w.evaluate(() => window.__game.researching[0].id),
+    "archery",
+  );
+  await w.locator("#research-button").tap();
+  await w.evaluate(() => window.__advance(19));
+  await w.waitForFunction(() =>
+    document
+      .querySelector('[data-research="archery"]')
+      .classList.contains("done"),
+  );
+  report.researchWallet = {
+    liveIncomeUnlock: true,
+    stableButtons: true,
+    stickyGold: true,
+    completionUpdates: true,
+  };
+  await wallet.context.close();
   assert.deepEqual(errors, []);
   report.errors = errors;
   await fs.writeFile(

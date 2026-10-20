@@ -483,14 +483,20 @@ function updateResearch() {
   const labelNode = researchButton.querySelector("span");
   if (labelNode.textContent !== label) labelNode.textContent = label;
   if (!$("#research-dialog").open) return;
+  $("#research-gold").textContent = Math.floor(game.gold[0]);
+  $("#research-income").textContent =
+    `+${E.income(game, 0).total.toFixed(1).replace(".", ",")}/s`;
   const key = JSON.stringify([
     game.research,
     active && [active.id, Math.ceil(active.remaining)],
-    Object.keys(E.RESEARCH).map((id) => E.researchStatus(game, 0, id).canStart),
+    Object.keys(E.RESEARCH).map((id) => {
+      const s = E.researchStatus(game, 0, id);
+      return [s.state, s.reason, s.canStart, Math.ceil(s.remaining)];
+    }),
   ]);
   if (key === researchKey) return;
   researchKey = key;
-  $("#research-tree").innerHTML = Object.entries(E.RESEARCH)
+  const markup = Object.entries(E.RESEARCH)
     .map(([id, r]) => {
       const status = E.researchStatus(game, 0, id);
       const badge =
@@ -507,9 +513,36 @@ function updateResearch() {
             `<span class="needs-icon ${game.research[0].includes(k) ? "met" : ""}" title="${E.RESEARCH[k].name}">${icon(k, "mini-icon")}${game.research[0].includes(k) ? icon("check", "tiny-check") : ""}</span>`,
         )
         .join('<span aria-hidden="true">+</span>');
-      return `<article class="research-card ${status.state}"><button class="research-node ${status.state}" data-research="${id}" aria-label="${r.name}: ${r.desc} ${status.reason || r.cost + " Gold, " + r.duration + " Sekunden"}" ${status.canStart ? "" : "disabled"}><span class="research-picture">${icon(id)}${badge ? icon(badge, "research-badge") : ""}</span><span class="research-name">${r.name}</span><span class="research-description">${r.desc}</span>${needs ? `<span class="research-needs" aria-label="Benötigt: ${r.requires.map((k) => E.RESEARCH[k].name).join(", ")}">${needs}<span aria-hidden="true">→</span>${icon(id, "mini-icon")}</span>` : ""}<span class="research-price">${status.state === "done" ? icon("check", "mini-icon") : status.state === "active" ? `${icon("clock", "mini-icon")} ${Math.ceil(status.remaining)}` : `${icon("coin", "mini-icon")} ${r.cost} <span>·</span> ${icon("clock", "mini-icon")} ${r.duration}`}</span></button><button class="speak-research" data-speak="${id}" aria-label="${r.name} vorlesen" title="Vorlesen">${icon("speaker", "speaker-icon")}</button></article>`;
+      return `<article class="research-card ${status.state}"><button class="research-node ${status.state}" data-research="${id}" aria-label="${r.name}: ${r.desc} ${status.reason || r.cost + " Gold, " + r.duration + " Sekunden"}" ${status.canStart ? "" : "disabled"}><span class="research-picture">${icon(id)}${badge ? icon(badge, "research-badge") : ""}</span><span class="research-name">${r.name}</span><span class="research-description">${r.desc}</span>${needs ? `<span class="research-needs" aria-label="Benötigt: ${r.requires.map((k) => E.RESEARCH[k].name).join(", ")}">${needs}<span aria-hidden="true">→</span>${icon(id, "mini-icon")}</span>` : ""}<span class="research-price">${status.state === "done" ? icon("check", "mini-icon") : status.state === "active" ? `${icon("clock", "mini-icon")} ${Math.ceil(status.remaining)}` : `${icon("coin", "mini-icon")} ${r.cost} <span>·</span> ${icon("clock", "mini-icon")} ${r.duration}`}</span><span class="research-reason">${status.reason || "Bereit zum Forschen"}</span></button><button class="speak-research" data-speak="${id}" aria-label="${r.name} vorlesen" title="Vorlesen">${icon("speaker", "speaker-icon")}</button></article>`;
     })
     .join("");
+  const tree = $("#research-tree");
+  if (!tree.children.length) tree.innerHTML = markup;
+  else {
+    const template = document.createElement("template");
+    template.innerHTML = markup;
+    for (const fresh of template.content.children) {
+      const next = fresh.querySelector("[data-research]");
+      const current = tree.querySelector(
+        `[data-research="${next.dataset.research}"]`,
+      );
+      current.className = next.className;
+      current.parentElement.className = fresh.className;
+      current.disabled = next.disabled;
+      current.setAttribute("aria-label", next.getAttribute("aria-label"));
+      for (const selector of [
+        ".research-picture",
+        ".research-needs",
+        ".research-price",
+        ".research-reason",
+      ]) {
+        const target = current.querySelector(selector),
+          source = next.querySelector(selector);
+        if (target && source && target.innerHTML !== source.innerHTML)
+          target.innerHTML = source.innerHTML;
+      }
+    }
+  }
 }
 const researchButton = document.createElement("button");
 researchButton.id = "research-button";
@@ -520,7 +553,7 @@ researchButton.onclick = showResearch;
 $(".command").insertBefore(researchButton, $("#palette"));
 const researchDialog = document.createElement("dialog");
 researchDialog.id = "research-dialog";
-researchDialog.innerHTML = `<span class="eyebrow">DAS WISSEN DEINES REICHES</span><h2>Schloss & Forschung</h2><p>Bild antippen zum Forschen. ${icon("speaker", "inline-icon")} erklärt dir die Wirkung. Eine Forschung zur Zeit.</p><div id="research-tree"></div><button class="primary" id="research-close">${icon("back", "inline-icon")} ZURÜCK ZUR SCHLACHT</button>`;
+researchDialog.innerHTML = `<div class="research-wallet">${icon("coin", "inline-icon")} <strong id="research-gold">0</strong> <span>Gold</span><span id="research-income"></span></div><span class="eyebrow">DAS WISSEN DEINES REICHES</span><h2>Schloss & Forschung</h2><p>Bild antippen zum Forschen. ${icon("speaker", "inline-icon")} erklärt dir die Wirkung. Eine Forschung zur Zeit.</p><div id="research-tree"></div><button class="primary" id="research-close">${icon("back", "inline-icon")} ZURÜCK ZUR SCHLACHT</button>`;
 document.body.append(researchDialog);
 $("#research-close").onclick = () => researchDialog.close();
 researchDialog.addEventListener("click", (e) => {
