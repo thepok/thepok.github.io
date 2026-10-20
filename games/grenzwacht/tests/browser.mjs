@@ -87,7 +87,16 @@ try {
   );
   await tapWorld(p, 370, 1204);
   assert.match(await p.locator("#detail h3").innerText(), /Bank/);
-  await p.locator("[data-sell]").click();
+  await p.evaluate(() => {
+    window.__upgradeNode = document.querySelector("[data-upgrade]");
+  });
+  await p.waitForTimeout(1250);
+  assert.ok(
+    await p.evaluate(
+      () => window.__upgradeNode === document.querySelector("[data-upgrade]"),
+    ),
+  );
+  await p.locator("[data-sell]").click({ delay: 450 });
   assert.equal(
     await p.evaluate(
       () =>

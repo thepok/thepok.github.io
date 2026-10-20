@@ -287,9 +287,7 @@ function updateUI() {
     detailKey = "";
   }
   const key =
-    (b
-      ? `${b.id}-${b.level}-${Math.floor(b.hp)}-${Math.floor(game.gold[0])}`
-      : building || "none") +
+    (b ? `${b.id}-${b.level}` : building || "none") +
     "-" +
     (game.research?.[0] || []).join(",");
   if (key !== detailKey) {
@@ -299,7 +297,7 @@ function updateUI() {
         cost = E.upgradeCost(b),
         sell = Math.floor((b.paid * 0.6 * b.hp) / b.maxHp);
       $("#detail").innerHTML =
-        `<h3>${t.name} · Stufe ${b.level}</h3><p>${describe(b.type, b.level)}</p><progress max="${b.maxHp}" value="${b.hp}"></progress><small>${Math.ceil(b.hp)} / ${b.maxHp} LP${b.level < 3 && E.upgradeUnlocked && !E.upgradeUnlocked(game, 0, b) ? " · Benötigt " + (b.level === 1 ? "Veteranenausbildung" : "Meisterausbildung") : ""}</small><div class="actions"><button data-upgrade ${b.level >= 3 || game.gold[0] < cost || (E.upgradeUnlocked && !E.upgradeUnlocked(game, 0, b)) ? "disabled" : ""}>${b.level >= 3 ? "Max. Stufe" : `Aufwerten<br>${cost} Gold`}</button><button data-sell>${sellConfirm === selected ? "Bestätigen?" : "Verkaufen"}<br>+${sell} Gold</button></div>`;
+        `<h3>${t.name} · Stufe ${b.level}</h3><p>${describe(b.type, b.level)}</p><progress max="${b.maxHp}" value="${b.hp}"></progress><small data-building-health>${Math.ceil(b.hp)} / ${b.maxHp} LP${b.level < 3 && E.upgradeUnlocked && !E.upgradeUnlocked(game, 0, b) ? " · Benötigt " + (b.level === 1 ? "Veteranenausbildung" : "Meisterausbildung") : ""}</small><div class="actions"><button data-upgrade ${b.level >= 3 || game.gold[0] < cost || (E.upgradeUnlocked && !E.upgradeUnlocked(game, 0, b)) ? "disabled" : ""}>${b.level >= 3 ? "Max. Stufe" : `Aufwerten<br>${cost} Gold`}</button><button data-sell>${sellConfirm === selected ? "Bestätigen?" : "Verkaufen"}<br><span data-sale-value>+${sell} Gold</span></button></div>`;
     } else if (building) {
       const t = E.TYPES[building];
       $("#detail").innerHTML =
@@ -307,6 +305,21 @@ function updateUI() {
     } else
       $("#detail").innerHTML =
         "<h3>Dein Reich wächst.</h3><p>Wähle ein Gebäude, um es aufzuwerten, oder errichte Verstärkung auf einem freien Bauplatz.</p>";
+  }
+  if (b) {
+    const progress = $("#detail progress");
+    progress.max = b.maxHp;
+    progress.value = b.hp;
+    const health = `${Math.ceil(b.hp)} / ${b.maxHp} LP${b.level < 3 && !E.upgradeUnlocked(game, 0, b) ? " · Benötigt " + (b.level === 1 ? "Veteranenausbildung" : "Meisterausbildung") : ""}`;
+    const healthNode = $("[data-building-health]");
+    if (healthNode.textContent !== health) healthNode.textContent = health;
+    $("[data-upgrade]").disabled =
+      b.level >= 3 ||
+      game.gold[0] < E.upgradeCost(b) ||
+      !E.upgradeUnlocked(game, 0, b);
+    const sale = `+${Math.floor((b.paid * 0.6 * b.hp) / b.maxHp)} Gold`;
+    const saleNode = $("[data-sale-value]");
+    if (saleNode.textContent !== sale) saleNode.textContent = sale;
   }
   if (game.winner !== null && !ended) {
     ended = true;
