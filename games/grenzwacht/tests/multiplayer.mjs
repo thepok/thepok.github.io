@@ -41,6 +41,10 @@ try {
   await a.locator("#multiplayer-faction").selectOption(faction);
   await a.locator("#room-title").fill("Testduell " + Date.now());
   if (!openRoom) await a.locator("#room-password").fill("test-ork-42");
+  await a.locator("#host-handicap").fill("80");
+  await a.locator("#guest-handicap").fill("130");
+  assert.equal(await a.locator("#host-factor").innerText(), "80 %");
+  assert.equal(await a.locator("#guest-factor").innerText(), "130 %");
   await a.locator("#host-form button").click();
   const invite = await a.locator("#invite-link").inputValue();
   console.log("Host ready", invite);
@@ -57,12 +61,46 @@ try {
   } else {
     report.singleClickJoin = true;
   }
+  await b.waitForFunction(() => __duel?.lobby && __duel.connected);
+  assert.equal(await a.evaluate(() => __duel.started), false);
+  assert.equal(await a.evaluate(() => __game.tick), 0);
+  await a.locator("#lobby-ready").click();
+  await b.waitForFunction(() => __duel.lobby.ready[0]);
+  await b.locator("#lobby-handicap").fill("120");
+  await b.locator("#lobby-handicap").dispatchEvent("change");
+  await a.waitForFunction(
+    () => __duel.lobby.handicaps[1] === 120 && !__duel.lobby.ready[0],
+  );
+  await b.waitForFunction(() => !__duel.lobbyPending);
+  await b.locator("#lobby-handicap").fill("130");
+  await b.locator("#lobby-handicap").dispatchEvent("change");
+  await b.waitForFunction(
+    () => !__duel.lobbyPending && __duel.lobby.handicaps[1] === 130,
+  );
+  assert.equal(await b.locator("#lobby-lanes").isDisabled(), true);
+  await a.locator("#lobby-lanes").selectOption("3");
+  await b.waitForFunction(() => __duel.lobby.laneCount === 3);
+  await a.locator("#lobby-lanes").selectOption("2");
+  await b.waitForFunction(() => __duel.lobby.laneCount === 2);
+  await b.screenshot({ path: "evidence/shared-lobby-mobile.png" });
+  await Promise.all([
+    a.locator("#lobby-ready").click(),
+    b.locator("#lobby-ready").click(),
+  ]);
+  report.readyLobby = {
+    settingsSync: true,
+    changesResetReady: true,
+    simultaneousReady: true,
+  };
   await b.waitForFunction(
     () => window.__duel?.state?.tick > 10,
     {},
     { timeout: 60000 },
   );
   await a.waitForFunction(() => window.__duel?.state?.tick > 10);
+  assert.deepEqual(await a.evaluate(() => __game.handicap), [0.8, 1.3]);
+  assert.deepEqual(await b.evaluate(() => __game.handicap), [0.8, 1.3]);
+  report.handicap = [80, 130];
   report.host = await a.evaluate(() => __duel.status);
   report.guest = await b.evaluate(() => __duel.status);
   console.log(report);

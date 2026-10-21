@@ -124,7 +124,12 @@
             </select></label
           >
         </div>
-        <label>Karte<select id="lane-count"><option value="2" selected>Ⅱ · Zwei Wege</option><option value="3">Ⅲ · Drei Wege</option></select></label>
+        <label
+          >Karte<select id="lane-count">
+            <option value="2" selected>Ⅱ · Zwei Wege</option>
+            <option value="3">Ⅲ · Drei Wege</option>
+          </select></label
+        >
         <label
           >Gegner<select id="difficulty">
             <option value="easy">Entspannt · Zeit zum Lernen</option>
@@ -156,8 +161,8 @@
           /></label>
         </div>
         <p class="fine">
-          Mehr Einkommen hilft beim Einstieg. Beide Seiten starten mit drei
-          Kasernen und 420 Gold. Eine Runde dauert meist 5–10 Minuten.
+          Mehr Einkommen hilft beim Einstieg. Beide Seiten starten mit einer
+          Kaserne pro Weg und 420 Gold. Eine Runde dauert meist 5–10 Minuten.
           Einheitenwerte und Gebäude-Lebenspunkte sowie Produktionszeiten werden
           je Partie um ±15 % gewürfelt — identisch für beide Seiten.
         </p>
@@ -197,7 +202,12 @@
           ><button id="join-back" type="button">ZURÜCK ZUR SPIELLISTE</button>
         </section>
         <form id="host-form">
-          <label>Karte<select id="multiplayer-lane-count"><option value="2" selected>Ⅱ · Zwei Wege</option><option value="3">Ⅲ · Drei Wege</option></select></label>
+          <label
+            >Karte<select id="multiplayer-lane-count">
+              <option value="2" selected>Ⅱ · Zwei Wege</option>
+              <option value="3">Ⅲ · Drei Wege</option>
+            </select></label
+          >
           <label
             >Name der Partie<input
               id="room-title"
@@ -214,7 +224,32 @@
             ><input id="room-listed" type="checkbox" checked /> In der
             öffentlichen Spielliste zeigen</label
           >
-          <p id="duel-handicap" class="fine"></p>
+          <div class="handicaps">
+            <label
+              >Gastgeber-Einkommen <output id="host-factor">100 %</output
+              ><input
+                id="host-handicap"
+                type="range"
+                min="50"
+                max="150"
+                step="10"
+                value="100"
+            /></label>
+            <label
+              >Gast-Einkommen <output id="guest-factor">100 %</output
+              ><input
+                id="guest-handicap"
+                type="range"
+                min="50"
+                max="150"
+                step="10"
+                value="100"
+            /></label>
+          </div>
+          <p class="fine">
+            Mehr Einkommen hilft beim Einstieg. Die Werte gelten für diese
+            Partie.
+          </p>
           <button class="primary" type="submit">PARTIE ERSTELLEN →</button>
         </form>
         <h3>Offene Partien</h3>
@@ -224,6 +259,39 @@
         <label>Einladungslink<input id="invite-link" readonly /></label
         ><button id="copy-invite">LINK KOPIEREN</button>
         <p id="room-info"></p>
+        <section id="match-lobby">
+          <h3>Gemeinsame Lobby</h3>
+          <label
+            >Dein Volk<select id="lobby-faction">
+              <option value="human">⚔ Menschen</option>
+              <option value="orc">🪓 Orks</option>
+            </select></label
+          >
+          <label
+            >Dein Einkommen <output id="lobby-factor">100 %</output
+            ><input
+              id="lobby-handicap"
+              type="range"
+              min="50"
+              max="150"
+              step="10"
+              value="100"
+          /></label>
+          <label
+            >Karte · Gastgeber wählt<select id="lobby-lanes">
+              <option value="2">Ⅱ · Zwei Wege</option>
+              <option value="3">Ⅲ · Drei Wege</option>
+            </select></label
+          >
+          <p id="lobby-players"></p>
+          <p class="fine">
+            Änderungen setzen beide Bereitschaften zurück. Los geht es, wenn
+            beide bereit sind.
+          </p>
+          <button id="lobby-ready" class="primary" type="button">
+            ✓ BEREIT
+          </button>
+        </section>
         <button id="leave-duel">PARTIE VERLASSEN</button>
       </section>
       <p class="fine">
@@ -279,6 +347,6 @@
       <div id="stats"></div>
       <button class="primary" id="restart">NEUE SCHLACHT →</button>
     </dialog>
-    <script type="module" src="app.js?v=7"></script>
+    <script type="module" src="app.js?v=8"></script>
   </body>
 </html>

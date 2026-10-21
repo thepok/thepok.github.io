@@ -402,6 +402,8 @@ document.addEventListener("visibilitychange", () => {
 for (const [id, out] of [
   ["handicap", "player-factor"],
   ["enemy-handicap", "enemy-factor"],
+  ["host-handicap", "host-factor"],
+  ["guest-handicap", "guest-factor"],
 ])
   $(`#${id}`).oninput = () => {
     $(`#${out}`).textContent = $(`#${id}`).value + " %";
@@ -632,6 +634,29 @@ let invitation = null,
 const multiplayerName = (f) => (f === "orc" ? "Orks" : "Menschen");
 function duelChanged() {
   if (!duel) return;
+  const l = duel.lobby;
+  $("#match-lobby").hidden = duel.started;
+  if (l && !duel.started) {
+    $("#lobby-faction").disabled = !!duel.lobbyPending;
+    $("#lobby-handicap").disabled = !!duel.lobbyPending;
+    $("#lobby-faction").value = l.factions[localSide];
+    if (document.activeElement !== $("#lobby-handicap"))
+      $("#lobby-handicap").value = l.handicaps[localSide];
+    $("#lobby-factor").textContent = $("#lobby-handicap").value + " %";
+    $("#lobby-lanes").value = l.laneCount;
+    $("#lobby-lanes").disabled = !duel.creator;
+    $("#lobby-ready").disabled =
+      !duel.connected || !!duel.error || !!duel.lobbyPending;
+    $("#lobby-ready").textContent = l.ready[localSide]
+      ? "↶ NICHT MEHR BEREIT"
+      : "✓ BEREIT";
+    $("#lobby-players").textContent = l.factions
+      .map(
+        (f, i) =>
+          `${i ? "Gast" : "Gastgeber"}: ${multiplayerName(f)} · ${l.handicaps[i]} % · ${l.ready[i] ? "✓ Bereit" : "Noch nicht bereit"}`,
+      )
+      .join(" | ");
+  } else if (!duel.started) $("#lobby-ready").disabled = true;
   const text = duel.status;
   if ($("#lobby-status").textContent !== text)
     $("#lobby-status").textContent = text;
@@ -699,11 +724,9 @@ function displayRooms() {
 async function openMultiplayer() {
   $("#setup").close();
   $("#multiplayer-faction").value = $("#faction").value;
-  $("#duel-handicap").textContent =
-    `Einkommen: Gastgeber ${$("#handicap").value} %, Gast ${$("#enemy-handicap").value} %. Einstellbar auf dem Startbildschirm.`;
   if (!$("#lobby-dialog").open) $("#lobby-dialog").showModal();
   try {
-    networkModule ||= await import("./network.js?v=7");
+    networkModule ||= await import("./network.js?v=8");
     directory ||= new networkModule.Directory(
       networkModule.selfId,
       displayRooms,
@@ -739,8 +762,8 @@ async function startDuel(item = null) {
   renderer.localSide = localSide;
   const options = {
     seed: crypto.getRandomValues(new Uint32Array(1))[0],
-    handicap: +$("#handicap").value,
-    enemyHandicap: +$("#enemy-handicap").value,
+    handicap: +$("#host-handicap").value,
+    enemyHandicap: +$("#guest-handicap").value,
     factions: [faction, "orc"],
     laneCount: +$("#multiplayer-lane-count").value,
     faction,
@@ -772,7 +795,7 @@ async function startDuel(item = null) {
   history.replaceState(null, "", "#" + hash);
   $("#invite-link").value = location.origin + location.pathname + "#" + hash;
   $("#room-info").textContent =
-    `Du: ${multiplayerName(faction)} · Team ${localSide ? "Rot" : "Blau"}. Die Schlacht beginnt, sobald beide verbunden sind.`;
+    `Du: ${multiplayerName(faction)} · Team ${localSide ? "Rot" : "Blau"}. Stellt eure Partie ein und bestätigt beide mit Bereit.`;
   $("#lobby-options").hidden = true;
   $("#room-active").hidden = false;
   $("#network-status").hidden = false;
@@ -870,3 +893,15 @@ $("#join-back").onclick = () => {
   $("#join-invitation").hidden = true;
   $("#host-form").hidden = false;
 };
+
+$("#lobby-faction").onchange = (e) =>
+  duel?.configure({ faction: e.target.value });
+$("#lobby-handicap").oninput = (e) => {
+  $("#lobby-factor").textContent = e.target.value + " %";
+};
+$("#lobby-handicap").onchange = (e) =>
+  duel?.configure({ handicap: +e.target.value });
+$("#lobby-lanes").onchange = (e) =>
+  duel?.configure({ laneCount: +e.target.value });
+$("#lobby-ready").onclick = () =>
+  duel?.configure({ ready: !duel.lobby?.ready[localSide] });

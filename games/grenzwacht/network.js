@@ -4,7 +4,7 @@ import {
   GuestSimulation,
   PROTOCOL,
   cleanCommand,
-} from "./net-core.js?v=7";
+} from "./net-core.js?v=8";
 export { Directory, selfId };
 export class Duel {
   constructor({
@@ -20,6 +20,18 @@ export class Duel {
     this.host = host || selfId;
     this.creator = !host;
     this.side = this.creator ? 0 : 1;
+    this.options = options;
+    this.lobby = this.creator
+      ? {
+          revision: 0,
+          factions: [...this.stateFactions(options)],
+          handicaps: [options.handicap || 100, options.enemyHandicap || 100],
+          laneCount: options.laneCount === 3 ? 3 : 2,
+          ready: [false, false],
+          guestSeq: 0,
+        }
+      : null;
+    this.lobbySeq = 0;
     this.faction = options.faction === "orc" ? "orc" : "human";
     this.changed = changed;
     this.result = result;
@@ -80,6 +92,88 @@ export class Duel {
     this.timer = setInterval(() => this.tick(), 50);
     this.beat = setInterval(() => this.heartbeat(), 500);
   }
+  stateFactions(options) {
+    return [0, 1].map((i) =>
+      options.factions?.[i] === "orc" ? "orc" : "human",
+    );
+  }
+  sendLobby() {
+    if (this.creator && this.peer)
+      void this.send({
+        kind: "lobby",
+        serial: ++this.revision,
+        lobby: this.lobby,
+      });
+  }
+  configure(patch) {
+    if (this.started || this.error || !this.lobby) return;
+    if (this.creator) {
+      this.applyLobby(0, patch, this.lobby.revision);
+      this.sendLobby();
+    } else {
+      this.lobbyPending = {
+        kind: "lobby-edit",
+        seq: ++this.lobbySeq,
+        revision: this.lobby.revision,
+        patch,
+      };
+      void this.send(this.lobbyPending);
+    }
+    this.changed();
+  }
+  applyLobby(side, patch, revision) {
+    if (!patch || typeof patch !== "object" || this.started) return;
+    const l = this.lobby;
+    let changed = false;
+    if (
+      ["human", "orc"].includes(patch.faction) &&
+      patch.faction !== l.factions[side]
+    ) {
+      l.factions[side] = patch.faction;
+      changed = true;
+    }
+    if (
+      Number.isInteger(patch.handicap) &&
+      patch.handicap >= 50 &&
+      patch.handicap <= 150 &&
+      patch.handicap % 10 === 0 &&
+      patch.handicap !== l.handicaps[side]
+    ) {
+      l.handicaps[side] = patch.handicap;
+      changed = true;
+    }
+    if (
+      side === 0 &&
+      [2, 3].includes(patch.laneCount) &&
+      patch.laneCount !== l.laneCount
+    ) {
+      l.laneCount = patch.laneCount;
+      changed = true;
+    }
+    if (changed) {
+      l.ready = [false, false];
+      l.revision++;
+    } else if (
+      typeof patch.ready === "boolean" &&
+      revision === l.revision &&
+      this.connected
+    ) {
+      l.ready[side] = patch.ready;
+      // Readiness does not change the settings revision: simultaneous ready clicks are valid.
+    }
+    if (this.peer && this.connected && l.ready.every(Boolean)) {
+      this.sim = new HostSimulation({
+        ...this.options,
+        factions: l.factions,
+        handicap: l.handicaps[0],
+        enemyHandicap: l.handicaps[1],
+        laneCount: l.laneCount,
+      });
+      this.started = true;
+      this.paused = false;
+      this.snapshot();
+    }
+  }
   get state() {
     return this.sim.state;
   }
@@ -99,7 +193,7 @@ export class Duel {
     return (
       mode +
       (this.rtt !== null ? ` · ${this.rtt} ms` : "") +
-      (this.paused ? " · Pause" : "")
+      (!this.started ? " · Lobby" : this.paused ? " · Pause" : "")
     );
   }
   async send(m, target = this.creator ? this.peer : this.host) {
@@ -149,12 +243,13 @@ export class Duel {
         }
         if (!this.peer) {
           this.peer = from;
-          this.state.factions[1] = m.faction === "orc" ? "orc" : "human";
-          this.paused = false;
-          this.started = true;
+          this.lobby.factions[1] = m.faction === "orc" ? "orc" : "human";
+          this.lobby.ready = [false, false];
+          this.lobby.revision++;
         }
         this.lastSeen = Date.now();
-        this.snapshot();
+        if (this.started) this.snapshot();
+        else this.sendLobby();
         this.changed();
         return;
       }
@@ -173,6 +268,16 @@ export class Duel {
     if (m.kind === "pong" && Number.isFinite(m.sent))
       this.rtt = Math.max(0, Math.round(Date.now() - m.sent));
     if (this.creator) {
+      if (
+        m.kind === "lobby-edit" &&
+        !this.started &&
+        Number.isSafeInteger(m.seq) &&
+        m.seq > this.lobby.guestSeq
+      ) {
+        this.lobby.guestSeq = m.seq;
+        this.applyLobby(1, m.patch, m.revision);
+        this.sendLobby();
+      }
       if (
         m.kind === "ack" &&
         Number.isSafeInteger(m.tick) &&
@@ -196,6 +301,18 @@ export class Duel {
         }
       }
     } else {
+      if (
+        m.kind === "lobby" &&
+        !this.started &&
+        m.lobby &&
+        Number.isSafeInteger(m.serial) &&
+        m.serial > (this.lobbySerial || 0)
+      ) {
+        this.lobbySerial = m.serial;
+        this.lobby = m.lobby;
+        if (this.lobbyPending?.seq <= this.lobby.guestSeq)
+          this.lobbyPending = null;
+      }
       if (m.kind === "error") {
         this.error = String(m.text).slice(0, 140);
       }
@@ -209,6 +326,7 @@ export class Duel {
         if (!this.state || m.state.tick >= this.state.tick) {
           this.sim.snapshot(m.state);
           this.started = !!m.started;
+          if (this.started) this.lobbyPending = null;
           if (
             Number.isSafeInteger(m.revision) &&
             m.revision >= this.remoteRevision
@@ -263,6 +381,7 @@ export class Duel {
     return { ok: true, pending: true };
   }
   setPaused(value) {
+    if (!this.started) return;
     if (this.creator) {
       this.paused = !!value || !this.connected || !!this.error;
       this.broadcast();
@@ -270,7 +389,7 @@ export class Duel {
     this.changed();
   }
   broadcast() {
-    if (!this.peer) return;
+    if (!this.peer || !this.started) return;
     if (this.ack < this.state.tick - 200) {
       if (Date.now() - this.lastSnapshot > 1500) this.snapshot();
       return;
@@ -311,7 +430,15 @@ export class Duel {
   }
   heartbeat() {
     if (this.closed) return;
+    if (this.creator && !this.started) {
+      if (!this.connected && this.lobby.ready.some(Boolean)) {
+        this.lobby.ready = [false, false];
+        this.lobby.revision++;
+      }
+      this.sendLobby();
+    }
     if (!this.creator) {
+      if (this.lobbyPending) void this.send(this.lobbyPending);
       if (!this.state) void this.send({ kind: "hello", faction: this.faction });
       else void this.send({ kind: "ack", tick: this.state.tick });
       for (const [id, p] of this.pending)
