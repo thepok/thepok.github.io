@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#eee9df" />
+    <meta
+      name="description"
+      content="Grenzwacht, Poker, Monster-Schach, Load Bearing und Lesewörter: alle Spiele direkt im Browser."
+    />
+    <title>Spiele · thepok</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        background: #eee9df;
+        color: #232b29;
+      }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", sans-serif;
+      }
+      a {
+        color: inherit;
+      }
+      main {
+        max-width: 1120px;
+        margin: auto;
+        padding: 30px 28px 24px;
+      }
+      .mast {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 2px solid #28312d;
+        padding-bottom: 14px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .mast a {
+        text-decoration: none;
+      }
+      .mast span {
+        color: #60695f;
+        font-weight: 500;
+        letter-spacing: 0.03em;
+      }
+      .intro {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 16px;
+        padding: 26px 0 25px;
+      }
+      h1 {
+        font-family: Georgia, serif;
+        font-size: 60px;
+        letter-spacing: -3px;
+        line-height: 1;
+        margin: 0;
+        font-weight: normal;
+      }
+      .intro p {
+        margin: 0;
+        color: #5f665e;
+        font-size: 14px;
+      }
+      .games {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+      .game {
+        --accent: #527058;
+        --wash: #dce3d7;
+        position: relative;
+        display: flex;
+        gap: 22px;
+        align-items: center;
+        min-height: 206px;
+        padding: 26px 24px 20px;
+        background: #f9f7f0;
+        border: 1px solid #c8c9bb;
+        border-top: 4px solid var(--accent);
+        text-decoration: none;
+        transition:
+          transform 0.15s,
+          box-shadow 0.15s;
+      }
+      .game:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 0 #232b2918;
+      }
+      .game:focus-visible {
+        outline: 3px solid #155a94;
+        outline-offset: 3px;
+      }
+      .number {
+        position: absolute;
+        right: 18px;
+        top: 14px;
+        color: #7b8175;
+        font: 12px monospace;
+      }
+      .symbol {
+        flex: 0 0 72px;
+        height: 86px;
+        display: grid;
+        place-items: center;
+        color: var(--accent);
+        background: var(--wash);
+        font:
+          60px Georgia,
+          serif;
+        border-radius: 40% 40% 3px 3px;
+        box-shadow: inset 0 0 0 1px #23302114;
+      }
+      .genre {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+      h2 {
+        font:
+          normal 29px/1.12 Georgia,
+          serif;
+        letter-spacing: -0.6px;
+        margin: 6px 0 10px;
+      }
+      .copy {
+        min-width: 0;
+        flex: 1;
+      }
+      .copy p {
+        margin: 0;
+        color: #5b635c;
+        font-size: 13px;
+        line-height: 1.55;
+        max-width: 37ch;
+      }
+      .bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 20px;
+        font-size: 10px;
+        color: #616a5e;
+      }
+      .play {
+        font-size: 12px;
+        font-weight: 700;
+        color: #28342d;
+      }
+      .play b {
+        font-size: 18px;
+        margin-left: 8px;
+      }
+      .red {
+        --accent: #a0443c;
+        --wash: #f0dcd2;
+      }
+      .blue {
+        --accent: #416881;
+        --wash: #dce5e9;
+      }
+      .amber {
+        --accent: #9e6f27;
+        --wash: #f0e3c9;
+      }
+      .violet {
+        --accent: #71657f;
+        --wash: #e5dfe9;
+      }
+      .violet .symbol {
+        font-size: 39px;
+      }
+      .game:last-child {
+        grid-column: 1/-1;
+        min-height: 170px;
+      }
+      .game:last-child .copy p {
+        max-width: none;
+      }
+      .game:last-child .bottom {
+        max-width: 420px;
+      }
+      footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        padding-top: 22px;
+        color: #72786d;
+        font-size: 11px;
+      }
+      footer a {
+        text-underline-offset: 3px;
+      }
+      @media (max-width: 650px) {
+        main {
+          padding: 20px 16px;
+        }
+        .mast {
+          font-size: 10px;
+        }
+        .intro {
+          display: block;
+          padding: 24px 0;
+        }
+        h1 {
+          font-size: 48px;
+        }
+        .intro p {
+          margin-top: 12px;
+          font-size: 13px;
+        }
+        .games {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+        .game,
+        .game:last-child {
+          min-height: 190px;
+          padding: 22px 18px 18px;
+          gap: 16px;
+        }
+        .symbol {
+          flex-basis: 55px;
+          height: 72px;
+          font-size: 47px;
+        }
+        h2 {
+          font-size: 26px;
+        }
+        .bottom {
+          margin-top: 16px;
+        }
+        .bottom > span:first-child {
+          font-size: 10px;
+        }
+        .number {
+          right: 14px;
+          top: 12px;
+        }
+        footer {
+          font-size: 10px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .game {
+          transition: none;
+        }
+        .game:hover {
+          transform: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="mast">
+        <a href="../">thepok / Spiele</a><span>05 Spiele · im Browser</span>
+      </header>
+      <div class="intro">
+        <h1>Spiele.</h1>
+        <p>Für eine ruhige Runde. Oder die nächste große Schlacht.</p>
+      </div>
+      <nav class="games" aria-label="Alle Spiele">
+        <a class="game green" href="./grenzwacht/"
+          ><span class="number">01</span>
+          <div class="symbol" aria-hidden="true">⚑</div>
+          <div class="copy">
+            <span class="genre">Echtzeitstrategie</span>
+            <h2>Grenzwacht</h2>
+            <p>
+              Menschen oder Orks: Baue dein Reich, erforsche neue Einheiten und
+              stürme das gegnerische Schloss.
+            </p>
+            <div class="bottom">
+              <span>Solo & P2P-Duell</span
+              ><span class="play">Spielen <b aria-hidden="true">↗</b></span>
+            </div>
+          </div></a
+        >
+        <a class="game red" href="./poker/"
+          ><span class="number">02</span>
+          <div class="symbol" aria-hidden="true">♠</div>
+          <div class="copy">
+            <span class="genre">Poker</span>
+            <h2>Freundesrunde</h2>
+            <p>
+              Ein Tisch für deine Runde. Freunde einladen oder einer offenen
+              Partie beitreten.
+            </p>
+            <div class="bottom">
+              <span>Mit Freunden · P2P</span
+              ><span class="play">Spielen <b aria-hidden="true">↗</b></span>
+            </div>
+          </div></a
+        >
+        <a class="game blue" href="./monster-schach/"
+          ><span class="number">03</span>
+          <div class="symbol" aria-hidden="true">♞</div>
+          <div class="copy">
+            <span class="genre">Brettspiel</span>
+            <h2>Monster-Schach</h2>
+            <p>
+              Schach mit eigenen Kreaturen und animierten Kämpfen bei jedem
+              Schlagzug.
+            </p>
+            <div class="bottom">
+              <span>Schach & Monster</span
+              ><span class="play">Spielen <b aria-hidden="true">↗</b></span>
+            </div>
+          </div></a
+        >
+        <a class="game amber" href="./loadbearing/"
+          ><span class="number">04</span>
+          <div class="symbol" aria-hidden="true">▥</div>
+          <div class="copy">
+            <span class="genre">Physik-Sandbox</span>
+            <h2>Load Bearing</h2>
+            <p>
+              Bauen, testen, zerstören. Entwirf Bauwerke und finde heraus, was
+              sie wirklich aushalten.
+            </p>
+            <div class="bottom">
+              <span>Bauen & Experimentieren</span
+              ><span class="play">Spielen <b aria-hidden="true">↗</b></span>
+            </div>
+          </div></a
+        >
+        <a class="game violet" href="./lesen/"
+          ><span class="number">05</span>
+          <div class="symbol" aria-hidden="true">Aa</div>
+          <div class="copy">
+            <span class="genre">Lesen lernen</span>
+            <h2>Lesewörter</h2>
+            <p>
+              Bekannte Buchstaben auswählen und passende Wörter, Wortgruppen und
+              Sätze entdecken.
+            </p>
+            <div class="bottom">
+              <span>Buchstaben & Wörter</span
+              ><span class="play">Spielen <b aria-hidden="true">↗</b></span>
+            </div>
+          </div></a
+        >
+      </nav>
+      <footer>
+        <span>Ein Spiel auswählen und loslegen.</span
+        ><a href="../">Zur Startseite ↗</a>
+      </footer>
+    </main>
+  </body>
+</html>
