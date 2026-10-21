@@ -18,6 +18,8 @@ async function open(mobile = false) {
   p.on("pageerror", (e) => errors.push(e.message));
   await p.goto(base + (base.includes("?") ? "&" : "?") + "test=1");
   await p.locator("#setup[open]").waitFor();
+  assert.equal(await p.locator("#lane-count").inputValue(), "2");
+  await p.locator("#lane-count").selectOption("3");
   await p.locator("#setup-form button").click();
   await p.waitForFunction(
     () =>
@@ -64,8 +66,8 @@ try {
     return {
       width: E.W,
       height: E.H,
-      playerSlots: E.slots(0).length,
-      enemySlots: E.slots(1).length,
+      playerSlots: E.slots(0, window.__game.lanes).length,
+      enemySlots: E.slots(1, window.__game.lanes).length,
     };
   });
   assert.deepEqual(mapRules, {

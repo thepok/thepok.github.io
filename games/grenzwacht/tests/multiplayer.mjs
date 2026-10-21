@@ -4,6 +4,7 @@ import fs from "node:fs/promises";
 const browser = await chromium.launch({ channel: "msedge", headless: true });
 const base = process.env.TEST_URL || "http://127.0.0.1:5192/";
 const relay = process.env.RELAY_ONLY === "1";
+const openRoom = process.env.OPEN_ROOM === "1";
 const errors = [];
 const faction = process.env.FACTION === "human" ? "human" : "orc";
 async function page(mobile = false) {
@@ -39,7 +40,7 @@ try {
   );
   await a.locator("#multiplayer-faction").selectOption(faction);
   await a.locator("#room-title").fill("Testduell " + Date.now());
-  await a.locator("#room-password").fill("test-ork-42");
+  if (!openRoom) await a.locator("#room-password").fill("test-ork-42");
   await a.locator("#host-form button").click();
   const invite = await a.locator("#invite-link").inputValue();
   console.log("Host ready", invite);
@@ -47,11 +48,15 @@ try {
   await b.locator("#multiplayer").click();
   const roomId = new URLSearchParams(new URL(invite).hash.slice(1)).get("room");
   await b.locator(`[data-room="${roomId}"]`).waitFor({ timeout: 60000 });
+  await b.locator("#multiplayer-faction").selectOption(faction);
   await b.locator(`[data-room="${roomId}"]`).click();
   report.publicListing = true;
-  await b.locator("#multiplayer-faction").selectOption(faction);
-  await b.locator("#join-password").fill("test-ork-42");
-  await b.locator("#join-duel").click();
+  if (!openRoom) {
+    await b.locator("#join-password").fill("test-ork-42");
+    await b.locator("#join-duel").click();
+  } else {
+    report.singleClickJoin = true;
+  }
   await b.waitForFunction(
     () => window.__duel?.state?.tick > 10,
     {},
@@ -62,15 +67,17 @@ try {
   report.guest = await b.evaluate(() => __duel.status);
   console.log(report);
   assert.deepEqual(await b.evaluate(() => __game.factions), [faction, faction]);
-  const intruder = await page();
-  await intruder.goto(url + new URL(invite).hash);
-  await intruder.locator("#join-password").fill("wrong-password");
-  await intruder.locator("#join-duel").click();
-  await intruder.waitForTimeout(2500);
-  assert.equal(await intruder.evaluate(() => __duel.state), null);
-  await intruder.locator("#leave-duel").click();
-  await intruder.close();
-  report.wrongPasswordBlocked = true;
+  if (!openRoom) {
+    const intruder = await page();
+    await intruder.goto(url + new URL(invite).hash);
+    await intruder.locator("#join-password").fill("wrong-password");
+    await intruder.locator("#join-duel").click();
+    await intruder.waitForTimeout(2500);
+    assert.equal(await intruder.evaluate(() => __duel.state), null);
+    await intruder.locator("#leave-duel").click();
+    await intruder.close();
+    report.wrongPasswordBlocked = true;
+  }
   if (!relay) {
     await a.evaluate(() => {
       __duel.room.leave();
@@ -92,7 +99,7 @@ try {
   await b.waitForTimeout(800);
   assert.equal(
     await a.evaluate(() => __game.buildings.filter((x) => x.side === 0).length),
-    3,
+    2,
   );
   assert.equal(
     (
@@ -104,8 +111,10 @@ try {
   );
   await b.locator('[data-build="bank"]').click();
   const slotPoint = await b.evaluate(async () => {
-    const E = await import("./engine.js?v=6");
-    const slot = E.SLOTS.find((s) => s.id === "1-1-1");
+    const E = await import("./engine.js?v=7");
+    const slot = E.slots(1, __game.lanes).find((s) => s.id === "1-1-1");
+    __view.focusWorld(slot.x, slot.y, true);
+    __view.draw(__game, null, "bank");
     const p = __view.point(slot.x, slot.y);
     return { x: p.x, y: p.y - 8 };
   });

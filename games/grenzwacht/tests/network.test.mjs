@@ -7,8 +7,8 @@ test("all faction combinations keep teams and shared randomized rules independen
     for (const b of ["human", "orc"]) {
       const s = E.createGame({ seed: 19, factions: [a, b] });
       assert.deepEqual(s.factions, [a, b]);
-      assert.equal(s.buildings.filter((x) => x.side === 0).length, 3);
-      assert.equal(s.buildings.filter((x) => x.side === 1).length, 3);
+      assert.equal(s.buildings.filter((x) => x.side === 0).length, 2);
+      assert.equal(s.buildings.filter((x) => x.side === 1).length, 2);
       assert.deepEqual(s.rules, E.createGame({ seed: 19 }).rules);
     }
 });
@@ -81,7 +81,7 @@ test("sender cannot override faction or sell opposing buildings; malformed comma
   });
   const replies = host.advance();
   assert.equal(replies[0].result.ok, false);
-  assert.equal(host.state.buildings.length, 6);
+  assert.equal(host.state.buildings.length, 4);
   assert.equal(host.enqueue(1, "bad", { type: "teleport" }).ok, false);
 });
 test("snapshot repairs a gap beyond retained history, and replay of acknowledged input is idempotent", () => {
@@ -120,5 +120,16 @@ test("periodic checksum detects divergent simulation and a snapshot repairs it",
   host.advance();
   guest.receive(host.frames(20));
   guest.advance();
+  assert.deepEqual(guest.state, host.state);
+});
+
+for (const laneCount of [2, 3]) test(`host transfers ${laneCount}-lane layout to guest`, () => {
+  const host = new HostSimulation({laneCount});
+  const guest = new GuestSimulation();
+  guest.snapshot(host.state);
+  for (let i = 0; i < 200; i++) host.advance();
+  guest.receive(host.frames(guest.state.tick));
+  while (guest.advance());
+  assert.equal(guest.state.lanes.length, laneCount);
   assert.deepEqual(guest.state, host.state);
 });

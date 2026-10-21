@@ -1,4 +1,4 @@
-import { W, H, LANES, SLOTS, TYPES, buildingStats } from "./engine.js?v=6";
+import { W, H, LANES, slots, TYPES, buildingStats } from "./engine.js?v=7";
 const load = (src) => {
   const i = new Image();
   i.src = src;
@@ -36,7 +36,7 @@ export class Renderer {
       .then((m) => (this.buildingRects = m?.rows || m))
       .catch(() => {});
     this.sheets = {};
-    fetch("assets/unit-manifest.json?v=6")
+    fetch("assets/unit-manifest.json?v=7")
       .then((r) => (r.ok ? r.json() : {}))
       .then((m) => {
         for (const [k, v] of Object.entries(m))
@@ -48,9 +48,11 @@ export class Renderer {
     this.bg.height = H;
     this.localSide = 0;
     this.factions = ["human", "orc"];
+    this.lanes = LANES;
     this.terrain();
   }
   terrain() {
+    const LANES = this.lanes;
     const c = this.bg.getContext("2d");
     let n = 736;
     const rand = () =>
@@ -175,7 +177,7 @@ export class Renderer {
           LANES.some((l) => Math.abs(y - l) < 115) ||
           ((x < 540 || x > W - 540) &&
             y > LANES[0] - 110 &&
-            y < LANES[2] + 110) ||
+            y < LANES[LANES.length - 1] + 110) ||
           occupied.has(key)
         )
           continue;
@@ -528,6 +530,11 @@ export class Renderer {
     c.fillRect(p.x - w / 2 + 1, p.y + 1, (w - 2) * Math.max(0, hp / max), 2);
   }
   draw(s, selected, building, hover) {
+    if (this.lanes.join() !== s.lanes.join()) {
+      this.lanes = s.lanes;
+      this.terrain();
+    }
+    const LANES = s.lanes;
     this.factions = s.factions || ["human", "orc"];
     const c = this.ctx,
       r = this.sizing();
@@ -556,7 +563,7 @@ export class Renderer {
     }
     c.restore();
     this.drawScenery();
-    for (const slot of SLOTS) {
+    for (const slot of [...slots(0, s.lanes), ...slots(1, s.lanes)]) {
       if (s.buildings.some((b) => b.slot === slot.id)) continue;
       const p = this.point(slot.x, slot.y),
         size = 48 * this.scale;

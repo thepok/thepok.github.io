@@ -4,7 +4,7 @@ import {
   GuestSimulation,
   PROTOCOL,
   cleanCommand,
-} from "./net-core.js?v=6";
+} from "./net-core.js?v=7";
 export { Directory, selfId };
 export class Duel {
   constructor({
@@ -40,25 +40,30 @@ export class Duel {
       ? new HostSimulation(options)
       : new GuestSimulation();
     if (!forceRelay) {
-      this.room = joinRoom(
-        {
-          appId: "thepok.github.io.grenzwacht.v1",
-          password: password || undefined,
-        },
-        room,
-        { onJoinError: () => this.changed() },
-      );
-      this.wire = this.room.makeAction("duel");
-      this.wire.onMessage = (m, { peerId }) => this.receive(m, peerId);
-      this.room.onPeerJoin = (p) => {
-        this.direct.add(p);
-        this.heartbeat();
-        this.changed();
-      };
-      this.room.onPeerLeave = (p) => {
-        this.direct.delete(p);
-        this.changed();
-      };
+      try {
+        this.room = joinRoom(
+          {
+            appId: "thepok.github.io.grenzwacht.v1",
+            password: password || undefined,
+          },
+          room,
+          { onJoinError: () => this.changed() },
+        );
+        this.wire = this.room.makeAction("duel");
+        this.wire.onMessage = (m, { peerId }) => this.receive(m, peerId);
+        this.room.onPeerJoin = (p) => {
+          this.direct.add(p);
+          this.heartbeat();
+          this.changed();
+        };
+        this.room.onPeerLeave = (p) => {
+          this.direct.delete(p);
+          this.changed();
+        };
+      } catch {
+        this.room = null;
+        this.wire = null;
+      }
     }
     this.relay = new Relay(
       room,

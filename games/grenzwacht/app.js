@@ -1,6 +1,6 @@
-import * as E from "./engine.js?v=6";
-import { Renderer } from "./renderer.js?v=6";
-import { icon, spoken } from "./icons.js?v=6";
+import * as E from "./engine.js?v=7";
+import { Renderer } from "./renderer.js?v=7";
+import { icon, spoken } from "./icons.js?v=7";
 const $ = (s) => document.querySelector(s),
   canvas = $("#map"),
   renderer = new Renderer(canvas),
@@ -415,6 +415,7 @@ $("#setup-form").onsubmit = (e) => {
     handicap: +$("#handicap").value,
     enemyHandicap: +$("#enemy-handicap").value,
     difficulty: $("#difficulty").value,
+    laneCount: +$("#lane-count").value,
     seed: initialSeed,
     factions: [$("#faction").value, $("#enemy-faction").value],
   });
@@ -683,9 +684,10 @@ function displayRooms() {
       button.dataset.room = item.room;
       list.append(button);
     }
-    const label = `${item.locked ? "🔒" : "⚔"} ${item.title} · ${item.phase}`;
+    const label = `${item.locked ? "🔒" : "⚔"} ${item.title} · ${item.phase} · ${item.locked ? "Passwort eingeben" : "Beitreten →"}`;
     if (button.textContent !== label) button.textContent = label;
-    button.onclick = () => selectInvitation(item);
+    button.onclick = () =>
+      item.locked ? selectInvitation(item) : void startDuel(item);
   }
   if (!entries.length) {
     const p = document.createElement("p");
@@ -701,7 +703,7 @@ async function openMultiplayer() {
     `Einkommen: Gastgeber ${$("#handicap").value} %, Gast ${$("#enemy-handicap").value} %. Einstellbar auf dem Startbildschirm.`;
   if (!$("#lobby-dialog").open) $("#lobby-dialog").showModal();
   try {
-    networkModule ||= await import("./network.js?v=6");
+    networkModule ||= await import("./network.js?v=7");
     directory ||= new networkModule.Directory(
       networkModule.selfId,
       displayRooms,
@@ -718,12 +720,19 @@ function selectInvitation(item) {
   $("#join-description").textContent =
     `${item.title || "Eingeladene Partie"}${item.locked ? " · Passwort benötigt" : ""}. Wähle dein Volk und tritt bei.`;
   $("#join-password").value = "";
-  $("#join-invitation").scrollIntoView({ block: "nearest" });
+  $("#join-password").closest("label").hidden = !item.locked;
+  $("#host-form").hidden = true;
+  $("#lobby-dialog").scrollTop = 0;
+  if (item.locked) $("#join-password").focus({ preventScroll: true });
 }
 async function startDuel(item = null) {
   if (!networkModule || duel) return;
   const room = item?.room || crypto.randomUUID().replaceAll("-", "");
-  const password = item ? $("#join-password").value : $("#room-password").value;
+  const password = item
+    ? item.locked
+      ? $("#join-password").value
+      : ""
+    : $("#room-password").value;
   const faction = $("#multiplayer-faction").value;
   enteredDuel = false;
   localSide = item ? 1 : 0;
@@ -733,19 +742,28 @@ async function startDuel(item = null) {
     handicap: +$("#handicap").value,
     enemyHandicap: +$("#enemy-handicap").value,
     factions: [faction, "orc"],
+    laneCount: +$("#multiplayer-lane-count").value,
     faction,
   };
-  duel = new networkModule.Duel({
-    room,
-    host: item?.host,
-    password,
-    options,
-    changed: duelChanged,
-    result: (r) => {
-      if (!r?.ok) toast(r?.error || "Aktion abgelehnt.");
-    },
-    forceRelay: new URLSearchParams(location.search).has("relayOnly"),
-  });
+  try {
+    duel = new networkModule.Duel({
+      room,
+      host: item?.host,
+      password,
+      options,
+      changed: duelChanged,
+      result: (r) => {
+        if (!r?.ok) toast(r?.error || "Aktion abgelehnt.");
+      },
+      forceRelay: new URLSearchParams(location.search).has("relayOnly"),
+    });
+  } catch (error) {
+    $("#lobby-status").textContent =
+      "Beitritt fehlgeschlagen: " +
+      (error?.message || "Verbindung konnte nicht gestartet werden.");
+    return;
+  }
+  $("#lobby-dialog").scrollTop = 0;
   const hash = new URLSearchParams({
     room,
     host: duel.host,
@@ -786,6 +804,8 @@ async function leaveMultiplayer() {
   $("#network-status").hidden = true;
   $("#room-active").hidden = true;
   $("#lobby-options").hidden = false;
+  $("#host-form").hidden = false;
+  $("#join-invitation").hidden = true;
   $("#lobby-dialog").close();
   $("#result").close();
   $("#research-dialog").close();
@@ -844,3 +864,9 @@ queueMicrotask(async () => {
     selectInvitation({ room, host, locked: hash.get("locked") === "true" });
   }
 });
+
+$("#join-back").onclick = () => {
+  invitation = null;
+  $("#join-invitation").hidden = true;
+  $("#host-form").hidden = false;
+};

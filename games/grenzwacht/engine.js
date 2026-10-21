@@ -2,7 +2,7 @@
 export const STEP = 0.05;
 export const W = 3420,
   H = 2280,
-  LANES = [540, 1140, 1740];
+  LANES = [900, 1380];
 export const TYPES = {
   barracks: {
     name: "Kaserne",
@@ -174,8 +174,9 @@ export function researchStatus(s, side, id) {
     remaining: 0,
   };
 }
-export function slots(side) {
-  return LANES.flatMap((y, lane) =>
+export const lanesFor = (count = 2) => Number(count) === 3 ? [540, 1140, 1740] : LANES;
+export function slots(side, lanes = LANES) {
+  return lanes.flatMap((y, lane) =>
     Array.from({ length: 10 }, (_, col) => ({
       id: `${side}-${lane}-${col}`,
       side,
@@ -193,9 +194,11 @@ export function createGame({
   difficulty = "normal",
   seed = 42,
   factions = ["human", "orc"],
+  laneCount = 2,
 } = {}) {
   const state = {
-    version: 1,
+    version: 2,
+    lanes: [...lanesFor(laneCount)],
     factions: [0, 1].map((i) => (factions?.[i] === "orc" ? "orc" : "human")),
     tick: 0,
     time: 0,
@@ -256,8 +259,8 @@ export function createGame({
     };
   // Equal opening armies; construction choices are immediately available.
   for (let side = 0; side < 2; side++)
-    for (let lane = 0; lane < 3; lane++) {
-      const slot = SLOTS.find(
+    for (let lane = 0; lane < state.lanes.length; lane++) {
+      const slot = slots(side, state.lanes).find(
         (s) => s.side === side && s.lane === lane && s.col === 0,
       );
       addBuilding(state, side, "barracks", slot);
@@ -319,7 +322,7 @@ export function command(s, side, c) {
     return { ok: true };
   }
   if (c.type === "build") {
-    const slot = SLOTS.find((x) => x.id === c.slot),
+    const slot = slots(side, s.lanes).find((x) => x.id === c.slot),
       t = Object.hasOwn(TYPES, c.building) ? TYPES[c.building] : null;
     if (!slot || slot.side !== side || !t)
       return {
@@ -534,8 +537,8 @@ function ai(s) {
       return;
     }
   const own = s.buildings.filter((b) => b.side === 1),
-    free = slots(1).filter((x) => !own.some((b) => b.slot === x.id));
-  const threat = LANES.map(
+    free = slots(1, s.lanes).filter((x) => !own.some((b) => b.slot === x.id));
+  const threat = s.lanes.map(
     (_, lane) =>
       s.units.filter((u) => u.side === 0 && u.lane === lane && u.x > W / 2)
         .length *
@@ -545,7 +548,7 @@ function ai(s) {
       ).length,
   );
   let lane = threat.indexOf(Math.max(...threat));
-  if (rand(s) < 0.45) lane = Math.floor(rand(s) * 3);
+  if (rand(s) < 0.45) lane = Math.floor(rand(s) * s.lanes.length);
   let type;
   if (
     buildingUnlocked(s, 1, "range") &&
@@ -621,7 +624,7 @@ export function step(s, { aiEnabled = true } = {}) {
     c.cooldown = Math.max(0, c.cooldown - STEP);
     if (c.cooldown > 0 || c.hp <= 0) continue;
     let fired = false;
-    for (let lane = 0; lane < 3; lane++) {
+    for (let lane = 0; lane < s.lanes.length; lane++) {
       const target = s.units
         .filter(
           (u) =>
@@ -659,7 +662,7 @@ export function step(s, { aiEnabled = true } = {}) {
           kind: t.unit,
           lane: b.lane,
           x: b.x,
-          y: LANES[b.lane] + ((s.nextId % 3) - 1) * 24,
+          y: s.lanes[b.lane] + ((s.nextId % 3) - 1) * 24,
           formation: ((s.nextId % 3) - 1) * 24,
           hp,
           maxHp: hp,
@@ -722,7 +725,7 @@ export function step(s, { aiEnabled = true } = {}) {
             x: beforeMerge ? mergeX : tx,
             y:
               beforeMerge || (!castle && Math.abs(dx) > 210)
-                ? LANES[u.lane] + (u.formation || 0)
+                ? s.lanes[u.lane] + (u.formation || 0)
                 : ty + (u.formation || 0) * 0.6,
           };
       steer(s, u, goal.x, goal.y);

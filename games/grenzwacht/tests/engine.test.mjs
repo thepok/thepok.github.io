@@ -1,16 +1,16 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  createGame,
+  createGame as createGameEngine,
   command,
   step,
   income,
   upgradeCost,
-  slots,
+  slots as mapSlots,
   TYPES,
   UNIT,
   STEP,
-  LANES,
+  lanesFor,
   RESEARCH,
   researchStatus,
   buildingUnlocked,
@@ -21,6 +21,10 @@ import {
   W,
   H,
 } from "../engine.js";
+
+const LANES = lanesFor(3);
+const slots = (side) => mapSlots(side, LANES);
+const createGame = (options = {}) => createGameEngine({laneCount: 3, ...options});
 
 const run = (s, seconds, options = { aiEnabled: false }) => {
   for (let i = 0; i < Math.round(seconds / STEP); i++) step(s, options);
@@ -602,3 +606,16 @@ test("dense infantry seeks multiple attack positions instead of one queue", () =
     assert.ok(target.hp < target.maxHp);
   }
 });
+
+for (const laneCount of [2, 3]) test(`${laneCount} lanes drive construction, AI and production`, () => {
+  const s = createGameEngine({ laneCount });
+  assert.equal(s.lanes.length, laneCount);
+  assert.equal(s.buildings.length, laneCount * 2);
+  assert.equal(mapSlots(0, s.lanes).length, laneCount * 10);
+  assert.equal(command(s, 0, {type: "build", building: "barracks", slot: `0-${laneCount}-1`}).ok, false);
+  run(s, 90, {aiEnabled: true});
+  assert.ok(s.units.length > 0);
+  assert.ok(s.units.every(u => u.lane < laneCount));
+  assert.ok(s.buildings.every(b => b.lane < laneCount));
+});
+test("new games default to two lanes", () => assert.equal(createGameEngine().lanes.length, 2));

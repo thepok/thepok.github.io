@@ -1,10 +1,10 @@
-# Grenzwacht — Chronik der drei Brücken
+# Grenzwacht — Schlacht an der Grenze
 
 Statisches Echtzeit-Strategiespiel, Menschen oder Orks, gegen KI oder einen zweiten Spieler. Kein Backend, kein Build-Schritt, kein Account. `index.html`, ES-Module und `assets/` können direkt auf GitHub Pages oder einem anderen statischen Webserver liegen. Dateien wegen ES-Modulen über HTTP öffnen, nicht per `file://`.
 
 ## Spielen
 
-Gebäude wählen und auf einen eigenen Bauplatz tippen. Truppen laufen und kämpfen automatisch auf drei Wegen. Banken verzinsen vorhandenes Gold, Türme schützen einen Weg, Katapulte verursachen dreifachen Gebäudeschaden. Ein Schloss hat 6000 LP und eine eigene Verteidigung. Ziel ist das gegnerische Schloss.
+Gebäude wählen und auf einen eigenen Bauplatz tippen. Truppen laufen und kämpfen automatisch auf zwei oder drei Wegen. Banken verzinsen vorhandenes Gold, Türme schützen einen Weg, Katapulte verursachen dreifachen Gebäudeschaden. Ein Schloss hat 6000 LP und eine eigene Verteidigung. Ziel ist das gegnerische Schloss.
 
 Im Schloss gibt es neun Forschungen mit Voraussetzungen und Forschungszeit. Bogenschießen, Steinbau und Belagerung schalten Gebäude frei; Waffen, Rüstung und Logistik verbessern Einheiten/Produktion; Veteranen und Meister erlauben Stufe 2/3; Bankwesen hebt die Zinsobergrenze. Beide Seiten bezahlen dieselben Kosten. Die KI erhält keinen versteckten Geldbonus.
 
@@ -22,14 +22,14 @@ Am Handy: kurzer Tipp zum Bauen/Auswählen, Ziehen zum Verschieben, zwei Finger 
 
 Testzugriff auf Zustand und Zeitfortschritt wird nur mit `?test=1` aktiviert. Multiplayer verwendet die getrennte Befehlssimulation und die unten beschriebene Verbindungstechnik. Kein Speichern/Fortsetzen nach Neuladen. Das Balancing ist eine erste spielbare Fassung.
 
-Die Karte umfasst 3420 × 2280 Weltpunkte (rund zehnfache ursprüngliche Fläche) und 30 Bauplätze je Seite. Alle Bedienelemente liegen über der Karte. Minikarte, Heimat-Taste und Übersicht helfen bei der Navigation. Die äußeren Wege münden vor dem Schloss in echte Angriffswege; Treffer benötigen tatsächliche Reichweite. Gebäude der Stufen 2 und 3 besitzen eigene Grafiken, die Landschaft verschiedene Baumarten, Felsen und Büsche. Der Forschungsbutton öffnet den Baum jederzeit; erfolgreicher Forschungsstart schließt ihn automatisch.
+Die Karte umfasst 3420 × 2280 Weltpunkte (rund zehnfache ursprüngliche Fläche) und je Seite 20 Bauplätze bei zwei Wegen (Standard) oder 30 bei drei Wegen. Alle Bedienelemente liegen über der Karte. Minikarte, Heimat-Taste und Übersicht helfen bei der Navigation. Die äußeren Wege münden vor dem Schloss in echte Angriffswege; Treffer benötigen tatsächliche Reichweite. Gebäude der Stufen 2 und 3 besitzen eigene Grafiken, die Landschaft verschiedene Baumarten, Felsen und Büsche. Der Forschungsbutton öffnet den Baum jederzeit; erfolgreicher Forschungsstart schließt ihn automatisch.
 
 
 ## Multiplayer
 
 Auf dem Startbildschirm „Gegen Freunde“ wählen. Beide Spieler wählen ihr Volk unabhängig: Menschen/Menschen, Menschen/Orks, Orks/Menschen und Orks/Orks. Völker verwenden dieselben Spielregeln; Team Blau/Rot, Flaggen und Einheitenringe unterscheiden die Seiten. Der Gastgeber steuert links/Blau, der Gast rechts/Rot. Die Heimat-Taste führt zum eigenen Gebiet, auch auf dem Handy. Die Einkommensregler auf dem Startbildschirm bestimmen die Faktoren beider Spieler.
 
-Eine Partie erhält einen Namen, optional ein Passwort und kann öffentlich gelistet oder nur per Einladungslink erreichbar sein. Passwörter stehen niemals im Link oder Verzeichnis. Der Gast wählt sein Volk und bestätigt den Beitritt; danach startet die Runde automatisch. Eine volle Partie verschwindet aus der Liste. Verwaiste Anzeigen laufen nach 35 Sekunden ab. Die öffentliche Liste liegt kurzzeitig bei den verbundenen Browsern und wird durch öffentliche Relays verteilt; kein eigener Server und keine dauerhafte Datenbank.
+Eine Partie erhält einen Namen, optional ein Passwort und kann öffentlich gelistet oder nur per Einladungslink erreichbar sein. Passwörter stehen niemals im Link oder Verzeichnis. Der Gastgeber wählt zwei oder drei Wege. Der Gast wählt sein Volk; ein Klick auf eine offene Partie verbindet direkt, bei geschützten Partien wird zuerst das Passwort abgefragt; danach startet die Runde automatisch. Eine volle Partie verschwindet aus der Liste. Verwaiste Anzeigen laufen nach 35 Sekunden ab. Die öffentliche Liste liegt kurzzeitig bei den verbundenen Browsern und wird durch öffentliche Relays verteilt; kein eigener Server und keine dauerhafte Datenbank.
 
 Trystero 0.26.0 baut einen WebRTC-Datenkanal auf. Falls dieser scheitert oder ausfällt, nutzen dieselben Spielnachrichten den AES-GCM-verschlüsselten Relay-Fallback aus der Poker-App mit eigenem Grenzwacht-Namensraum. Öffentliche Dienste: MQTT über `broker.emqx.io:8084/mqtt`, `test.mosquitto.org:8081/mqtt`, außerdem Nostr `nostr-relay.corb.net` und `nos.lol`. Ihre Verfügbarkeit und Laufzeiten sind nicht garantiert. Ohne Passwort liefert die Raumkennung das Schlüsselmaterial; bei öffentlichen Partien ist diese öffentlich. Ein Passwort schützt den Raum über PBKDF2. Das ist ein Freundschaftsspiel mit vertrauenswürdigem Gastgeber, kein manipulationssicheres Wettkampf-System.
 

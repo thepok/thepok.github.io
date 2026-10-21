@@ -8,7 +8,7 @@
     />
     <meta name="theme-color" content="#19211a" />
     <title>Grenzwacht · Menschen gegen Orks</title>
-    <link rel="stylesheet" href="style.css?v=6" />
+    <link rel="stylesheet" href="style.css?v=7" />
   </head>
   <body>
     <main id="game">
@@ -105,7 +105,7 @@
     </main>
     <dialog id="setup">
       <form id="setup-form">
-        <span class="eyebrow">EIN REICH. DREI WEGE. DEINE STRATEGIE.</span>
+        <span class="eyebrow">EIN REICH. DEINE WEGE. DEINE STRATEGIE.</span>
         <h1>Grenzwacht</h1>
         <p class="intro">
           Jenseits des Flusses wartet dein Gegner.<br />Errichte deine
@@ -124,6 +124,7 @@
             </select></label
           >
         </div>
+        <label>Karte<select id="lane-count"><option value="2" selected>Ⅱ · Zwei Wege</option><option value="3">Ⅲ · Drei Wege</option></select></label>
         <label
           >Gegner<select id="difficulty">
             <option value="easy">Entspannt · Zeit zum Lernen</option>
@@ -192,9 +193,11 @@
               type="password"
               maxlength="128"
               autocomplete="off" /></label
-          ><button id="join-duel" class="primary">BEITRETEN →</button>
+          ><button id="join-duel" class="primary">BEITRETEN →</button
+          ><button id="join-back" type="button">ZURÜCK ZUR SPIELLISTE</button>
         </section>
         <form id="host-form">
+          <label>Karte<select id="multiplayer-lane-count"><option value="2" selected>Ⅱ · Zwei Wege</option><option value="3">Ⅲ · Drei Wege</option></select></label>
           <label
             >Name der Partie<input
               id="room-title"
@@ -276,6 +279,6 @@
       <div id="stats"></div>
       <button class="primary" id="restart">NEUE SCHLACHT →</button>
     </dialog>
-    <script type="module" src="app.js?v=6"></script>
+    <script type="module" src="app.js?v=7"></script>
   </body>
 </html>
