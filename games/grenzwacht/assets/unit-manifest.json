@@ -1,6 +1,6 @@
 {
   "human-soldier": {
-    "src": "assets/human-soldier.png",
+    "src": "assets/human-soldier.webp",
     "cols": 2,
     "rows": 2,
     "frames": 4,
@@ -8,7 +8,7 @@
     "flip": true
   },
   "orc-soldier": {
-    "src": "assets/orc-soldier.png",
+    "src": "assets/orc-soldier.webp",
     "cols": 2,
     "rows": 2,
     "frames": 4,
@@ -16,7 +16,7 @@
     "flip": true
   },
   "human-archer": {
-    "src": "assets/human-archer.png",
+    "src": "assets/human-archer.webp",
     "cols": 2,
     "rows": 2,
     "frames": 4,
@@ -24,7 +24,7 @@
     "flip": true
   },
   "orc-archer": {
-    "src": "assets/orc-archer.png",
+    "src": "assets/orc-archer.webp",
     "cols": 2,
     "rows": 2,
     "frames": 4,
@@ -32,7 +32,7 @@
     "flip": true
   },
   "human-siege": {
-    "src": "assets/human-siege.png",
+    "src": "assets/human-siege.webp",
     "cols": 2,
     "rows": 2,
     "frames": 4,
@@ -40,7 +40,7 @@
     "flip": true
   },
   "orc-siege": {
-    "src": "assets/orc-siege.png",
+    "src": "assets/orc-siege.webp",
     "cols": 2,
     "rows": 2,
     "frames": 4,

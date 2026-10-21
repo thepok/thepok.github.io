@@ -8,7 +8,7 @@
     />
     <meta name="theme-color" content="#19211a" />
     <title>Grenzwacht · Menschen gegen Orks</title>
-    <link rel="stylesheet" href="style.css?v=4" />
+    <link rel="stylesheet" href="style.css?v=5" />
   </head>
   <body>
     <main id="game">
@@ -18,6 +18,9 @@
           ><span>GOLD <b id="income">+6,0/s</b></span>
         </div>
         <div class="clock" id="clock">00:00</div>
+        <button id="network-status" hidden title="Verbindung und Einladung">
+          P2P
+        </button>
         <button
           id="pause"
           title="Pause (Leertaste)"
@@ -31,12 +34,12 @@
         <div class="map-shell">
           <div class="castle-bars">
             <div class="human">
-              <span>⚑ MENSCHEN</span
+              <span id="human-label">⚑ MENSCHEN</span
               ><progress id="human-hp" max="2400" value="2400"></progress>
             </div>
             <span class="versus">DIE GRENZE HÄLT.</span>
             <div class="orc">
-              <span>ORKS ⚑</span
+              <span id="orc-label">ORKS ⚑</span
               ><progress id="orc-hp" max="2400" value="2400"></progress>
             </div>
           </div>
@@ -105,13 +108,21 @@
         <span class="eyebrow">EIN REICH. DREI WEGE. DEINE STRATEGIE.</span>
         <h1>Grenzwacht</h1>
         <p class="intro">
-          Jenseits des Flusses sammeln sich die Orks.<br />Errichte deine
+          Jenseits des Flusses wartet dein Gegner.<br />Errichte deine
           Verteidigung. Schicke deine Armee.<br />Bringe ihr Schloss zu Fall.
         </p>
-        <div class="factions">
-          <span>⚑ <b>MENSCHEN</b><small>Du führst die blaue Krone</small></span
-          ><i>gegen</i
-          ><span>⚑ <b>ORKS</b><small>Die rote Horde · KI</small></span>
+        <div class="handicaps">
+          <label
+            >Dein Volk<select id="faction">
+              <option value="human">⚔ Menschen</option>
+              <option value="orc">🪓 Orks</option>
+            </select></label
+          ><label
+            >Volk der KI<select id="enemy-faction">
+              <option value="orc">🪓 Orks</option>
+              <option value="human">⚔ Menschen</option>
+            </select></label
+          >
         </div>
         <label
           >Gegner<select id="difficulty">
@@ -153,9 +164,70 @@
           DIE GRENZE VERTEIDIGEN <span>→</span>
         </button>
         <div class="modal-foot">
-          SOLO GEGEN KI · DIREKT IM BROWSER · AUCH AUF DEM HANDY
+          SOLO ODER DUELL · DIREKT IM BROWSER · AUCH AUF DEM HANDY
         </div>
       </form>
+      <button id="multiplayer" class="primary">
+        ⚔ GEGEN FREUNDE · MULTIPLAYER
+      </button>
+    </dialog>
+    <dialog id="lobby-dialog">
+      <div class="lobby-heading">
+        <h2>Gemeinsam spielen</h2>
+        <button id="lobby-close" aria-label="Zurück">×</button>
+      </div>
+      <p id="lobby-status" role="status">Verbinde …</p>
+      <div id="lobby-options">
+        <label
+          >Dein Volk<select id="multiplayer-faction">
+            <option value="human">⚔ Menschen</option>
+            <option value="orc">🪓 Orks</option>
+          </select></label
+        >
+        <section id="join-invitation" hidden>
+          <p id="join-description"></p>
+          <label
+            >Passwort (falls gesetzt)<input
+              id="join-password"
+              type="password"
+              maxlength="128"
+              autocomplete="off" /></label
+          ><button id="join-duel" class="primary">BEITRETEN →</button>
+        </section>
+        <form id="host-form">
+          <label
+            >Name der Partie<input
+              id="room-title"
+              value="Schlacht an der Grenze"
+              maxlength="40"
+              required /></label
+          ><label
+            >Passwort (optional)<input
+              id="room-password"
+              type="password"
+              maxlength="128"
+              autocomplete="new-password" /></label
+          ><label class="listed-option"
+            ><input id="room-listed" type="checkbox" checked /> In der
+            öffentlichen Spielliste zeigen</label
+          >
+          <p id="duel-handicap" class="fine"></p>
+          <button class="primary" type="submit">PARTIE ERSTELLEN →</button>
+        </form>
+        <h3>Offene Partien</h3>
+        <div id="room-list"></div>
+      </div>
+      <section id="room-active" hidden>
+        <label>Einladungslink<input id="invite-link" readonly /></label
+        ><button id="copy-invite">LINK KOPIEREN</button>
+        <p id="room-info"></p>
+        <button id="leave-duel">PARTIE VERLASSEN</button>
+      </section>
+      <p class="fine">
+        Zwei Spieler · direkter P2P-Kanal oder verschlüsselter Relay-Fallback.
+        Der Gastgeber hält die Partie offen. Bei Verbindungsabbruch pausiert
+        sie; kein automatischer Gastgeberwechsel.
+      </p>
     </dialog>
     <dialog id="help-dialog">
       <h2>Dein Plan entscheidet.</h2>
@@ -204,6 +276,6 @@
       <div id="stats"></div>
       <button class="primary" id="restart">NEUE SCHLACHT →</button>
     </dialog>
-    <script type="module" src="app.js?v=4"></script>
+    <script type="module" src="app.js?v=5"></script>
   </body>
 </html>

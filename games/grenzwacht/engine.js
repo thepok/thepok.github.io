@@ -192,9 +192,11 @@ export function createGame({
   enemyHandicap = 100,
   difficulty = "normal",
   seed = 42,
+  factions = ["human", "orc"],
 } = {}) {
   const state = {
     version: 1,
+    factions: [0, 1].map((i) => (factions?.[i] === "orc" ? "orc" : "human")),
     tick: 0,
     time: 0,
     nextId: 1,

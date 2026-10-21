@@ -1,4 +1,4 @@
-import { W, H, LANES, SLOTS, TYPES, buildingStats } from "./engine.js";
+import { W, H, LANES, SLOTS, TYPES, buildingStats } from "./engine.js?v=5";
 const load = (src) => {
   const i = new Image();
   i.src = src;
@@ -12,21 +12,21 @@ export class Renderer {
     this.firstView = true;
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
-    this.buildings = load("assets/buildings.png");
+    this.buildings = load("assets/buildings.webp");
     this.buildingRects = null;
     this.castleHits = [];
     this.buildingHits = [];
     this.slotHits = [];
     this.minimap = document.querySelector("#minimap");
     this.upgrades = [
-      load("assets/human-upgrades.png"),
-      load("assets/orc-upgrades.png"),
+      load("assets/human-upgrades.webp"),
+      load("assets/orc-upgrades.webp"),
     ];
     fetch("assets/upgrade-manifest.json")
       .then((r) => r.json())
       .then((m) => (this.upgradeRects = m.sides))
       .catch(() => {});
-    this.sceneryImage = load("assets/scenery.png");
+    this.sceneryImage = load("assets/scenery.webp");
     fetch("assets/scenery-manifest.json")
       .then((r) => r.json())
       .then((m) => (this.sceneryRects = m))
@@ -36,7 +36,7 @@ export class Renderer {
       .then((m) => (this.buildingRects = m?.rows || m))
       .catch(() => {});
     this.sheets = {};
-    fetch("assets/unit-manifest.json")
+    fetch("assets/unit-manifest.json?v=5")
       .then((r) => (r.ok ? r.json() : {}))
       .then((m) => {
         for (const [k, v] of Object.entries(m))
@@ -46,6 +46,8 @@ export class Renderer {
     this.bg = document.createElement("canvas");
     this.bg.width = W;
     this.bg.height = H;
+    this.localSide = 0;
+    this.factions = ["human", "orc"];
     this.terrain();
   }
   terrain() {
@@ -252,7 +254,7 @@ export class Renderer {
       wh = this.portrait ? W : H;
     this.panX = -((this.portrait ? y : x) - ww / 2) * scale;
     this.panY = -((this.portrait ? W - x : y) - wh / 2) * scale;
-    if (this.portrait && close) this.panY -= 110;
+    if (this.portrait && close) this.panY += this.localSide === 1 ? 80 : -110;
     this.sizing();
   }
   drawMinimap(s) {
@@ -356,7 +358,7 @@ export class Renderer {
   }
   drawUnit(e, s) {
     const c = this.ctx,
-      sheet = this.sheets[`${e.side === 0 ? "human" : "orc"}-${e.kind}`];
+      sheet = this.sheets[`${this.factions[e.side]}-${e.kind}`];
     if (!sheet?.img.complete || !sheet.img.naturalWidth) return;
     this.prepareSheet(sheet);
     const frame = e.moving
@@ -418,6 +420,15 @@ export class Renderer {
           )
         : p.y - h + 8 * this.scale;
     c.drawImage(image, b.x, b.y, b.w, b.h, left, top, w, h);
+    const flag = Math.max(5, 10 * this.scale);
+    c.strokeStyle = "#e3d5ac";
+    c.lineWidth = 1;
+    c.beginPath();
+    c.moveTo(left + w * 0.75, top + h * 0.45);
+    c.lineTo(left + w * 0.75, top + h * 0.45 - flag * 2);
+    c.stroke();
+    c.fillStyle = e.side === 0 ? "#63bbff" : "#ff806c";
+    c.fillRect(left + w * 0.75, top + h * 0.45 - flag * 2, flag, flag * 0.65);
     if (e.isCastle) this.castleHits[e.side] = { x: left, y: top, w, h };
     else
       this.buildingHits.push({ id: e.id, side: e.side, x: left, y: top, w, h });
@@ -427,10 +438,20 @@ export class Renderer {
     const upgraded =
       !e.isCastle &&
       e.level > 1 &&
-      this.upgradeRects?.[e.side]?.[e.level - 2]?.[idx - 1];
+      this.upgradeRects?.[this.factions[e.side] === "orc" ? 1 : 0]?.[
+        e.level - 2
+      ]?.[idx - 1];
     return upgraded
-      ? { image: this.upgrades[e.side], b: upgraded }
-      : { image: this.buildings, b: this.buildingRects?.[e.side]?.[idx] };
+      ? {
+          image: this.upgrades[this.factions[e.side] === "orc" ? 1 : 0],
+          b: upgraded,
+        }
+      : {
+          image: this.buildings,
+          b: this.buildingRects?.[this.factions[e.side] === "orc" ? 1 : 0]?.[
+            idx
+          ],
+        };
   }
   drawScenery() {
     if (
@@ -489,7 +510,7 @@ export class Renderer {
       .reverse()
       .find(
         (b) =>
-          b.side === 0 &&
+          b.side === this.localSide &&
           x >= b.x &&
           x <= b.x + b.w &&
           y >= b.y &&
@@ -511,6 +532,7 @@ export class Renderer {
     c.fillRect(p.x - w / 2 + 1, p.y + 1, (w - 2) * Math.max(0, hp / max), 2);
   }
   draw(s, selected, building, hover) {
+    this.factions = s.factions || ["human", "orc"];
     const c = this.ctx,
       r = this.sizing();
     this.buildingHits = [];
@@ -542,7 +564,7 @@ export class Renderer {
       if (s.buildings.some((b) => b.slot === slot.id)) continue;
       const p = this.point(slot.x, slot.y),
         size = 48 * this.scale;
-      if (slot.side === 0) {
+      if (slot.side === this.localSide) {
         const tw = Math.max(30, size),
           th = Math.max(26, size * 0.65);
         this.slotHits.push({
@@ -553,15 +575,19 @@ export class Renderer {
           h: th + 5,
         });
       }
-      c.fillStyle = slot.side === 0 ? "#263d35aa" : "#422d2422";
+      c.fillStyle = slot.side === this.localSide ? "#263d35aa" : "#422d2422";
       c.strokeStyle =
-        slot.side === 0 ? (building ? "#93c9da" : "#76999877") : "#a06a4d30";
+        slot.side === this.localSide
+          ? building
+            ? "#93c9da"
+            : "#76999877"
+          : "#a06a4d30";
       c.lineWidth = 1;
       c.setLineDash([4, 4]);
       c.strokeRect(p.x - size / 2, p.y - size * 0.65, size, size * 0.65);
       c.fillRect(p.x - size / 2, p.y - size * 0.65, size, size * 0.65);
       c.setLineDash([]);
-      if (slot.side === 0 && building) {
+      if (slot.side === this.localSide && building) {
         c.fillStyle = "#bcdbc6";
         c.font = `${Math.max(10, 16 * this.scale)}px Georgia`;
         c.textAlign = "center";
@@ -620,6 +646,19 @@ export class Renderer {
         if (e.hp < e.maxHp)
           this.bar(e.x, e.y - 5, e.hp, e.maxHp, e.isCastle ? 80 : 42);
       } else {
+        c.strokeStyle = e.side === 0 ? "#63bbff" : "#ff806c";
+        c.lineWidth = Math.max(1, 1.5 * this.scale);
+        c.beginPath();
+        c.ellipse(
+          p.x,
+          p.y,
+          Math.max(3, 13 * this.scale),
+          Math.max(2, 6 * this.scale),
+          0,
+          0,
+          Math.PI * 2,
+        );
+        c.stroke();
         this.drawUnit(e, s);
         if (e.hp < e.maxHp) this.bar(e.x, e.y + 4, e.hp, e.maxHp, 26);
       }
