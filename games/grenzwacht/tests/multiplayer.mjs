@@ -104,7 +104,7 @@ try {
   );
   await b.locator('[data-build="bank"]').click();
   const slotPoint = await b.evaluate(async () => {
-    const E = await import("./engine.js?v=5");
+    const E = await import("./engine.js?v=6");
     const slot = E.SLOTS.find((s) => s.id === "1-1-1");
     const p = __view.point(slot.x, slot.y);
     return { x: p.x, y: p.y - 8 };

@@ -42,3 +42,7 @@ Die Quellen der aus Poker übernommenen Transporthelfer liegen in `network-sourc
 ## Bildgrößen
 
 Zur Laufzeit werden ausschließlich WebP-Bilder geladen (Qualität 82, originale Pixelabmessungen, unveränderter verlustfreier Alphakanal). Die Bilddaten sinken dadurch von 15,91 MB auf 2,96 MB (81,4 % weniger). PNG-Dateien bleiben als Bearbeitungsoriginale erhalten, werden vom Spiel aber nicht angefordert. Die Sprite-Koordinaten und Animationen bleiben dadurch unverändert. Neue Bildfassungen lassen sich mit Pillow über `Image.open(source).convert("RGBA").save(target, "WEBP", quality=82, method=6, exact=True)` erzeugen.
+
+Nahkämpfer wählen freie Positionen am Ziel und weichen dicht stehenden Einheiten seitlich aus. Die gleiche deterministische Bewegung gilt für beide Seiten. Multiplayer-Protokoll 2 verlangt auf beiden Geräten dieselbe Spielversion; nach einem Update beide Seiten neu laden.
+
+Während ein Menü geöffnet ist, bleibt die verdeckte Kartenzeichnung stehen. Die Simulation sowie Gold und Forschung laufen weiter. Das Forschungsfenster verzichtet auf den Hintergrund-Weichzeichner, damit Scrollen auf Mobilgeräten weniger Zeichenarbeit auslöst.

@@ -404,6 +404,15 @@ try {
   assert.equal(await w.locator('[data-research="archery"]').isDisabled(), true);
   await w.evaluate(() => {
     window.__researchNode = document.querySelector('[data-research="archery"]');
+    window.__drawsInMenu = 0;
+    const draw = window.__view.draw;
+    window.__view.draw = function (...args) {
+      window.__drawsInMenu++;
+      return draw.apply(this, args);
+    };
+    window.__restoreDraw = () => {
+      window.__view.draw = draw;
+    };
   });
   await w.waitForFunction(
     () => !document.querySelector('[data-research="archery"]').disabled,
@@ -416,6 +425,11 @@ try {
         document.querySelector('[data-research="archery"]'),
     ),
   );
+  assert.ok(
+    await w.evaluate(() => window.__drawsInMenu <= 1),
+    "no continuous battlefield redraws beneath research",
+  );
+  await w.evaluate(() => window.__restoreDraw());
   await w.locator("#research-dialog").evaluate((el) => {
     el.scrollTop = el.scrollHeight;
   });
@@ -435,6 +449,7 @@ try {
       .classList.contains("done"),
   );
   report.researchWallet = {
+    noBackgroundRedraw: true,
     liveIncomeUnlock: true,
     stableButtons: true,
     stickyGold: true,

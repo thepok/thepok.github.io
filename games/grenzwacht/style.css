@@ -1387,3 +1387,16 @@ body {
     padding: 20px;
   }
 }
+
+/* Research scrolls over a static battlefield; avoid an expensive blurred canvas layer. */
+#research-dialog {
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+#research-dialog::backdrop {
+  backdrop-filter: none;
+  background: #08110cdd;
+}
+.research-wallet {
+  transform: translateZ(0);
+}

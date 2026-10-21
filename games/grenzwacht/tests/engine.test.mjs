@@ -236,16 +236,28 @@ test("a passive match has a finite draw and stops updating after completion", ()
 });
 
 function mixedPolicy(s) {
-  const research = Object.keys(RESEARCH).find(
-    (id) => researchStatus(s, 0, id).canStart,
-  );
+  // Build an army while advancing research, rather than buying the entire tree first.
+  const plan = [
+    ["archery", 0],
+    ["masonry", 25],
+    ["weapons", 55],
+    ["armor", 90],
+    ["engineering", 120],
+    ["veteran", 160],
+    ["logistics", 220],
+    ["mastery", 300],
+    ["banking", 340],
+  ];
+  const research = plan.find(
+    ([id, time]) => s.time >= time && researchStatus(s, 0, id).canStart,
+  )?.[0];
   if (research) {
     command(s, 0, { type: "research", research });
     return;
   }
   const free = slots(0)
     .filter((p) => !s.buildings.some((b) => b.slot === p.id))
-    .sort((a, b) => a.col - b.col);
+    .sort((a, b) => b.col - a.col);
   const p = free[0],
     type = ["barracks", "range", "workshop", "tower"][(p?.col || 0) % 4];
   if (p && buildingUnlocked(s, 0, type))
@@ -437,7 +449,7 @@ test("castle defensive arrows cover each lane and leave distant armies alone", (
   assert.equal(s.units[2].hp, 110);
 });
 
-test("infantry can pass friendly archers; same-kind troops preserve frontage", () => {
+test("infantry routes around archers and blocked same-kind troops without overlapping", () => {
   const s = empty();
   s.units = [
     unit(100, 0, "soldier", 400),
@@ -451,8 +463,11 @@ test("infantry can pass friendly archers; same-kind troops preserve frontage", (
   const t = empty();
   t.units = [unit(100, 0, "soldier", 400), unit(101, 0, "soldier", 417)];
   t.units[1].speed = 0;
-  run(t, 1);
-  assert.ok(t.units[0].x <= 400.01);
+  run(t, 3);
+  assert.ok(t.units[0].x > 430, "soldier passes the stationary ally");
+  assert.ok(
+    Math.hypot(t.units[0].x - t.units[1].x, t.units[0].y - t.units[1].y) >= 16,
+  );
 });
 
 test("outer lanes follow their merge point and approach the actual castle before melee damage", () => {
@@ -540,5 +555,50 @@ test("castle arrows originate at the visible castle for every attacking lane", (
   for (const p of arrows) {
     assert.equal(p.originX, c.x);
     assert.equal(p.originY, c.y - 12);
+  }
+});
+
+test("dense infantry seeks multiple attack positions instead of one queue", () => {
+  for (const side of [0, 1]) {
+    const s = empty(),
+      sign = side === 0 ? 1 : -1;
+    const target = {
+      id: 999,
+      side: 1 - side,
+      type: "bank",
+      slot: "fixture",
+      lane: 1,
+      x: 1700,
+      y: LANES[1],
+      hp: 1e6,
+      maxHp: 1e6,
+      level: 1,
+      cooldown: 0,
+    };
+    s.buildings = [target];
+    s.units = Array.from({ length: 18 }, (_, i) => ({
+      ...unit(
+        100 + i,
+        side,
+        "soldier",
+        target.x - sign * (70 + Math.floor(i / 3) * 18),
+      ),
+      y: LANES[1] + ((i % 3) - 1) * 18,
+    }));
+    run(s, 12);
+    const attackers = s.units.filter(
+      (u) => Math.hypot(u.x - target.x, u.y - target.y) <= u.range + 20,
+    );
+    assert.ok(
+      attackers.length >= 6,
+      `${attackers.length} soldiers reach free frontage`,
+    );
+    assert.ok(
+      Math.max(...attackers.map((u) => u.y)) -
+        Math.min(...attackers.map((u) => u.y)) >
+        55,
+      "frontage wraps around the target",
+    );
+    assert.ok(target.hp < target.maxHp);
   }
 });

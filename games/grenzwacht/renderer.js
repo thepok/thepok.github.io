@@ -1,4 +1,4 @@
-import { W, H, LANES, SLOTS, TYPES, buildingStats } from "./engine.js?v=5";
+import { W, H, LANES, SLOTS, TYPES, buildingStats } from "./engine.js?v=6";
 const load = (src) => {
   const i = new Image();
   i.src = src;
@@ -36,7 +36,7 @@ export class Renderer {
       .then((m) => (this.buildingRects = m?.rows || m))
       .catch(() => {});
     this.sheets = {};
-    fetch("assets/unit-manifest.json?v=5")
+    fetch("assets/unit-manifest.json?v=6")
       .then((r) => (r.ok ? r.json() : {}))
       .then((m) => {
         for (const [k, v] of Object.entries(m))
@@ -368,13 +368,9 @@ export class Renderer {
       size = e.kind === "siege" ? 55 : 46,
       ratio = (size * this.scale) / sheet.maxSize,
       p = this.point(e.x, e.y);
-    let angle = sheet.headingDown
-      ? e.side === 0
-        ? -Math.PI / 2
-        : Math.PI / 2
-      : e.side === 0
-        ? 0
-        : Math.PI;
+    let angle =
+      (Number.isFinite(e.facing) ? e.facing : e.side === 0 ? 0 : Math.PI) -
+      (sheet.headingDown ? Math.PI / 2 : 0);
     if (this.portrait) angle -= Math.PI / 2;
     c.save();
     c.translate(p.x, p.y);

@@ -4,7 +4,7 @@ import {
   GuestSimulation,
   PROTOCOL,
   cleanCommand,
-} from "./net-core.js?v=5";
+} from "./net-core.js?v=6";
 export { Directory, selfId };
 export class Duel {
   constructor({
@@ -99,7 +99,7 @@ export class Duel {
   }
   async send(m, target = this.creator ? this.peer : this.host) {
     if (!target || this.closed) return false;
-    m = { ...m, protocol: PROTOCOL };
+    m = { protocol: PROTOCOL, ...m };
     if (this.direct.has(target))
       try {
         await this.wire.send(m, { target });
@@ -121,6 +121,17 @@ export class Duel {
     });
   }
   receive(m, from) {
+    if (!this.closed && m?.protocol && m.protocol !== PROTOCOL) {
+      const text =
+        "Unterschiedliche Spielversionen. Bitte beide Seiten neu laden.";
+      if (!this.creator && from === this.host) {
+        this.error = text;
+        this.paused = true;
+        this.changed();
+      } else if (this.creator && m.kind === "hello")
+        void this.send({ kind: "error", protocol: m.protocol, text }, from);
+      return;
+    }
     if (this.closed || this.error || !m || m.protocol !== PROTOCOL) return;
     if (this.creator) {
       if (m.kind === "hello") {

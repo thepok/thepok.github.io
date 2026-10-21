@@ -1,5 +1,5 @@
-import * as E from "./engine.js?v=5";
-export const PROTOCOL = "grenzwacht-1";
+import * as E from "./engine.js?v=6";
+export const PROTOCOL = "grenzwacht-2";
 export function cleanCommand(c) {
   if (!c || typeof c !== "object") return null;
   if (

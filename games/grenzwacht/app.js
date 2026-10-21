@@ -1,6 +1,6 @@
-import * as E from "./engine.js?v=5";
-import { Renderer } from "./renderer.js?v=5";
-import { icon, spoken } from "./icons.js?v=5";
+import * as E from "./engine.js?v=6";
+import { Renderer } from "./renderer.js?v=6";
+import { icon, spoken } from "./icons.js?v=6";
 const $ = (s) => document.querySelector(s),
   canvas = $("#map"),
   renderer = new Renderer(canvas),
@@ -455,6 +455,7 @@ document.addEventListener("keydown", (e) => {
     updateUI();
   }
 });
+let menuWasOpen = false;
 function frame(now) {
   const dt = Math.min(0.2, (now - last) / 1000 || 0);
   last = now;
@@ -465,7 +466,10 @@ function frame(now) {
       acc -= E.STEP;
     }
   }
-  renderer.draw(game, selected, building);
+  const menuOpen = !!document.querySelector("dialog[open]");
+  // Keep simulation and income live, but do not repaint an obscured battlefield.
+  if (!menuOpen || !menuWasOpen) renderer.draw(game, selected, building);
+  menuWasOpen = menuOpen;
   if (now - lastUi > 120) {
     updateUI();
     lastUi = now;
@@ -512,9 +516,12 @@ function updateResearch() {
   const labelNode = researchButton.querySelector("span");
   if (labelNode.textContent !== label) labelNode.textContent = label;
   if (!$("#research-dialog").open) return;
-  $("#research-gold").textContent = Math.floor(game.gold[localSide]);
-  $("#research-income").textContent =
-    `+${E.income(game, localSide).total.toFixed(1).replace(".", ",")}/s`;
+  const goldText = String(Math.floor(game.gold[localSide]));
+  const incomeText = `+${E.income(game, localSide).total.toFixed(1).replace(".", ",")}/s`;
+  if ($("#research-gold").textContent !== goldText)
+    $("#research-gold").textContent = goldText;
+  if ($("#research-income").textContent !== incomeText)
+    $("#research-income").textContent = incomeText;
   const key = JSON.stringify([
     game.research,
     active && [active.id, Math.ceil(active.remaining)],
@@ -694,7 +701,7 @@ async function openMultiplayer() {
     `Einkommen: Gastgeber ${$("#handicap").value} %, Gast ${$("#enemy-handicap").value} %. Einstellbar auf dem Startbildschirm.`;
   if (!$("#lobby-dialog").open) $("#lobby-dialog").showModal();
   try {
-    networkModule ||= await import("./network.js?v=5");
+    networkModule ||= await import("./network.js?v=6");
     directory ||= new networkModule.Directory(
       networkModule.selfId,
       displayRooms,

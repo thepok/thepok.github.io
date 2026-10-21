@@ -427,6 +427,92 @@ function findTarget(s, u) {
   if (d < best) target = castle;
   return target || castle;
 }
+// Pick reachable frontage around the target, rather than a single lane-centre destination.
+function approach(s, u, target, range) {
+  const angle = Math.atan2(u.y - target.y, u.x - target.x);
+  const radius = Math.max(12, range - 2);
+  const nearby = s.units.filter(
+    (a) =>
+      a !== u &&
+      a.hp > 0 &&
+      Math.hypot(a.x - target.x, a.y - target.y) < radius + 45,
+  );
+  let best = null,
+    score = Infinity;
+  for (let i = 0; i < 16; i++) {
+    const a = angle + ((i % 2 ? 1 : -1) * Math.ceil(i / 2) * Math.PI) / 8;
+    const x = target.x + Math.cos(a) * radius,
+      y = target.y + Math.sin(a) * radius;
+    if (x < 12 || x > W - 12 || y < 12 || y > H - 12) continue;
+    let cost = Math.hypot(x - u.x, y - u.y);
+    for (const other of nearby) {
+      const d = Math.hypot(x - other.x, y - other.y);
+      cost += Math.max(0, 22 - d) * 12;
+    }
+    // Avoid switching between equally good flanks on every simulation step.
+    if (u.approachTarget === target.id)
+      cost += Math.hypot(x - u.approachX, y - u.approachY) * 0.3;
+    if (cost < score) {
+      score = cost;
+      best = { x, y };
+    }
+  }
+  const goal = best || target;
+  u.approachTarget = target.id;
+  u.approachX = goal.x;
+  u.approachY = goal.y;
+  return goal;
+}
+function steer(s, u, x, y) {
+  const distance = Math.hypot(x - u.x, y - u.y);
+  const speed = Math.min(u.speed * STEP, distance);
+  if (speed <= 0) return;
+  const heading = Math.atan2(y - u.y, x - u.x);
+  const nearby = s.units.filter(
+    (a) =>
+      a !== u &&
+      a.hp > 0 &&
+      Math.abs(a.x - u.x) < 40 &&
+      Math.abs(a.y - u.y) < 40,
+  );
+  let best = null,
+    bestScore = -Infinity;
+  const preference = u.id % 2 ? 1 : -1;
+  for (const turn of [
+    0, 30, -30, 60, -60, 90, -90, 120, -120, 150, -150, 180,
+  ]) {
+    const a = heading + (turn * preference * Math.PI) / 180,
+      mx = Math.cos(a) * speed,
+      my = Math.sin(a) * speed;
+    const nx = u.x + mx,
+      ny = u.y + my;
+    if (nx < 8 || nx > W - 8 || ny < 8 || ny > H - 8) continue;
+    let blocked = false,
+      clearance = 0;
+    for (const other of nearby) {
+      const before = Math.hypot(u.x - other.x, u.y - other.y),
+        after = Math.hypot(nx - other.x, ny - other.y);
+      const spacing = u.kind === "siege" || other.kind === "siege" ? 20 : 16;
+      if (after < spacing && after < before - 1e-6) {
+        blocked = true;
+        break;
+      }
+      clearance += Math.min(after, 24) - Math.min(before, 24);
+    }
+    if (blocked) continue;
+    const score = distance - Math.hypot(x - nx, y - ny) + clearance * 0.15;
+    if (score > bestScore) {
+      bestScore = score;
+      best = { mx, my };
+    }
+  }
+  if (best) {
+    u.facing = Math.atan2(best.my, best.mx);
+    u.x += best.mx;
+    u.y += best.my;
+    u.moving = true;
+  } else u.moving = false;
+}
 function ai(s) {
   if (s.time < s.aiNext) return;
   const cadence = { easy: 12, normal: 7, hard: 4 }[s.difficulty] || 7;
@@ -622,46 +708,24 @@ export function step(s, { aiEnabled = true } = {}) {
       dy = ty - u.y,
       dist = Math.hypot(dx, dy),
       range = u.range + (target.slot ? 20 : castle ? 30 : 0);
+    u.facing = Math.atan2(dy, dx);
     u.moving = dist > range;
     if (u.moving) {
       // Outer roads merge into the physical castle, never an invisible lane proxy.
       const mergeX = u.side === 0 ? W - 450 : 450;
       const beforeMerge =
         castle && (u.side === 0 ? u.x < mergeX : u.x > mergeX);
-      const moveX = beforeMerge ? mergeX - u.x : dx;
-      const goalY =
-          beforeMerge || (!castle && Math.abs(dx) > 210)
-            ? LANES[u.lane] + (u.formation || 0)
-            : ty + (u.formation || 0) * 0.6,
-        vy = goalY - u.y,
-        len = Math.hypot(moveX, vy) || 1;
-      let mx = (moveX / len) * u.speed * STEP,
-        my = (vy / len) * u.speed * STEP;
-      // Friendly troops keep a small frontage instead of stacking unlimited melee damage.
-      for (const ally of s.units) {
-        if (
-          ally === u ||
-          ally.side !== u.side ||
-          ally.kind !== u.kind ||
-          ally.lane !== u.lane ||
-          ally.hp <= 0
-        )
-          continue;
-        const ax = ally.x - u.x,
-          ay = ally.y - u.y,
-          d = Math.hypot(ax, ay);
-        if (d < 19 && ax * mx + ay * my > 0) {
-          const scale = Math.max(
-            0,
-            Math.min(1, (d - 17) / (Math.hypot(mx, my) || 1)),
-          );
-          mx *= scale;
-          my *= scale;
-        }
-      }
-      u.x += mx;
-      u.y += my;
-      u.moving = Math.hypot(mx, my) > 0.01;
+      const close = !beforeMerge && dist < range + 170;
+      const goal = close
+        ? approach(s, u, target, range)
+        : {
+            x: beforeMerge ? mergeX : tx,
+            y:
+              beforeMerge || (!castle && Math.abs(dx) > 210)
+                ? LANES[u.lane] + (u.formation || 0)
+                : ty + (u.formation || 0) * 0.6,
+          };
+      steer(s, u, goal.x, goal.y);
     } else if (u.cooldown <= 0) {
       u.cooldown = UNIT[u.kind].cooldown;
       u.attack = 0.3;
