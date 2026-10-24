@@ -61,8 +61,10 @@ let bankIndex = null;
 
 function audio() {
   if (ctx) return;
+  if (USE_MSE) { stream = new MseStream(); ctx = mediaClock(); return; }
   ctx = new AudioContext({ latencyHint: 'playback', sampleRate: SR });
   out = ctx.createGain(); out.gain.value = MUTE ? 0 : 1; out.connect(ctx.destination);
+  ctx.onstatechange = () => { if (ctx.state !== 'running' && state.playing) resumeSoon('audiocontext ' + ctx.state); };
 }
 function decoderCtx() { if (!sampleDecoder) sampleDecoder = new OfflineAudioContext(2, 1, SR); return sampleDecoder; }
 
@@ -87,7 +89,7 @@ class OpusStore {
       },
       error: (e) => { this.err = e; M.errors.push('encoder: ' + e); },
     });
-    this.enc.configure({ codec: 'opus', sampleRate: SR, numberOfChannels: 2, bitrate: 160000 });
+    this.enc.configure({ codec: 'opus', sampleRate: SR, numberOfChannels: 2, bitrate: 128000 });   // (128k: 3 pieces fit the stream)
   }
   add(pcm, n) {
     const t = performance.now();
@@ -200,7 +202,264 @@ class OpusPlayer extends Player {
     this.play(L, R, n);
   }
 }
-const newPlayer = (piece, offset, startAt) => (piece.store && piece.store.kind === 'pcm' ? new PcmPlayer(piece, offset, startAt) : new OpusPlayer(piece, offset, startAt));
+const newPlayer = (piece, offset, startAt) => (USE_MSE ? new MsePlayer(piece, offset) : piece.store && piece.store.kind === 'pcm' ? new PcmPlayer(piece, offset, startAt) : new OpusPlayer(piece, offset, startAt));
+
+// ---------------------------------------------------------------- one continuous media stream (Android / desktop)
+// The OS keeps a playing <audio> element alive with the screen off (Web Audio and timers get throttled or suspended):
+// every piece's Opus packets (the pool's WebCodecs encode) go, muxed as WebM, into ONE Media Source SourceBuffer -
+// the current piece, a short silence, the next ready pieces - appended as soon as they are rendered (also in the
+// background, as far as the browser lets the workers run). While nothing is ready the stream plays silence, so it
+// never breaks; a skip / seek / another piece cuts the stream at the playhead and appends from there.
+const MSE_TYPE = 'audio/webm; codecs="opus"';
+const MS = window.ManagedMediaSource || window.MediaSource;
+const AHEAD_BYTES = 9e6;            // appended ahead of the playhead at most (Chrome: ~12 MB per audio SourceBuffer)
+let USE_MSE = false;
+let silence = null;                 // GAP seconds of encoded silence (packets)
+
+const EB = {
+  id: (n) => { const b = []; while (n > 0) { b.unshift(n & 255); n = Math.floor(n / 256); } return b; },
+  size: (n) => { const b = [1, 0, 0, 0, 0, 0, 0, 0]; for (let i = 7; i > 0; i--) { b[i] = n % 256; n = Math.floor(n / 256); } return b; },
+  uint: (v) => { const b = []; do { b.unshift(v % 256); v = Math.floor(v / 256); } while (v > 0); return b; },
+};
+function cat(parts) {
+  let n = 0; for (const p of parts) n += p.length;
+  const out = new Uint8Array(n); let o = 0;
+  for (const p of parts) { out.set(p, o); o += p.length; }
+  return out;
+}
+const u8 = (p) => (p instanceof Uint8Array ? p : Uint8Array.from(p));
+function el(id, ...parts) {         // an EBML element: id, size (8-byte vint), the parts (byte lists or Uint8Arrays)
+  const body = cat(parts.map(u8));
+  return cat([Uint8Array.from(EB.id(id)), Uint8Array.from(EB.size(body.length)), body]);
+}
+const str = (s) => Array.from(s, (c) => c.charCodeAt(0));
+function f64(v) { const b = new Uint8Array(8); new DataView(b.buffer).setFloat64(0, v); return b; }
+function opusHead(cfg) {
+  const d = cfg && cfg.description;
+  if (d && d.byteLength >= 19) return d instanceof ArrayBuffer ? new Uint8Array(d.slice(0)) : new Uint8Array(d.buffer.slice(d.byteOffset, d.byteOffset + d.byteLength));
+  const b = new Uint8Array(19), v = new DataView(b.buffer);
+  b.set(str('OpusHead')); b[8] = 1; b[9] = 2; v.setUint16(10, 312, true); v.setUint32(12, SR, true); v.setInt16(16, 0, true); b[18] = 0;
+  return b;
+}
+function webmInit(cfg) {
+  const head = opusHead(cfg);
+  const preskip = head[10] | (head[11] << 8);
+  const ebml = el(0x1A45DFA3, el(0x4286, EB.uint(1)), el(0x42F7, EB.uint(1)), el(0x42F2, EB.uint(4)), el(0x42F3, EB.uint(8)),
+                  el(0x4282, str('webm')), el(0x4287, EB.uint(4)), el(0x4285, EB.uint(2)));
+  const info = el(0x1549A966, el(0x2AD7B1, EB.uint(1000000)), el(0x4D80, str('AgentSound')), el(0x5741, str('AgentSound')));
+  const track = el(0xAE, el(0xD7, EB.uint(1)), el(0x73C5, EB.uint(1)), el(0x83, EB.uint(2)), el(0x86, str('A_OPUS')),
+                   el(0x63A2, head), el(0x56AA, EB.uint(Math.round(preskip * 1e9 / SR))), el(0x56BB, EB.uint(80000000)),
+                   el(0xE1, el(0xB5, f64(SR)), el(0x9F, EB.uint(2))));
+  const segHead = Uint8Array.from([0x18, 0x53, 0x80, 0x67, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]);   // unknown size
+  return cat([ebml, segHead, info, el(0x1654AE6B, track)]);
+}
+// packets at absolute media times (seconds) [{t, d}] -> WebM clusters (one per <= 10 s, 1 ms timecodes)
+function webmClusters(list) {
+  const out = [];
+  for (let i = 0; i < list.length;) {
+    const tc = Math.round(list[i].t * 1000);
+    const blocks = [];
+    while (i < list.length && Math.round(list[i].t * 1000) - tc < 10000) {
+      const rel = Math.round(list[i].t * 1000) - tc;
+      blocks.push(el(0xA3, Uint8Array.from([0x81, (rel >> 8) & 255, rel & 255, 0x80]), list[i].d));
+      i++;
+    }
+    out.push(el(0x1F43B675, el(0xE7, EB.uint(tc)), ...blocks));
+  }
+  return cat(out);
+}
+async function encodeSilence() {
+  const pk = [];
+  const enc = new AudioEncoder({ output: (c) => { const d = new Uint8Array(c.byteLength); c.copyTo(d); pk.push({ ts: c.timestamp, d }); }, error: () => {} });
+  enc.configure({ codec: 'opus', sampleRate: SR, numberOfChannels: 2, bitrate: 32000 });
+  const n = Math.round(GAP * SR);
+  enc.encode(new AudioData({ format: 's16', sampleRate: SR, numberOfFrames: n, numberOfChannels: 2, timestamp: 0, data: new Int16Array(2 * n) }));
+  await enc.flush(); enc.close();
+  return pk.filter((p) => p.ts < GAP * 1e6);
+}
+async function probeMse() {
+  try {
+    if (!OPUS || !MS || !MS.isTypeSupported(MSE_TYPE) || params.has('webaudio')) return false;
+    silence = await encodeSilence();
+    return silence.length > 0;
+  } catch (e) { return false; }
+}
+
+class MseStream {
+  constructor() {
+    this.audio = $('out');
+    this.audio.volume = MUTE ? 0 : 1;   // (?mute=1: volume 0, not muted - browsers pause muted media in hidden pages)
+    this.audio.disableRemotePlayback = true;        // (ManagedMediaSource needs it)
+    this.ms = new MS();
+    this.sb = null; this.ops = []; this.inited = false; this.segs = []; this.end = 0; this.full = 0; this.lastEvict = 0;
+    this.audio.src = URL.createObjectURL(this.ms);
+    this.ms.addEventListener('sourceopen', () => {
+      this.sb = this.ms.addSourceBuffer(MSE_TYPE);
+      this.sb.mode = 'segments';
+      this.sb.addEventListener('updateend', () => { this.ops.shift(); this.run(); });
+      this.sb.addEventListener('error', () => M.errors.push('sourcebuffer error'));
+      this.run();
+      if (state.playing) this.audio.play().catch(() => {});
+    });
+  }
+  run() {
+    if (!this.sb || this.sb.updating || !this.ops.length || this.ms.readyState !== 'open') return;
+    const op = this.ops[0];
+    try {
+      if (op.kind === 'append') this.sb.appendBuffer(op.data);
+      else {
+        const r = this.sb.buffered, b = Math.min(op.b, r.length ? r.end(r.length - 1) : 0);   // (remove() must stay in range)
+        if (b > op.a) this.sb.remove(op.a, b); else { this.ops.shift(); this.run(); }
+      }
+    } catch (e) {
+      if (e.name === 'QuotaExceededError') { this.full = 1; this.evict(true); return; }   // retried after the eviction
+      M.errors.push('mse: ' + e.name + ' ' + e.message); this.ops.shift(); this.run();
+    }
+  }
+  op(o) { this.ops.push(o); this.run(); }
+  append(list, cfg) {
+    if (!list.length) return;
+    if (!this.inited) { this.op({ kind: 'append', data: webmInit(cfg) }); this.inited = true; }
+    this.op({ kind: 'append', data: webmClusters(list) });
+  }
+  evict(force) {
+    const t = this.audio.currentTime;
+    if (!force && performance.now() - this.lastEvict < 15000) return;
+    this.lastEvict = performance.now();
+    const b = this.sb && this.sb.buffered;
+    if (t > 25 && b && b.length && b.start(0) < t - 20) {
+      if (this.sb.updating) this.ops.splice(1, 0, { kind: 'remove', a: 0, b: t - 20 });
+      else this.ops.unshift({ kind: 'remove', a: 0, b: t - 20 });
+    }
+    if (force) setTimeout(() => { this.full = 0; this.run(); }, 3000);
+    this.run();
+  }
+  aheadBytes() { const t = this.audio.currentTime; return this.segs.reduce((s, g) => s + (g.base !== null && g.base + g.until > t ? g.bytes : 0), 0); }
+  silenceAt(t0) { this.append(silence.map((p) => ({ t: t0 + p.ts / 1e6, d: p.d })), null); this.end = t0 + GAP; }
+  // cut the stream at the playhead: everything after it goes, `piece` from `offset` comes next
+  cut(piece, offset) {
+    const T = this.audio.currentTime;
+    this.ops = this.ops.filter((o, i) => i === 0 && this.sb && this.sb.updating);
+    this.op({ kind: 'remove', a: T + 0.05, b: Infinity });
+    const b = this.sb && this.sb.buffered;
+    this.end = b && b.length && b.end(b.length - 1) > T ? T + 0.1 : T;   // (an empty stream: no gap at its start)
+    this.segs = [];
+    const seg = this.newSeg(piece, Math.max(0, offset - 0.1));
+    seg.seekTo = offset;
+    mark('stream-cut', { id: piece.id, at: +T.toFixed(2), offset: +offset.toFixed(2) });
+    return seg;
+  }
+  newSeg(piece, from) { const s = { piece, from, base: null, n: -1, until: 0, bytes: 0, done: false, endT: null }; this.segs.push(s); return s; }
+  // append what is ready, in order: chain = [current, ...the pool]
+  pump(chain) {
+    if (!this.sb) return;
+    this.evict(false);
+    const at = this.audio.currentTime;
+    // the pieces appended after the playing one must be the pool's, in order: else the stream is cut behind it
+    const k = this.segs.findIndex((s) => s.piece === chain[0]);
+    if (k >= 0) {
+      for (let i = k + 1; i < this.segs.length; i++) {
+        if (this.segs[i].piece === chain[i - k]) continue;
+        const prev = this.segs[i - 1];
+        const from = Math.max(at + 0.1, prev.done ? prev.endT + GAP : this.end);
+        this.ops = this.ops.filter((o, j) => j === 0 && this.sb.updating);   // (nothing queued for the pieces dropped)
+        this.op({ kind: 'remove', a: from, b: Infinity });
+        this.segs.length = i;
+        if (!prev.done) { prev.done = false; }
+        this.end = from;
+        break;
+      }
+    }
+    for (let guard = 0; guard < 8; guard++) {
+      const last = this.segs[this.segs.length - 1];
+      if (!last) return;
+      const st = last.piece.store;
+      if (!last.done) {
+        if (!st || last.piece.dropped) return this.fill(at);
+        if (this.full) return;
+        const pk = st.packets;
+        if (last.n < 0) {                              // its first packet: where the stream is now
+          let i = 0;
+          while (i < pk.length && pk[i].ts / 1e6 < last.from) i++;
+          if (i >= pk.length) return this.fill(at);
+          last.n = i;
+          last.base = this.end - pk[i].ts / 1e6;
+          if (last.seekTo !== undefined) { this.audio.currentTime = Math.max(at, last.base + last.seekTo); last.seekTo = undefined; }
+        }
+        if (last.n < pk.length) {
+          const list = [];
+          for (let i = last.n; i < pk.length; i++) { list.push({ t: last.base + pk[i].ts / 1e6, d: pk[i].d }); last.bytes += pk[i].d.length; }
+          this.append(list, st.cfg);
+          last.n = pk.length;
+          last.until = (pk[pk.length - 1].ts + pk[pk.length - 1].dur) / 1e6;
+          this.end = last.base + last.until;
+        }
+        if (!(st.complete && last.n >= pk.length)) return;
+        last.done = true; last.endT = last.base + st.until;
+        this.silenceAt(Math.max(this.end, last.endT));
+      }
+      const next = chain[chain.indexOf(last.piece) + 1];
+      if (!next || !next.store || next.dropped || this.aheadBytes() > AHEAD_BYTES) return this.fill(at);
+      this.newSeg(next, 0);
+    }
+  }
+  fill(at) {                        // nothing to append yet: the stream plays silence on (never a gap)
+    if (this.sb && !this.full && at > this.end - 2) {
+      const last = this.segs[this.segs.length - 1];
+      if (last && !last.done && last.base !== null) return;   // (a piece rendering: its data comes)
+      this.silenceAt(this.end);
+    }
+  }
+}
+let stream = null;
+
+// the player of one piece on the stream (the interface of the Web Audio players: position, pump, stop, endTime)
+class MsePlayer {
+  constructor(piece, offset) {
+    this.p = piece; this.offset = offset; this.dead = false; this.first = null; this.endTime = null;
+    const S = stream, a = S.audio;
+    const seg = S.segs.find((s) => s.piece === piece);
+    let keep = false;
+    const idx = seg ? S.segs.indexOf(seg) : -1, prev = idx > 0 ? S.segs[idx - 1] : null;
+    if (seg && offset === 0 && prev && (seg.base !== null || (prev.done && a.currentTime >= prev.endT - 0.2))) {
+      keep = true;                                  // the next piece, appended after the one before (or due now)
+      if (seg.base !== null && a.currentTime < seg.base - GAP - 0.5) a.currentTime = Math.max(0, seg.base - 0.05);  // (a skip)
+    } else if (seg && seg.base !== null && offset >= seg.from && seg.base + offset < S.end - 0.2) {   // a seek inside it
+      keep = true;
+      a.currentTime = seg.base + offset;
+    }
+    if (keep) {
+      this.seg = seg;
+      S.segs.splice(0, S.segs.indexOf(seg));
+    } else this.seg = S.cut(piece, offset);
+    if (a.paused && state.playing) a.play().catch((e) => M.errors.push('play: ' + e.name));
+  }
+  position() {
+    const s = this.seg;
+    if (s.base === null) return this.offset;
+    return Math.max(0, Math.min(stream.audio.currentTime - s.base, this.p.info ? this.p.info.seconds + 10 : 1e9));
+  }
+  pump() {
+    if (this.dead) return;
+    stream.pump([current, ...pool]);
+    const s = this.seg;
+    if (s.done && this.endTime === null) this.endTime = s.endT;
+    if (this.first === null && s.base !== null && stream.audio.currentTime > s.base + s.from + 0.02 && !stream.audio.paused) {
+      this.first = stream.audio.currentTime; this.onFirst && this.onFirst(this.first);
+    }
+  }
+  stop() { this.dead = true; }
+}
+// the clock the transport reads (ctx.currentTime, resume, suspend): the stream's media element
+function mediaClock() {
+  return {
+    get currentTime() { return stream.audio.currentTime; },
+    get state() { return stream.audio.paused ? 'suspended' : 'running'; },
+    resume() { stream.audio.play().catch((e) => M.errors.push('play: ' + e.name)); return Promise.resolve(); },   // (play() waits for data: never awaited)
+    suspend() { stream.audio.pause(); return Promise.resolve(); },
+  };
+}
+
 
 // ---------------------------------------------------------------- pieces
 // piece: {id, gen, kind: 'bank'|'set'|'history', status: 'loading'|'composing'|'queued'|'samples'|'rendering'|'ready'|'failed',
@@ -291,7 +550,7 @@ function makeEngine() {
     const p = engineJob && engineJob.id === m.job ? engineJob : null;
     if (m.type === 'chunk') {
       if (p && p.store && !p.dropped) { p.store.add(m.pcm, m.frames); if (p.status !== 'rendering') p.status = 'rendering'; }
-      if (p === current && player) player.pump();
+      if (player) player.pump();                 // (the stream appends the pool's pieces while they render, too)
       return;
     }
     if (p || m.job === undefined) engineJob = null;
@@ -563,6 +822,7 @@ function advance(startAt = null) {
 
 $('play').onclick = async () => {
   audio();
+  if (wantWake) wake();
   if (!state.clicked) {
     state.clicked = true; state.playing = true; state.waitClick = performance.now();
     await ctx.resume();
@@ -570,9 +830,9 @@ $('play').onclick = async () => {
     startPlayer(0);
     pumpWork();
   } else if (state.playing) {
-    state.playing = false; await ctx.suspend();
+    state.playing = false; state.pausing = true; await ctx.suspend(); state.pausing = false;
   } else {
-    state.playing = true; await ctx.resume();
+    state.playing = true; state.sysPaused = false; await ctx.resume();
     if (!player && current) startPlayer(0);
   }
   ui();
@@ -788,6 +1048,7 @@ function memory() {
   if (performance.memory) M.mem.jsHeapMB = Math.round(performance.memory.usedJSHeapSize / 1048576);
 }
 function ui() {
+  session();
   $('play').textContent = state.playing ? 'Pause' : (state.clicked ? 'Weiter' : 'Abspielen');
   $('skip').disabled = !state.clicked; $('back').disabled = !state.clicked || !current;
   const p = current, i = p && p.info;
@@ -833,15 +1094,94 @@ function ui() {
   else showState(state.notice && Date.now() - state.noticeAt < 60000 ? state.notice : '');
 }
 
+// ---------------------------------------------------------------- the phone: lock screen, screen off, interruptions
+// Media Session: title / genre on the lock screen and in the notification, play / pause / next / previous / seek
+const ART = [{ src: 'icon-192.png', sizes: '192x192', type: 'image/png' }, { src: 'icon-512.png', sizes: '512x512', type: 'image/png' }];
+let sessionKey = '';
+function session() {
+  if (!('mediaSession' in navigator)) return;
+  const ms = navigator.mediaSession, i = current && current.info;
+  const key = i ? `${current.id}` : '';
+  if (key !== sessionKey && 'MediaMetadata' in window) {
+    sessionKey = key;
+    ms.metadata = i ? new MediaMetadata({ title: i.title, artist: `AgentSound · ${GENRE_NAME[i.genre] || ''}`, album: `${keyName(i.key)} · ${i.tempo} BPM`, artwork: ART })
+                    : new MediaMetadata({ title: 'Endless', artist: 'AgentSound', artwork: ART });
+  }
+  ms.playbackState = state.clicked ? (state.playing ? 'playing' : 'paused') : 'none';
+  try {
+    if (i && player && state.clicked) {
+      const d = Math.max(1, i.seconds);
+      ms.setPositionState({ duration: d, playbackRate: 1, position: Math.max(0, Math.min(d, player.position())) });
+    }
+  } catch (e) { /* positionState: older browsers */ }
+}
+if ('mediaSession' in navigator) {
+  const on = (a, f) => { try { navigator.mediaSession.setActionHandler(a, f); } catch (e) { /* unsupported action */ } };
+  on('play', () => { if (!state.playing) $('play').click(); });
+  on('pause', () => { if (state.playing) $('play').click(); });
+  on('nexttrack', () => $('skip').click());
+  on('previoustrack', () => $('back').click());
+  on('seekto', (d) => seek(d.seekTime));
+  on('seekforward', (d) => player && seek(player.position() + (d.seekOffset || 10)));
+  on('seekbackward', (d) => player && seek(player.position() - (d.seekOffset || 10)));
+}
+// interruptions (a call, another app's audio, the OS suspending the context): back to playing when the page returns
+function resumeSoon(why) {
+  if (!state.playing || !ctx) return;
+  mark('interrupted', { why });
+  if (document.visibilityState === 'visible') setTimeout(() => { if (state.playing && ctx.state !== 'running') ctx.resume(); }, 300);
+}
+$('out').addEventListener('pause', () => {
+  if (!state.playing || state.pausing) return;
+  if (document.visibilityState === 'visible') { resumeSoon('media paused'); return; }
+  // hidden: the system paused us (another app took the audio focus): show it as paused, the lock screen's play resumes
+  state.playing = false; state.sysPaused = true; mark('system-pause', { at: +$('out').currentTime.toFixed(2) }); ui();
+});
+$('out').addEventListener('play', () => {      // the system resumed us (after a call)
+  if (!state.playing && state.sysPaused) { state.playing = true; state.sysPaused = false; mark('system-resume'); ui(); }
+});
+$('out').addEventListener('waiting', () => mark('stream-waiting', { at: +$('out').currentTime.toFixed(2) }));
+function onVisible() {
+  const vis = document.visibilityState === 'visible';
+  mark(vis ? 'visible' : 'hidden', { appended: stream ? stream.segs.filter((g) => g.done).length : null, pool: pool.filter(canPlay).length });
+  if (vis) {
+    if (state.playing && ctx && ctx.state !== 'running') ctx.resume();
+    if (wantWake) wake();
+  } else if (player) player.pump();                 // (append what is ready before the browser slows the page down)
+}
+document.addEventListener('visibilitychange', onVisible);
+window.addEventListener('pageshow', () => { if (state.playing && ctx && ctx.state !== 'running') ctx.resume(); });
+// "Bildschirm anlassen": the Screen Wake Lock, taken again whenever the page becomes visible
+let wantWake = false, wakeLock = null;
+async function wake() {
+  if (!('wakeLock' in navigator) || wakeLock) return;
+  try { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => { wakeLock = null; }); }
+  catch (e) { M.errors.push('wakelock: ' + e.name); }
+}
+if ('wakeLock' in navigator) {
+  $('wake-row').hidden = false;
+  try { wantWake = localStorage.getItem('endless-wake') === '1'; } catch (e) { /* no storage */ }
+  $('wake').checked = wantWake;
+  $('wake').onchange = () => {
+    wantWake = $('wake').checked;
+    try { localStorage.setItem('endless-wake', wantWake ? '1' : '0'); } catch (e) { /* no storage */ }
+    if (wantWake) wake(); else if (wakeLock) { wakeLock.release(); wakeLock = null; }
+  };
+}
+
 // for tests: the page's inner state, read only
-window.__dbg = { get current() { return current; }, get pool() { return pool; }, get played() { return played; },
+window.__dbg = { get current() { return current; }, get pool() { return pool; }, get played() { return played; }, get stream() { return stream; },
                  get player() { return player; }, get ctx() { return ctx; }, pcmOf, state };
 
 // ---------------------------------------------------------------- the clock
 setInterval(() => {
+  if (USE_MSE && stream && state.playing && stream.audio.paused && !state.pausing && document.visibilityState === 'visible' &&
+      performance.now() - (state.kicked || 0) > 2000) {
+    state.kicked = performance.now(); stream.audio.play().catch(() => {});        // (a pause we did not ask for)
+  }
   if (player && state.playing) {
     player.pump();
-    if (player.endTime !== null && ctx.currentTime >= player.endTime - 0.05) advance(player.endTime + GAP);
+    if (player.endTime !== null && ctx.currentTime >= player.endTime - 0.05) advance(USE_MSE ? null : player.endTime + GAP);
   } else if (!player && current && state.playing && ctx) startPlayer(0);
   pumpWork().catch(() => {});
   memory();
@@ -851,9 +1191,13 @@ setInterval(() => {
 // ---------------------------------------------------------------- start: on load, the first piece renders silently
 (async () => {
   OPUS = await probeOpus();
+  USE_MSE = await probeMse();
+  M.config0 = { mse: USE_MSE, managed: !!window.ManagedMediaSource && MS === window.ManagedMediaSource };
   POOL = OPUS ? (mobile ? (devMem >= 6 ? 3 : 2) : 4) : (mobile ? 1 : 2);
   KEEP = OPUS ? 2 : 1;
-  M.config = { opus: OPUS, pool: POOL, keep: KEEP, mobile, deviceMemory: devMem };
+  if (mobile && USE_MSE) POOL = Math.max(POOL, 2);   // (two pieces appended ahead when the screen goes off)
+  M.config = { opus: OPUS, mse: USE_MSE, pool: POOL, keep: KEEP, mobile, deviceMemory: devMem };
+  if ('serviceWorker' in navigator && !params.has('nosw')) navigator.serviceWorker.register('sw.js?v=' + V).catch((e) => M.errors.push('sw: ' + e));
   pianoUi();
   if (mobile) $('orch-note').textContent = 'Das Orchester lädt rund 20 MB Klänge pro Stück und braucht beim Rendern rund ein halbes GB Arbeitsspeicher - auf Handys oft zu schwer (es kann stocken oder abbrechen). Das Klavier läuft überall.';
   mark('config', M.config);

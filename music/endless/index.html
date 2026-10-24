@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Endless Piano</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#15171a">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="description" content="Endlose Klavier- und Orchestermusik, live im Browser komponiert und gespielt von AgentSound.">
 <style>
   :root {
@@ -63,6 +68,8 @@
   #history li.playing .t { color: var(--accent); }
   #hist-empty { color: var(--muted); font-size: 14px; }
   .note { color: var(--muted); font-size: 14px; margin: 10px 0 0; }
+  label.check span { display: flex; align-items: center; gap: 8px; min-height: 44px; color: var(--fg); }
+  label.check input { width: 22px; height: 22px; min-height: 0; }
   footer { color: var(--muted); font-size: 13px; margin-top: 28px; line-height: 1.5; }
   footer a { color: inherit; }
   @media (max-width: 420px) { .settings { grid-template-columns: 1fr; } }
@@ -112,7 +119,9 @@
     <label>&nbsp;
       <button id="restart">Neu starten</button>
     </label>
+    <label id="wake-row" class="check" hidden><span><input id="wake" type="checkbox"> Bildschirm anlassen</span></label>
   </section>
+  <audio id="out" hidden preload="auto"></audio>
 
   <p id="orch-note" class="note" hidden>Das Orchester lädt rund 20 MB Klänge pro Stück (nur die Instrumente, die es spielt) und braucht beim Rendern viel Arbeitsspeicher.</p>
 
