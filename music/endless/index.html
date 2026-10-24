@@ -69,6 +69,8 @@
   #hist-empty { color: var(--muted); font-size: 14px; }
   .note { color: var(--muted); font-size: 14px; margin: 10px 0 0; }
   label.check span { display: flex; align-items: center; gap: 8px; min-height: 44px; color: var(--fg); }
+  #offline { align-items: center; margin-top: 12px; }
+  #offline .note { margin: 0; flex: 1 1 100%; }
   label.check input { width: 22px; height: 22px; min-height: 0; }
   footer { color: var(--muted); font-size: 13px; margin-top: 28px; line-height: 1.5; }
   footer a { color: inherit; }
@@ -122,6 +124,11 @@
     <label id="wake-row" class="check" hidden><span><input id="wake" type="checkbox"> Bildschirm anlassen</span></label>
   </section>
   <audio id="out" hidden preload="auto"></audio>
+  <div class="row" id="offline" hidden>
+    <span id="offline-size" class="note">Offline gespeichert: …</span>
+    <button id="offline-load">Für offline laden</button>
+    <button id="offline-clear">Cache leeren</button>
+  </div>
 
   <p id="orch-note" class="note" hidden>Das Orchester lädt rund 20 MB Klänge pro Stück (nur die Instrumente, die es spielt) und braucht beim Rendern viel Arbeitsspeicher.</p>
 
@@ -146,6 +153,6 @@
     Raumhall: Voxengo IM Reverbs. <a href="LICENSES.md">Lizenzen</a>
   </footer>
 </main>
-<script type="module" src="app.js?v=web2-806f541&a=p1"></script>
+<script type="module" src="app.js?v=web2-806f541&a=p3"></script>
 </body>
 </html>

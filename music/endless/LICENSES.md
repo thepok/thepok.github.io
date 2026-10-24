@@ -7,7 +7,7 @@ sales).
 
 `engine/agentsound.js`, `engine/agentsound.wasm` (the AgentSound engine compiled to WebAssembly),
 `py/repo.zip` (the AgentSound Python composer and the sample-mapping text files it reads), `app.js`,
-`compose-worker.js`, `engine-worker.js`, `index.html`, `sw.js`, `manifest.webmanifest`, the icons `icon-192.png` /
+`compose-worker.js`, `engine-worker.js`, `index.html`, `store.js`, `sw.js`, `manifest.webmanifest`, the icons `icon-192.png` /
 `icon-512.png` (drawn by a script for this page), and `bank/` (pieces pre-composed by the same AgentSound
 composer: note data and render settings, gzipped JSON; no audio).
 

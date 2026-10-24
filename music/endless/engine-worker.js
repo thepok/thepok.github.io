@@ -2,7 +2,9 @@
 // The main thread sends the render JSON with its sample paths already mapped to s/<name>.wav, the piece's samples
 // (decoded from Opus into 16-bit WAVs, loop points in their smpl chunk) and its impulse responses (urls).
 // One piece per worker: the page starts a fresh worker for the next one (the engine's sample caches go with it).
-const V = new URL(self.location.href).searchParams.get('v') || '';   // the page's code version: no stale cached engine
+const Q = new URL(self.location.href).searchParams;
+const V = Q.get('v') || '', A = Q.get('a') || '';   // the page's code version / revision: no stale cached engine
+const store = import(`./store.js?v=${V}&a=${A}`);
 let engine = null, stream = null;
 const ready = import(`./engine/agentsound.js?v=${V}`).then(({ default: createEngine }) => createEngine({
   locateFile: (path, prefix) => `${prefix}${path}?v=${V}`,
@@ -20,9 +22,8 @@ async function render(m) {
   mkdir('/assets'); mkdir('/assets/s'); mkdir('/assets/ir'); mkdir('/out');
   for (const [path, url] of Object.entries(m.irs || {})) {
     if (irs.has(path)) continue;
-    const r = await fetch(url);
-    if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`);
-    FS.writeFile('/assets/' + path, new Uint8Array(await r.arrayBuffer()));
+    const { buf } = await (await store).cachedBuffer(url, m.cache);   // (the sample cache: offline next time)
+    FS.writeFile('/assets/' + path, new Uint8Array(buf));
     irs.add(path);
   }
   for (const [name, buf] of Object.entries(m.files)) FS.writeFile(`/assets/s/${name}.wav`, new Uint8Array(buf));

@@ -3,8 +3,12 @@
 //   engine-worker.js:  the AgentSound engine (WASM): render JSON -> streamed 16-bit PCM
 //   here: the bank (natively pre-composed set openings), the pool of ready pieces, compact storage (Opus via
 //   WebCodecs, else 16-bit PCM), playback with seeking, the history (recipes in localStorage).
-const A = 'p1';                     // page revision (app.js / the shell only: the bank, recipes and links stay valid)
+const A = 'p3';                     // page revision (app.js / the shell only: the bank, recipes and links stay valid)
 const V = 'web2-806f541';           // code version: recipes / links of another version are made anew with this code (noted)
+const SV = '3b5c44c47f';                      // the sample set's content hash (wasm-space/prod/asset_version.py writes it): ?s= on samples/**
+const PYV = '314.0.7';              // Pyodide (the compose worker loads it from the CDN; the service worker caches it)
+const store = import(`./store.js?v=${V}&a=${A}`);   // Cache Storage: the samples, the bank, the composer zip stay offline
+const CODE_CACHE = `endless-code-${V}`, SAMPLE_CACHE = `endless-samples-${SV}`;
 const SR = 48000;
 const GAP = 2.5;                    // silence between pieces (the render already ends in its reverb tail)
 const AHEAD = 4;                    // seconds of decoded audio scheduled ahead
@@ -481,18 +485,26 @@ function freePiece(p) {
 
 // ---------------------------------------------------------------- the bank (natively pre-composed set openings)
 async function gunzipJson(url) {
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`);
-  const s = r.body.pipeThrough(new DecompressionStream('gzip'));
+  const { buf } = await (await store).cachedBuffer(url, CODE_CACHE);
+  const s = new Response(buf).body.pipeThrough(new DecompressionStream('gzip'));
   return JSON.parse(await new Response(s).text());
 }
 async function bankPiece(genre, piano, n) {
-  if (!bankIndex) bankIndex = await (await fetch('bank/index.json', { cache: 'no-cache' })).json();
+  if (!bankIndex) bankIndex = JSON.parse(new TextDecoder().decode(await (await store).freshBuffer('bank/index.json', CODE_CACHE)));
   if (bankIndex.v !== V) throw new Error('bank of another version');
   const count = bankIndex.counts[genre] || 0;
   if (!count) throw new Error('empty bank');
-  if (n === undefined || n === null || n < 0 || n >= count) n = Math.floor(Math.random() * count);
-  const e = await gunzipJson(`bank/${genre}/${n}.json.gz`);
+  const asked = !(n === undefined || n === null || n < 0 || n >= count);
+  if (!asked) n = Math.floor(Math.random() * count);
+  let e;
+  try { e = await gunzipJson(`bank/${genre}/${n}.json.gz?v=${V}`); }
+  catch (err) {                                 // offline: a random opening that is already stored
+    const c = !asked && typeof caches !== 'undefined' && await caches.open(CODE_CACHE).catch(() => null);
+    const have = c ? (await c.keys()).map((r) => new URL(r.url).pathname.split(`/bank/${genre}/`)[1]).filter((x) => x && /^[0-9]+[.]json[.]gz$/.test(x)).map((x) => parseInt(x, 10)) : [];
+    if (!have.length) throw err;
+    n = have[Math.floor(Math.random() * have.length)];
+    e = await gunzipJson(`bank/${genre}/${n}.json.gz?v=${V}`);
+  }
   if (e.v !== V) throw new Error('bank entry of another version');
   if (ORCH(genre)) piano = 'beste';
   if (piano === 'spar') {                       // the mini cut: the same notes, its own zones
@@ -512,7 +524,7 @@ const composeQueue = [];            // pieces waiting for the composer, urgent f
 const renderQueue = [];             // pieces waiting for the engine, urgent first
 
 function makeComposer() {
-  composer = new Worker(new URL('./compose-worker.js?v=' + V, import.meta.url), { type: 'module' });
+  composer = new Worker(new URL(`./compose-worker.js?v=${V}&a=${A}&py=${PYV}`, import.meta.url), { type: 'module' });
   composerReady = false;
   composer.onmessage = (e) => {
     const m = e.data;
@@ -544,7 +556,7 @@ function makeComposer() {
   };
 }
 function makeEngine() {
-  engine = new Worker(new URL('./engine-worker.js?v=' + V, import.meta.url), { type: 'module' });
+  engine = new Worker(new URL(`./engine-worker.js?v=${V}&a=${A}`, import.meta.url), { type: 'module' });
   engine.onmessage = (e) => {
     const m = e.data;
     if (m.type === 'ready') { mark('engine-ready'); return; }
@@ -606,14 +618,13 @@ function decoderAt(sr) { if (!decoders.has(sr)) decoders.set(sr, new OfflineAudi
 let orchIndex = null;                // the orchestra's samples: relpath -> [name, rate, frames, loop, unity]
 async function orchestraIndex() {
   if (!orchIndex) {
-    const r = await fetch('samples/orch/index.json?v=' + V);
-    if (!r.ok) throw new Error('samples/orch/index.json: HTTP ' + r.status);
-    orchIndex = await r.json();
+    const { buf } = await (await store).cachedBuffer(`samples/orch/index.json?s=${SV}`, SAMPLE_CACHE);
+    orchIndex = JSON.parse(new TextDecoder().decode(buf));
   }
   return orchIndex;
 }
-const IRS = { 'French 18th Century Salon.wav': 'samples/ir/French%2018th%20Century%20Salon.wav',
-              'Musikvereinsaal.wav': 'samples/ir/Musikvereinsaal.wav' };
+const IRS = { 'French 18th Century Salon.wav': `samples/ir/French%2018th%20Century%20Salon.wav?s=${SV}`,
+              'Musikvereinsaal.wav': `samples/ir/Musikvereinsaal.wav?s=${SV}` };
 
 // the piece's samples, loaded on demand: only the instruments (tracks) this piece plays, each file fetched once per
 // visit (kept compressed), decoded for this render; the render JSON gets the engine's paths
@@ -627,10 +638,10 @@ async function samplesFor(p) {
     if (orch) {
       const e = idx[z.file.replace(/^.*?assets\//, '')];
       if (!e) throw new Error('Orchesterklang fehlt: ' + z.file.split('/').pop());
-      name = e[0]; job = { url: `samples/orch/${name}.opus`, sr: e[1], loop: e[3], unity: e[4] };
+      name = e[0]; job = { url: `samples/orch/${name}.opus?s=${SV}`, sr: e[1], loop: e[3], unity: e[4] };
     } else {
       name = safe(z.file.split('/').pop().replace(/\.wav$/i, ''));
-      job = { url: `samples/${p.piano}/${name}.opus`, sr: SR };
+      job = { url: `samples/${p.piano}/${name}.opus?s=${SV}`, sr: SR };
     }
     z.file = `s/${name}.wav`;
     jobs.set(name, job);
@@ -639,11 +650,12 @@ async function samplesFor(p) {
   for (const b of song.buses) for (const f of (b.fx || [])) if (f.params && f.params.ir) {
     const base = f.params.ir.split('/').pop();
     const url = IRS[base] || IRS['French 18th Century Salon.wav'];
-    f.params.ir = 'ir/' + safe(decodeURIComponent(url.split('/').pop()));
+    f.params.ir = 'ir/' + safe(decodeURIComponent(url.split('?')[0].split('/').pop()));
     irs[f.params.ir] = url;
   }
   const files = {}, list = [...jobs.entries()];
-  let fetched = 0, bytes = 0, done = 0;
+  let fetched = 0, bytes = 0, done = 0, cached = 0;
+  const S = await store;
   const t0 = performance.now();
   p.loading = { n: list.length, done: 0, MB: 0 };
   async function one() {
@@ -651,9 +663,9 @@ async function samplesFor(p) {
       const [name, j] = list.shift();
       let data = compressed.get(j.url);
       if (!data) {
-        const r = await fetch(j.url);
-        if (!r.ok) throw new Error(`${j.url}: HTTP ${r.status}`);
-        data = await r.arrayBuffer(); compressed.set(j.url, data); fetched++; bytes += data.byteLength;
+        const got = await S.cachedBuffer(j.url, SAMPLE_CACHE);
+        data = got.buf; compressed.set(j.url, data);
+        if (got.hit) cached++; else { fetched++; bytes += data.byteLength; }
       }
       files[name] = wav16(await decoderAt(j.sr).decodeAudioData(data.slice(0)), j.loop, j.unity);
       p.loading = { n: jobs.size, done: ++done, MB: +(bytes / 1e6).toFixed(1) };
@@ -661,8 +673,9 @@ async function samplesFor(p) {
   }
   await Promise.all(Array.from({ length: 6 }, one));
   const MB = +(bytes / 1e6).toFixed(2);
-  mark('samples', { id: p.id, n: jobs.size, fetched, MB, roles: song.tracks.length, s: +((performance.now() - t0) / 1000).toFixed(2) });
-  return { files, irs, render: JSON.stringify(song), sampleRate: song.sampleRate };
+  offlineUi();
+  mark('samples', { id: p.id, n: jobs.size, fetched, cached, MB, roles: song.tracks.length, s: +((performance.now() - t0) / 1000).toFixed(2) });
+  return { files, irs, cache: SAMPLE_CACHE, render: JSON.stringify(song), sampleRate: song.sampleRate };
 }
 
 const byUrgency = (a, b) => (b.urgent - a.urgent);
@@ -826,6 +839,7 @@ $('play').onclick = async () => {
   if (wantWake) wake();
   if (!state.clicked) {
     state.clicked = true; state.playing = true; state.waitClick = performance.now();
+    persistOnce();
     await ctx.resume();
     if (!current && state.session === null) await startSession();
     startPlayer(0);
@@ -1170,6 +1184,55 @@ if ('wakeLock' in navigator) {
   };
 }
 
+// ---------------------------------------------------------------- offline: what is stored, persistence, prefetch
+// The samples, the bank, the composer zip (store.js) and the engine / Pyodide (sw.js) stay in Cache Storage; asked
+// for persistent storage after the first play (Chrome grants it more readily to a page in use)
+let sizeTimer = 0;
+function offlineUi(now) {
+  if (typeof caches === 'undefined') return;
+  $('offline').hidden = false;
+  clearTimeout(sizeTimer);
+  sizeTimer = setTimeout(async () => {
+    try { const { bytes } = await (await store).cacheSize(); $('offline-size').textContent = `Offline gespeichert: ${Math.round(bytes / 1e6)} MB`; }
+    catch (e) { /* no storage */ }
+  }, now ? 0 : 3000);
+}
+let persistAsked = false;
+function persistOnce() {
+  if (persistAsked || !navigator.storage || !navigator.storage.persist) return;
+  persistAsked = true;
+  navigator.storage.persisted().then((p) => p || navigator.storage.persist()).then((ok) => mark('persist', { ok })).catch(() => {});
+}
+// "Für offline laden": every sample of the chosen sound (the orchestra's ~59 MB, the piano's 10 / 32 MB) and the
+// composer; the engine and Pyodide are kept by the service worker once they ran
+$('offline-load').onclick = async () => {
+  const b = $('offline-load'), S = await store;
+  b.disabled = true; persistOnce();
+  try {
+    let urls;
+    if (ORCH(state.genre)) urls = [...new Set(Object.values(await orchestraIndex()).map((e) => `samples/orch/${e[0]}.opus?s=${SV}`))];
+    else {
+      const { buf } = await S.cachedBuffer(`samples/${state.piano}/index.json?s=${SV}`, SAMPLE_CACHE);
+      urls = JSON.parse(new TextDecoder().decode(buf)).map((n) => `samples/${state.piano}/${n}.opus?s=${SV}`);
+    }
+    urls.push(...Object.values(IRS));
+    await S.cachedBuffer(`py/repo.zip?v=${V}`, CODE_CACHE);
+    let done = 0;
+    const total = urls.length, list = urls.slice();
+    const one = async () => { while (list.length) { await S.cachedBuffer(list.shift(), SAMPLE_CACHE); b.textContent = `Lädt … ${++done}/${total}`; } };
+    await Promise.all(Array.from({ length: 6 }, one));
+    b.textContent = `Offline bereit (${ORCH(state.genre) ? 'Orchester' : state.piano === 'spar' ? 'Sparklavier' : 'Flügel'})`;
+    mark('offline-load', { n: total });
+  } catch (e) { b.textContent = 'Für offline laden (Fehler)'; M.errors.push('offline: ' + e.message); }
+  b.disabled = false; offlineUi(true);
+};
+$('offline-clear').onclick = async () => {
+  await (await store).clearAll().catch(() => {});
+  compressed.clear(); $('offline-load').textContent = 'Für offline laden'; offlineUi(true);
+};
+offlineUi(true);
+setTimeout(() => store.then((S) => S.dropOld([CODE_CACHE, SAMPLE_CACHE, `endless-pyodide-${PYV}`])).catch(() => {}), 20000);
+
 // for tests: the page's inner state, read only
 window.__dbg = { get current() { return current; }, get pool() { return pool; }, get played() { return played; }, get stream() { return stream; },
                  get player() { return player; }, get ctx() { return ctx; }, pcmOf, state };
@@ -1198,7 +1261,7 @@ setInterval(() => {
   KEEP = OPUS ? 2 : 1;
   if (mobile && USE_MSE) POOL = Math.max(POOL, 2);   // (two pieces appended ahead when the screen goes off)
   M.config = { opus: OPUS, mse: USE_MSE, pool: POOL, keep: KEEP, mobile, deviceMemory: devMem };
-  if ('serviceWorker' in navigator && !params.has('nosw')) navigator.serviceWorker.register(`sw.js?v=${V}&a=${A}`).catch((e) => M.errors.push('sw: ' + e));
+  if ('serviceWorker' in navigator && !params.has('nosw')) navigator.serviceWorker.register(`sw.js?v=${V}&a=${A}&s=${SV}&p=${PYV}`).catch((e) => M.errors.push('sw: ' + e));
   pianoUi();
   if (mobile) $('orch-note').textContent = 'Das Orchester lädt rund 20 MB Klänge pro Stück und braucht beim Rendern rund ein halbes GB Arbeitsspeicher - auf Handys oft zu schwer (es kann stocken oder abbrechen). Das Klavier läuft überall.';
   mark('config', M.config);
