@@ -1,9 +1,9 @@
-// Endless Piano - the player.
-//   compose-worker.js: Pyodide + the AgentSound composer (the endless set loop, best of 8 per piece)
+// Endless Piano / Orchester - the player.
+//   compose-worker.js: Pyodide + the AgentSound composer (the endless set loop, best of N per piece)
 //   engine-worker.js:  the AgentSound engine (WASM): render JSON -> streamed 16-bit PCM
 //   here: the bank (natively pre-composed set openings), the pool of ready pieces, compact storage (Opus via
 //   WebCodecs, else 16-bit PCM), playback with seeking, the history (recipes in localStorage).
-const V = 'web1-1a3505f';           // code version: recipes / links of another version are refused, never misplayed
+const V = 'web2-806f541';           // code version: recipes / links of another version are made anew with this code (noted)
 const SR = 48000;
 const GAP = 2.5;                    // silence between pieces (the render already ends in its reverb tail)
 const AHEAD = 4;                    // seconds of decoded audio scheduled ahead
@@ -13,11 +13,19 @@ const MUTE = params.has('mute');
 const M = window.__metrics = { events: [], errors: [] };
 const mark = (name, extra) => M.events.push({ name, t: +(performance.now() / 1000).toFixed(2), ...extra });
 
-const GENRES = ['new-age', 'klassik', 'walzer'];
-const GENRE_NAME = { 'new-age': 'New Age', klassik: 'Klassisch', walzer: 'Walzer' };
+const GENRES = ['new-age', 'klassik', 'walzer', 'orchester'];
+const GENRE_NAME = { 'new-age': 'New Age', klassik: 'Klassisch', walzer: 'Walzer', orchester: 'Orchester' };
+const ORCH = (g) => g === 'orchester';
 const PIANOS = ['beste', 'spar'];
-const FEEL = { flowing: 'fließend', gentle: 'sanft', bright: 'hell', waltz: 'Walzer', nocturne: 'Nocturne' };
-const SECTION = { intro: 'Intro', coda: 'Coda', interlude: 'Zwischenspiel', climax: 'Höhepunkt', build: 'Steigerung', end: 'Ausklang' };
+const FEEL = { flowing: 'fließend', gentle: 'sanft', bright: 'hell', waltz: 'Walzer', nocturne: 'Nocturne',
+               allegro: 'Allegro', vivace: 'Vivace', scherzo: 'Scherzo', river: 'Flusslauf', andante: 'Andante' };
+const SECTION = { intro: 'Intro', coda: 'Coda', interlude: 'Zwischenspiel', climax: 'Höhepunkt', build: 'Steigerung', end: 'Ausklang',
+                  t: 'Thema', t1: 'Hauptthema', t1b: 'Hauptthema', trans: 'Überleitung', t2: 'Seitenthema', t2b: 'Seitenthema',
+                  close: 'Schlussgruppe', dev: 'Durchführung', false: 'Scheinreprise', retrans: 'Rückführung', recap: 'Reprise',
+                  source: 'Quelle', river: 'Fluss', hunt: 'Jagd', storm: 'Sturm', fugato: 'Fugato', broad: 'Breit',
+                  a: 'Refrain', b: 'Couplet', c: 'Couplet', theme: 'Thema', var: 'Variation', mid: 'Mittelteil', slow: 'Einleitung',
+                  solo: 'Solo', trio: 'Trio', scherzo: 'Scherzo', episode: 'Episode', refrain: 'Refrain' };
+const secName = (n) => SECTION[n] || SECTION[n.replace(/\d+$/, '')] || n;
 
 // ---------------------------------------------------------------- capabilities and the memory budget
 const mobile = matchMedia('(pointer: coarse)').matches || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
@@ -33,14 +41,16 @@ async function probeOpus() {
   } catch (e) { return false; }
 }
 let POOL = 2, KEEP = 1;
+const poolFor = (g) => (ORCH(g) ? (mobile ? 1 : 2) : POOL);   // the orchestra: ~20 MB of samples, ~0.5 GB to render
 
 // ---------------------------------------------------------------- state
 const state = {
-  genre: GENRES.includes(params.get('genre')) ? params.get('genre') : 'new-age',
+  genre: GENRES.includes(params.get('genre')) ? params.get('genre') : 'new-age',   // (phones too: the piano is the default)
   piano: PIANOS.includes(params.get('piano')) ? params.get('piano') : 'beste',
   gen: 0, playing: false, clicked: false, session: null,
 };
 $('genre').value = state.genre; $('piano').value = state.piano;
+function pianoUi() { $('piano').disabled = ORCH(state.genre); $('orch-note').hidden = !ORCH(state.genre); }
 let ctx = null, out = null, sampleDecoder = null;
 let current = null, player = null;
 let pool = [];                      // the set's next pieces, in order
@@ -217,13 +227,14 @@ async function gunzipJson(url) {
   return JSON.parse(await new Response(s).text());
 }
 async function bankPiece(genre, piano, n) {
-  if (!bankIndex) bankIndex = await (await fetch('bank/index.json')).json();
+  if (!bankIndex) bankIndex = await (await fetch('bank/index.json', { cache: 'no-cache' })).json();
   if (bankIndex.v !== V) throw new Error('bank of another version');
   const count = bankIndex.counts[genre] || 0;
   if (!count) throw new Error('empty bank');
   if (n === undefined || n === null || n < 0 || n >= count) n = Math.floor(Math.random() * count);
   const e = await gunzipJson(`bank/${genre}/${n}.json.gz`);
   if (e.v !== V) throw new Error('bank entry of another version');
+  if (ORCH(genre)) piano = 'beste';
   if (piano === 'spar') {                       // the mini cut: the same notes, its own zones
     const song = JSON.parse(e.render);
     for (const t of song.tracks) if (e.spar_samples[t.id]) t.instrument.params.samples = e.spar_samples[t.id];
@@ -241,7 +252,7 @@ const composeQueue = [];            // pieces waiting for the composer, urgent f
 const renderQueue = [];             // pieces waiting for the engine, urgent first
 
 function makeComposer() {
-  composer = new Worker(new URL('./compose-worker.js', import.meta.url), { type: 'module' });
+  composer = new Worker(new URL('./compose-worker.js?v=' + V, import.meta.url), { type: 'module' });
   composerReady = false;
   composer.onmessage = (e) => {
     const m = e.data;
@@ -255,7 +266,8 @@ function makeComposer() {
     if (m.type === 'composed' && p && !p.dropped) {
       const o = JSON.parse(m.out);
       adopt(p, o, p.piano || state.piano);
-      if (p.wantHash) {
+      if (o.info.other_version && !(p.wantHash && p.wantHash === o.hash)) notice('Dieses Stück stammt von einer älteren Version der Seite und wurde mit der aktuellen neu erzeugt - es kann anders klingen als damals.');
+      if (p.wantHash && !o.info.other_version) {
         p.verify = p.wantHash === o.hash;
         if (!p.verify) M.errors.push(`recipe ${JSON.stringify(o.recipe)}: hash ${o.hash}, expected ${p.wantHash}`);
       }
@@ -265,13 +277,14 @@ function makeComposer() {
     } else if (m.type === 'error') {
       M.errors.push('composer: ' + m.message);
       if (p) { p.status = 'failed'; p.error = m.message; pool = pool.filter((q) => q !== p); }
+      if (p && p === current && p.kind === 'history') { notice('Dieses Stück lässt sich mit der aktuellen Version nicht mehr erzeugen.'); advance(); }
       if (m.fatal) notice('Der Komponist konnte nicht laden. Die Musik der Bank spielt trotzdem.');
     }
     pumpWork(); ui();
   };
 }
 function makeEngine() {
-  engine = new Worker(new URL('./engine-worker.js', import.meta.url), { type: 'module' });
+  engine = new Worker(new URL('./engine-worker.js?v=' + V, import.meta.url), { type: 'module' });
   engine.onmessage = (e) => {
     const m = e.data;
     if (m.type === 'ready') { mark('engine-ready'); return; }
@@ -286,6 +299,7 @@ function makeEngine() {
       mark('rendered', { id: p.id, render_s: m.render_s, first_chunk_s: m.first_chunk_s, realtime_x: m.realtime_x, heapMB: m.heapMB });
       p.render = null;
       if (p.store) p.store.finish().then(() => { p.status = 'ready'; memory(); ui(); });
+      engine.terminate(); makeEngine();                // a fresh engine for the next piece: its memory goes
     } else if (m.type === 'error') {
       M.errors.push('engine: ' + m.message);
       if (p) { p.status = 'failed'; pool = pool.filter((q) => q !== p); }
@@ -294,46 +308,101 @@ function makeEngine() {
   };
 }
 
-function wav16(ab) {
-  const n = ab.length, sr = ab.sampleRate;
-  const buf = new ArrayBuffer(44 + n * 4), v = new DataView(buf);
+// a decoded sample as a 16-bit WAV for the engine's file system; loop = [start, end exclusive, pingpong] and
+// unity = [note, fraction] go into a 'smpl' chunk (the orchestra's sustains loop on the file's own loop points)
+function wav16(ab, loop, unity) {
+  const n = ab.length, sr = ab.sampleRate, ch = 2;
+  const smpl = loop || unity ? 36 + (loop ? 24 : 0) : 0;
+  const head = 44 + (smpl ? 8 + smpl : 0);
+  const buf = new ArrayBuffer(head + n * 4), v = new DataView(buf);
   const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
-  w(0, 'RIFF'); v.setUint32(4, 36 + n * 4, true); w(8, 'WAVE'); w(12, 'fmt ');
-  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 2, true); v.setUint32(24, sr, true);
-  v.setUint32(28, sr * 4, true); v.setUint16(32, 4, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 4, true);
-  const a = ab.getChannelData(0), b = ab.numberOfChannels > 1 ? ab.getChannelData(1) : a;
-  const pcm = new Int16Array(buf, 44);
-  for (let i = 0, o = 0; i < n; i++) {
-    pcm[o++] = Math.max(-32768, Math.min(32767, Math.round(a[i] * 32767)));
-    pcm[o++] = Math.max(-32768, Math.min(32767, Math.round(b[i] * 32767)));
+  w(0, 'RIFF'); v.setUint32(4, head - 8 + n * 4, true); w(8, 'WAVE'); w(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, ch, true); v.setUint32(24, sr, true);
+  v.setUint32(28, sr * 4, true); v.setUint16(32, 4, true); v.setUint16(34, 16, true);
+  let o = 36;
+  if (smpl) {
+    w(o, 'smpl'); v.setUint32(o + 4, smpl, true);
+    const b = o + 8;
+    for (let i = 0; i < smpl; i += 4) v.setUint32(b + i, 0, true);
+    v.setUint32(b + 12, unity ? unity[0] : 60, true); v.setUint32(b + 16, unity ? unity[1] : 0, true);
+    if (loop) {
+      v.setUint32(b + 28, 1, true);
+      v.setUint32(b + 36 + 4, loop[2] ? 1 : 0, true); v.setUint32(b + 36 + 8, loop[0], true); v.setUint32(b + 36 + 12, loop[1] - 1, true);
+    }
+    o = b + smpl;
+  }
+  w(o, 'data'); v.setUint32(o + 4, n * 4, true);
+  const a = ab.getChannelData(0), c = ab.numberOfChannels > 1 ? ab.getChannelData(1) : a;
+  const pcm = new Int16Array(buf, o + 8);
+  for (let i = 0, k = 0; i < n; i++) {
+    pcm[k++] = Math.max(-32768, Math.min(32767, Math.round(a[i] * 32767)));
+    pcm[k++] = Math.max(-32768, Math.min(32767, Math.round(c[i] * 32767)));
   }
   return buf;
 }
 const safe = (base) => base.replace(/ /g, '_').replace(/#/g, 's');
+const decoders = new Map();          // sample rate -> OfflineAudioContext (decodeAudioData resamples to it)
+function decoderAt(sr) { if (!decoders.has(sr)) decoders.set(sr, new OfflineAudioContext(2, 1, sr)); return decoders.get(sr); }
+let orchIndex = null;                // the orchestra's samples: relpath -> [name, rate, frames, loop, unity]
+async function orchestraIndex() {
+  if (!orchIndex) {
+    const r = await fetch('samples/orch/index.json?v=' + V);
+    if (!r.ok) throw new Error('samples/orch/index.json: HTTP ' + r.status);
+    orchIndex = await r.json();
+  }
+  return orchIndex;
+}
+const IRS = { 'French 18th Century Salon.wav': 'samples/ir/French%2018th%20Century%20Salon.wav',
+              'Musikvereinsaal.wav': 'samples/ir/Musikvereinsaal.wav' };
 
+// the piece's samples, loaded on demand: only the instruments (tracks) this piece plays, each file fetched once per
+// visit (kept compressed), decoded for this render; the render JSON gets the engine's paths
 async function samplesFor(p) {
   const song = JSON.parse(p.render);
-  const names = new Set();
-  for (const t of song.tracks) for (const z of (t.instrument.params.samples || [])) names.add(safe(z.file.split('/').pop().replace(/\.wav$/i, '')));
-  const files = {}, list = [...names];
-  let fetched = 0, bytes = 0;
+  const orch = ORCH(p.info.genre);
+  const idx = orch ? await orchestraIndex() : null;
+  const jobs = new Map();            // name -> {url, sr, loop, unity}
+  for (const t of song.tracks) for (const z of (t.instrument.params.samples || [])) {
+    let name, job;
+    if (orch) {
+      const e = idx[z.file.replace(/^.*?assets\//, '')];
+      if (!e) throw new Error('Orchesterklang fehlt: ' + z.file.split('/').pop());
+      name = e[0]; job = { url: `samples/orch/${name}.opus`, sr: e[1], loop: e[3], unity: e[4] };
+    } else {
+      name = safe(z.file.split('/').pop().replace(/\.wav$/i, ''));
+      job = { url: `samples/${p.piano}/${name}.opus`, sr: SR };
+    }
+    z.file = `s/${name}.wav`;
+    jobs.set(name, job);
+  }
+  const irs = {};
+  for (const b of song.buses) for (const f of (b.fx || [])) if (f.params && f.params.ir) {
+    const base = f.params.ir.split('/').pop();
+    const url = IRS[base] || IRS['French 18th Century Salon.wav'];
+    f.params.ir = 'ir/' + safe(decodeURIComponent(url.split('/').pop()));
+    irs[f.params.ir] = url;
+  }
+  const files = {}, list = [...jobs.entries()];
+  let fetched = 0, bytes = 0, done = 0;
   const t0 = performance.now();
+  p.loading = { n: list.length, done: 0, MB: 0 };
   async function one() {
     while (list.length) {
-      const name = list.shift();
-      const url = `samples/${p.piano}/${name}.opus`;
-      let data = compressed.get(url);
+      const [name, j] = list.shift();
+      let data = compressed.get(j.url);
       if (!data) {
-        const r = await fetch(url);
-        if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`);
-        data = await r.arrayBuffer(); compressed.set(url, data); fetched++; bytes += data.byteLength;
+        const r = await fetch(j.url);
+        if (!r.ok) throw new Error(`${j.url}: HTTP ${r.status}`);
+        data = await r.arrayBuffer(); compressed.set(j.url, data); fetched++; bytes += data.byteLength;
       }
-      files[name] = wav16(await decoderCtx().decodeAudioData(data.slice(0)));
+      files[name] = wav16(await decoderAt(j.sr).decodeAudioData(data.slice(0)), j.loop, j.unity);
+      p.loading = { n: jobs.size, done: ++done, MB: +(bytes / 1e6).toFixed(1) };
     }
   }
   await Promise.all(Array.from({ length: 6 }, one));
-  mark('samples', { id: p.id, n: names.size, fetched, MB: +(bytes / 1e6).toFixed(2), s: +((performance.now() - t0) / 1000).toFixed(2) });
-  return files;
+  const MB = +(bytes / 1e6).toFixed(2);
+  mark('samples', { id: p.id, n: jobs.size, fetched, MB, roles: song.tracks.length, s: +((performance.now() - t0) / 1000).toFixed(2) });
+  return { files, irs, render: JSON.stringify(song), sampleRate: song.sampleRate };
 }
 
 const byUrgency = (a, b) => (b.urgent - a.urgent);
@@ -361,14 +430,14 @@ async function pumpWork() {
     if (p) {
       engineJob = p; p.status = 'samples';
       try {
-        const files = await samplesFor(p);
+        const got = await samplesFor(p);
         if (engineJob !== p) return;                   // preempted while its samples loaded
         if (p.dropped) { engineJob = null; return pumpWork(); }
         p.store = newStore(); p.status = 'rendering';
-        engine.postMessage({ job: p.id, render: p.render, files }, Object.values(files));
+        engine.postMessage({ job: p.id, ...got }, Object.values(got.files));
       } catch (err) {
         M.errors.push(String(err)); p.status = 'failed'; engineJob = null;
-        notice('Die Klavierklänge konnten nicht geladen werden: ' + err.message);
+        notice('Die Klänge konnten nicht geladen werden: ' + err.message);
       }
     }
   }
@@ -378,7 +447,7 @@ async function pumpWork() {
     while (composeQueue.length && composeQueue[0].dropped) composeQueue.shift();
     let p = composeQueue.shift();
     if (!p && state.clicked && state.session && state.session.ready && pool.length < POOL &&
-        !renderQueue.length && pool.every((q) => q.status !== 'composing')) {
+        !renderQueue.length && pool.every((q) => q.status !== 'composing') && pool.length < poolFor(state.genre)) {
       p = newPiece('set', { piano: state.piano, status: 'composing' });
       pool.push(p);
       p.cmd = { cmd: 'next' };
@@ -419,7 +488,7 @@ async function startSession(opts = {}) {
       adopt(first, e, piano);
       first.status = 'queued';
       state.session.seed = e.S; state.session.bank = n;
-      composer.postMessage({ cmd: 'start', genre, seed: e.S, piano, afterKey: e.info.key });
+      composer.postMessage({ cmd: 'start', genre, seed: e.S, piano, first: e.n_first || null, afterKey: e.info.key });
       state.session.ready = true;
       renderQueue.push(first);
     } catch (err) {                                            // no bank: compose the opening live
@@ -530,7 +599,7 @@ function seek(t) {
 }
 
 for (const id of ['genre', 'piano']) $(id).onchange = () => {
-  state.genre = $('genre').value; state.piano = $('piano').value;
+  state.genre = $('genre').value; state.piano = $('piano').value; pianoUi();
   if (state.clicked || current) startSession();
 };
 $('restart').onclick = () => {
@@ -539,7 +608,7 @@ $('restart').onclick = () => {
   state.clicked = true; state.playing = true; ctx.resume();
   const old = current; current = null; if (player) player.stop(); player = null;
   if (old) { played.unshift(old); played = played.slice(0, KEEP); }
-  state.genre = $('genre').value; state.piano = $('piano').value;
+  state.genre = $('genre').value; state.piano = $('piano').value; pianoUi();
   startSession(Number.isFinite(s) && s !== state.session?.seed ? { seed: Math.abs(s) % 1000000 } : {});
 };
 
@@ -655,7 +724,7 @@ function remember(p) {
 }
 function heldPiece(hash) { return [current, ...played, ...pool].find((q) => q && q.hash === hash && q.store && !q.dropped); }
 function playRecipe(recipe, wantHash) {
-  if (recipe.v !== V) { notice('Dieses Stück stammt von einer anderen Version der Seite und kann so nicht mehr erzeugt werden.'); return; }
+  if (!GENRES.includes(recipe.g)) { notice('Dieses Stück kann diese Seite nicht erzeugen.'); return; }
   audio(); ctx.resume(); state.clicked = true; state.playing = true;
   const held = wantHash && heldPiece(wantHash);
   if (held && held === current) { mark('history-play', { from: 'memory', hash: wantHash }); startPlayer(0); return; }
@@ -682,7 +751,7 @@ function drawHistory() {
     const t = document.createElement('span'); t.className = 't'; t.textContent = h.title;
     const m = document.createElement('span'); m.className = 'm';
     const when = new Date(h.at);
-    m.textContent = `${GENRE_NAME[h.genre] || h.genre} · ${keyName(h.key)} · ${h.tempo} BPM · ${when.toLocaleDateString('de-DE')} ${when.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}` + (h.v !== V ? ' · andere Version' : '');
+    m.textContent = `${GENRE_NAME[h.genre] || h.genre} · ${keyName(h.key)} · ${h.tempo} BPM · ${when.toLocaleDateString('de-DE')} ${when.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}` + (h.v !== V ? ' · ältere Version (wird neu erzeugt)' : '');
     what.append(t, m);
     what.onclick = () => playRecipe(h.recipe, h.h);
     const fav = document.createElement('button'); fav.className = 'fav' + (h.fav ? ' on' : ''); fav.textContent = '♥';
@@ -705,6 +774,7 @@ function progressOf(p) {
   if (!p) return '';
   if (p.status === 'loading') return 'wird geladen…';
   if (p.status === 'composing') return composeJob === p ? 'wird komponiert…' : 'wartet auf den Komponisten…';
+  if (p.status === 'samples' && p.loading && p.loading.n > 1) return `Klänge werden geladen… ${p.loading.done}/${p.loading.n}` + (p.loading.MB ? ` (${String(p.loading.MB).replace('.', ',')} MB)` : '');
   if (p.status === 'queued' || p.status === 'samples') return 'Klänge werden geladen…';
   if (p.status === 'rendering') return `wird vorbereitet… ${Math.min(99, Math.round(100 * (p.store ? p.store.frames : 0) / p.expected))} %`;
   return '';
@@ -733,7 +803,7 @@ function ui() {
     for (const s of i.sections) {
       const d = document.createElement('div');
       d.style.flex = `${Math.max(0.001, s.end - s.start)} 1 0`;
-      d.textContent = SECTION[s.name] || s.name; d.title = `${SECTION[s.name] || s.name} ab ${fmt(s.start)}`;
+      d.textContent = secName(s.name); d.title = `${secName(s.name)} ab ${fmt(s.start)}`;
       d.dataset.start = s.start; d.dataset.end = s.end;
       form.appendChild(d);
     }
@@ -754,7 +824,7 @@ function ui() {
   $('wav').disabled = !(p && p.status === 'ready'); $('notes').disabled = !(p && p.tune);
   // the pool
   const ready = pool.filter((q) => q.status === 'ready').length;
-  $('dots').textContent = Array.from({ length: POOL }, (_, k) => (k < ready ? '●' : (k < pool.length ? '◐' : '○'))).join('');
+  $('dots').textContent = Array.from({ length: poolFor(state.genre) }, (_, k) => (k < ready ? '●' : (k < pool.length ? '◐' : '○'))).join('');
   const making = pool.find((q) => q.status !== 'ready');
   $('pool-text').textContent = state.clicked ? `${ready === 1 ? '1 Stück' : ready + ' Stücke'} bereit` + (making ? ` · nächstes: ${progressOf(making)}` : '') : '';
   $('upnext').textContent = pool.filter((q) => q.info).length ? 'Als Nächstes: ' + pool.filter((q) => q.info).map((q) => q.info.title).join(' · ') : '';
@@ -784,14 +854,16 @@ setInterval(() => {
   POOL = OPUS ? (mobile ? (devMem >= 6 ? 3 : 2) : 4) : (mobile ? 1 : 2);
   KEEP = OPUS ? 2 : 1;
   M.config = { opus: OPUS, pool: POOL, keep: KEEP, mobile, deviceMemory: devMem };
+  pianoUi();
+  if (mobile) $('orch-note').textContent = 'Das Orchester lädt rund 20 MB Klänge pro Stück und braucht beim Rendern rund ein halbes GB Arbeitsspeicher - auf Handys oft zu schwer (es kann stocken oder abbrechen). Das Klavier läuft überall.';
   mark('config', M.config);
   loadHistory(); drawHistory();
   makeComposer(); makeEngine();
   let shared = null;
   if (params.has('r')) {
     try { shared = JSON.parse(unb64u(params.get('r'))); } catch (e) { shared = null; }
-    if (shared && shared.v !== V) { notice('Dieser Link stammt von einer anderen Version der Seite und kann nicht abgespielt werden.'); shared = null; }
-    else if (shared) { state.genre = shared.g; state.piano = shared.p; $('genre').value = shared.g; $('piano').value = shared.p; }
+    if (shared && !GENRES.includes(shared.g)) shared = null;
+    if (shared) { state.genre = shared.g; state.piano = PIANOS.includes(shared.p) ? shared.p : 'beste'; $('genre').value = state.genre; $('piano').value = state.piano; }
   }
   const seed = params.has('seed') ? Math.abs(parseInt(params.get('seed'), 10) || 0) % 1000000 : null;
   const bank = params.has('set') ? parseInt(params.get('set'), 10) : undefined;

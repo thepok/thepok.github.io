@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Endless Piano</title>
-<meta name="description" content="Endlose Klaviermusik, live im Browser komponiert und gespielt von AgentSound.">
+<meta name="description" content="Endlose Klavier- und Orchestermusik, live im Browser komponiert und gespielt von AgentSound.">
 <style>
   :root {
     --bg: #f6f4ef; --fg: #1f1f1f; --muted: #6a6a6a; --line: #d9d5cc; --card: #ffffff;
@@ -62,6 +62,7 @@
   #history .fav.on { color: var(--fav); }
   #history li.playing .t { color: var(--accent); }
   #hist-empty { color: var(--muted); font-size: 14px; }
+  .note { color: var(--muted); font-size: 14px; margin: 10px 0 0; }
   footer { color: var(--muted); font-size: 13px; margin-top: 28px; line-height: 1.5; }
   footer a { color: inherit; }
   @media (max-width: 420px) { .settings { grid-template-columns: 1fr; } }
@@ -70,7 +71,7 @@
 <body>
 <main>
   <h1>Endless Piano</h1>
-  <p class="sub">Endlose Klaviermusik, Stück für Stück neu komponiert.</p>
+  <p class="sub">Endlose Klavier- und Orchestermusik, Stück für Stück neu komponiert.</p>
 
   <section class="card" aria-live="polite">
     <p id="title">Noch nichts gespielt</p>
@@ -96,6 +97,7 @@
         <option value="new-age">New Age</option>
         <option value="klassik">Klassisch (Nocturne und Walzer)</option>
         <option value="walzer">Walzer</option>
+        <option value="orchester">Orchester (sinfonisch)</option>
       </select>
     </label>
     <label>Klavier
@@ -112,6 +114,8 @@
     </label>
   </section>
 
+  <p id="orch-note" class="note" hidden>Das Orchester lädt rund 20 MB Klänge pro Stück (nur die Instrumente, die es spielt) und braucht beim Rendern viel Arbeitsspeicher.</p>
+
   <div class="row">
     <button id="share">Link teilen</button>
     <button id="wav" disabled>WAV laden</button>
@@ -127,9 +131,12 @@
     Komponiert und gespielt live in deinem Browser von AgentSound
     (<a href="https://github.com/thepok/AgentSound">github.com/thepok/AgentSound</a>, MIT).
     Flügel: Splendid Grand Piano (Public Domain).
+    Orchester: Sonatina Symphonic Orchestra (Mattias Westlund, Peter Eastman; CC Sampling Plus 1.0),
+    Virtual Playing Orchestra (Paul Battersby, virtualplaying.com; mit Samples von Mattias Westlund, CC BY-SA 3.0/4.0,
+    und Jeff Glatt / No Budget Orchestra, CC BY-SA 4.0), VSCO 2 Community Edition (Versilian Studios, CC0).
     Raumhall: Voxengo IM Reverbs. <a href="LICENSES.md">Lizenzen</a>
   </footer>
 </main>
-<script type="module" src="app.js"></script>
+<script type="module" src="app.js?v=web2-806f541"></script>
 </body>
 </html>
