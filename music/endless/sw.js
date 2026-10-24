@@ -1,9 +1,9 @@
 // Endless: a minimal service worker - the app shell and the static engine / composer files, cached per page version
 // (sw.js?v=<version>), so a home-screen start is fast. Samples, the bank and Pyodide are left to the browser's HTTP
 // cache; nothing else is stored offline.
-const V = new URL(self.location.href).searchParams.get('v') || 'dev';
-const CACHE = 'endless-' + V;
-const SHELL = ['./', 'index.html', `app.js?v=${V}`, `compose-worker.js?v=${V}`, `engine-worker.js?v=${V}`,
+const Q = new URL(self.location.href).searchParams, V = Q.get('v') || 'dev', A = Q.get('a') || '0';
+const CACHE = `endless-${V}-${A}`;
+const SHELL = ['./', 'index.html', `app.js?v=${V}&a=${A}`, `compose-worker.js?v=${V}`, `engine-worker.js?v=${V}`,
                `engine/agentsound.js?v=${V}`, `engine/agentsound.wasm?v=${V}`, `py/repo.zip?v=${V}`,
                'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 

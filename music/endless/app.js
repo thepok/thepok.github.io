@@ -3,6 +3,7 @@
 //   engine-worker.js:  the AgentSound engine (WASM): render JSON -> streamed 16-bit PCM
 //   here: the bank (natively pre-composed set openings), the pool of ready pieces, compact storage (Opus via
 //   WebCodecs, else 16-bit PCM), playback with seeking, the history (recipes in localStorage).
+const A = 'p1';                     // page revision (app.js / the shell only: the bank, recipes and links stay valid)
 const V = 'web2-806f541';           // code version: recipes / links of another version are made anew with this code (noted)
 const SR = 48000;
 const GAP = 2.5;                    // silence between pieces (the render already ends in its reverb tail)
@@ -1197,7 +1198,7 @@ setInterval(() => {
   KEEP = OPUS ? 2 : 1;
   if (mobile && USE_MSE) POOL = Math.max(POOL, 2);   // (two pieces appended ahead when the screen goes off)
   M.config = { opus: OPUS, mse: USE_MSE, pool: POOL, keep: KEEP, mobile, deviceMemory: devMem };
-  if ('serviceWorker' in navigator && !params.has('nosw')) navigator.serviceWorker.register('sw.js?v=' + V).catch((e) => M.errors.push('sw: ' + e));
+  if ('serviceWorker' in navigator && !params.has('nosw')) navigator.serviceWorker.register(`sw.js?v=${V}&a=${A}`).catch((e) => M.errors.push('sw: ' + e));
   pianoUi();
   if (mobile) $('orch-note').textContent = 'Das Orchester lädt rund 20 MB Klänge pro Stück und braucht beim Rendern rund ein halbes GB Arbeitsspeicher - auf Handys oft zu schwer (es kann stocken oder abbrechen). Das Klavier läuft überall.';
   mark('config', M.config);
