@@ -1,11 +1,11 @@
 // Endless: the persistent asset cache (Cache Storage), used by the page and both workers.
-// Every asset URL is content-versioned - ?v=<code version> (engine, composer zip, bank) or ?s=<sample-set hash>
-// (samples/**) - so a cached file can never be stale: cache-first, the network only on a miss. GitHub Pages sends
+// Every asset URL is content-versioned - ?v=<code version> (engine, composer zip, bank), ?s=<its hash>
+// (samples/index.json), ?h=<the file's own content hash> (samples/**) - so a cached file can never be stale:
+// cache-first, the network only on a miss. GitHub Pages sends
 // max-age=600 and phones evict their small HTTP cache, so without this every visit would load the sounds again.
 // The page does its own caching (it works on the very first visit and without a service worker); sw.js caches the
 // app shell, the engine and Pyodide, and passes these URLs through.
-export const codeCache = (V) => `endless-code-${V}`;        // engine, py/repo.zip, bank/**
-export const sampleCache = (SV) => `endless-samples-${SV}`; // samples/** (piano, orchestra, impulse responses)
+export const codeCache = (V) => `endless-code-${V}`;        // engine, py/repo.zip, bank/**  (the samples: 'endless-samples')
 const HAS = typeof caches !== 'undefined';
 
 // the file as an ArrayBuffer, from the cache or (on a miss) the network; only a full 200 response is stored, as a
@@ -62,6 +62,14 @@ export async function cacheSize() {
 // the caches of other versions go (the service worker does the same when it activates)
 export async function dropOld(keep) {
   for (const k of await ours()) if (!keep.includes(k) && !k.startsWith('endless-shell-')) await caches.delete(k);
+}
+// the entries of a cache `keep(url)` says no to (samples an update replaced); -> how many went
+export async function prune(name, keep) {
+  if (!HAS || !(await caches.has(name))) return 0;
+  const c = await caches.open(name);
+  let n = 0;
+  for (const r of await c.keys()) if (!keep(new URL(r.url))) { await c.delete(r); n++; }
+  return n;
 }
 // "Cache leeren": everything but the app shell
 export async function clearAll() {

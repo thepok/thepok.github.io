@@ -3,12 +3,21 @@
 //   engine-worker.js:  the AgentSound engine (WASM): render JSON -> streamed 16-bit PCM
 //   here: the bank (natively pre-composed set openings), the pool of ready pieces, compact storage (Opus via
 //   WebCodecs, else 16-bit PCM), playback with seeking, the history (recipes in localStorage).
-const A = 'p3';                     // page revision (app.js / the shell only: the bank, recipes and links stay valid)
-const V = 'web2-806f541';           // code version: recipes / links of another version are made anew with this code (noted)
-const SV = '3b5c44c47f';                      // the sample set's content hash (wasm-space/prod/asset_version.py writes it): ?s= on samples/**
+const A = 'p4';                     // page revision (app.js / the shell only: the bank, recipes and links stay valid)
+const V = 'web3-2204ef6';           // code version: recipes / links of another version are made anew with this code (noted)
+const SV = '5323456847';                      // the content hash of samples/index.json (wasm-space/prod/asset_version.py writes it)
 const PYV = '314.0.7';              // Pyodide (the compose worker loads it from the CDN; the service worker caches it)
 const store = import(`./store.js?v=${V}&a=${A}`);   // Cache Storage: the samples, the bank, the composer zip stay offline
-const CODE_CACHE = `endless-code-${V}`, SAMPLE_CACHE = `endless-samples-${SV}`;
+const CODE_CACHE = `endless-code-${V}`, SAMPLE_CACHE = 'endless-samples';   // (sample URLs carry each file's content hash)
+// samples/index.json: {set: {file: content hash}} for beste / spar / orch / ir - every sample URL is
+// samples/<set>/<file>?h=<hash>, so an update of the samples fetches only the files that changed
+let HASH = null;
+async function hashes() {
+  if (!HASH) HASH = JSON.parse(new TextDecoder().decode((await (await store).cachedBuffer(`samples/index.json?s=${SV}`, SAMPLE_CACHE)).buf));
+  return HASH;
+}
+const surl = (set, file) => `samples/${set}/${encodeURIComponent(file)}?h=${(HASH[set] || {})[file] || '0'}`;
+const irUrl = (base) => surl('ir', base in HASH.ir ? base : 'French 18th Century Salon.wav');
 const SR = 48000;
 const GAP = 2.5;                    // silence between pieces (the render already ends in its reverb tail)
 const AHEAD = 4;                    // seconds of decoded audio scheduled ahead
@@ -618,17 +627,17 @@ function decoderAt(sr) { if (!decoders.has(sr)) decoders.set(sr, new OfflineAudi
 let orchIndex = null;                // the orchestra's samples: relpath -> [name, rate, frames, loop, unity]
 async function orchestraIndex() {
   if (!orchIndex) {
-    const { buf } = await (await store).cachedBuffer(`samples/orch/index.json?s=${SV}`, SAMPLE_CACHE);
+    await hashes();
+    const { buf } = await (await store).cachedBuffer(surl('orch', 'index.json'), SAMPLE_CACHE);
     orchIndex = JSON.parse(new TextDecoder().decode(buf));
   }
   return orchIndex;
 }
-const IRS = { 'French 18th Century Salon.wav': `samples/ir/French%2018th%20Century%20Salon.wav?s=${SV}`,
-              'Musikvereinsaal.wav': `samples/ir/Musikvereinsaal.wav?s=${SV}` };
 
 // the piece's samples, loaded on demand: only the instruments (tracks) this piece plays, each file fetched once per
 // visit (kept compressed), decoded for this render; the render JSON gets the engine's paths
 async function samplesFor(p) {
+  await hashes();
   const song = JSON.parse(p.render);
   const orch = ORCH(p.info.genre);
   const idx = orch ? await orchestraIndex() : null;
@@ -638,10 +647,10 @@ async function samplesFor(p) {
     if (orch) {
       const e = idx[z.file.replace(/^.*?assets\//, '')];
       if (!e) throw new Error('Orchesterklang fehlt: ' + z.file.split('/').pop());
-      name = e[0]; job = { url: `samples/orch/${name}.opus?s=${SV}`, sr: e[1], loop: e[3], unity: e[4] };
+      name = e[0]; job = { url: surl('orch', name + '.opus'), sr: e[1], loop: e[3], unity: e[4] };
     } else {
       name = safe(z.file.split('/').pop().replace(/\.wav$/i, ''));
-      job = { url: `samples/${p.piano}/${name}.opus?s=${SV}`, sr: SR };
+      job = { url: surl(p.piano, name + '.opus'), sr: SR };
     }
     z.file = `s/${name}.wav`;
     jobs.set(name, job);
@@ -649,7 +658,7 @@ async function samplesFor(p) {
   const irs = {};
   for (const b of song.buses) for (const f of (b.fx || [])) if (f.params && f.params.ir) {
     const base = f.params.ir.split('/').pop();
-    const url = IRS[base] || IRS['French 18th Century Salon.wav'];
+    const url = irUrl(base);
     f.params.ir = 'ir/' + safe(decodeURIComponent(url.split('?')[0].split('/').pop()));
     irs[f.params.ir] = url;
   }
@@ -1209,13 +1218,8 @@ $('offline-load').onclick = async () => {
   const b = $('offline-load'), S = await store;
   b.disabled = true; persistOnce();
   try {
-    let urls;
-    if (ORCH(state.genre)) urls = [...new Set(Object.values(await orchestraIndex()).map((e) => `samples/orch/${e[0]}.opus?s=${SV}`))];
-    else {
-      const { buf } = await S.cachedBuffer(`samples/${state.piano}/index.json?s=${SV}`, SAMPLE_CACHE);
-      urls = JSON.parse(new TextDecoder().decode(buf)).map((n) => `samples/${state.piano}/${n}.opus?s=${SV}`);
-    }
-    urls.push(...Object.values(IRS));
+    const set = ORCH(state.genre) ? 'orch' : state.piano, H = await hashes();
+    const urls = Object.keys(H[set]).map((f) => surl(set, f)).concat(Object.keys(H.ir).filter((f) => f.endsWith('.wav')).map((f) => surl('ir', f)));
     await S.cachedBuffer(`py/repo.zip?v=${V}`, CODE_CACHE);
     let done = 0;
     const total = urls.length, list = urls.slice();
@@ -1231,7 +1235,18 @@ $('offline-clear').onclick = async () => {
   compressed.clear(); $('offline-load').textContent = 'Für offline laden'; offlineUi(true);
 };
 offlineUi(true);
-setTimeout(() => store.then((S) => S.dropOld([CODE_CACHE, SAMPLE_CACHE, `endless-pyodide-${PYV}`])).catch(() => {}), 20000);
+setTimeout(async () => {                       // the caches of other versions, the samples no index names any more
+  try {
+    const S = await store, H = await hashes();
+    await S.dropOld([CODE_CACHE, SAMPLE_CACHE, `endless-pyodide-${PYV}`]);
+    const n = await S.prune(SAMPLE_CACHE, (u) => {
+      const m = u.pathname.match(/\/samples\/([^/]+)\/([^/]+)$/);
+      if (!m) return u.pathname.endsWith('/samples/index.json') && u.searchParams.get('s') === SV;
+      return (H[m[1]] || {})[decodeURIComponent(m[2])] === u.searchParams.get('h');
+    });
+    if (n) { mark('pruned', { n }); offlineUi(); }
+  } catch (e) { /* no storage */ }
+}, 20000);
 
 // for tests: the page's inner state, read only
 window.__dbg = { get current() { return current; }, get pool() { return pool; }, get played() { return played; }, get stream() { return stream; },

@@ -25,20 +25,20 @@ changes.
 
 ## The orchestra (samples)
 
-`samples/orch/*.opus` (656 files) and `samples/orch/index.json`. Each file is one sample of the packs below, converted
+`samples/orch/*.opus` (1202 files) and `samples/orch/index.json`. Each file is one sample of the packs below, converted
 to Opus (96-112 kbps stereo); looped sustains end shortly after their loop, one-shots lose the tail below -66 dB of
 their peak (with a 30 ms fade). The file name is a short hash of the original path plus the original file name. The
 SFZ mapping text of the same packs is inside `py/repo.zip` (`assets/samples/...`, text only, no audio).
 
 | Pack | Licence | Used for | Attribution |
 |---|---|---|---|
-| Sonatina Symphonic Orchestra 4.0 (`sso`) | Creative Commons Sampling Plus 1.0 (non-commercial redistribution of the whole work allowed; no advertising use) | violins 1 + 2, violas, cellos, basses (SSO part), flutes, clarinets, bassoons, horns, trumpets, trombones, tuba; the SFZ mappings | Sonatina Symphonic Orchestra by Mattias Westlund, SFZ v4.0 by Peter Eastman - https://github.com/peastman/sso, https://creativecommons.org/licenses/sampling+/1.0/ |
+| Sonatina Symphonic Orchestra 4.0 (`sso`) | Creative Commons Sampling Plus 1.0 (non-commercial redistribution of the whole work allowed; no advertising use) | violins 1 + 2, violas, cellos, basses (SSO part; with their pizzicato, col legno, harmonics, tremolo), flutes, clarinets, bassoons, horns, trumpets, trombones, tuba; the SFZ mappings | Sonatina Symphonic Orchestra by Mattias Westlund, SFZ v4.0 by Peter Eastman - https://github.com/peastman/sso, https://creativecommons.org/licenses/sampling+/1.0/ |
 | Virtual Playing Orchestra 3.2 wave files (`vpo-wav`) + 3.3 standard scripts | VPO terms: free redistribution, credit the creators / link virtualplaying.com, no sale; its parts: | the string sections' sustains (basses, cellos, violas) | Virtual Playing Orchestra by Paul Battersby, http://virtualplaying.com/virtual-playing-orchestra/ |
 | - VPO `libs/SSO` (basses) | CC Sampling Plus 1.0 | basses sustain | Mattias Westlund (Sonatina Symphonic Orchestra), loops by Paul Battersby |
 | - VPO `libs/NoBudgetOrch/CelloSect` | CC BY-SA 4.0 | cellos sustain | Jeff Glatt (No Budget Orchestra), loops by Paul Battersby - https://creativecommons.org/licenses/by-sa/4.0/ |
 | - VPO `libs/Mattias-Westlund/ViolaSect` | CC BY-SA 4.0 (its readme; Mattias Westlund's samples are CC BY-SA 3.0 elsewhere) | violas sustain | Mattias Westlund (www.mattiaswestlund.net), from the bandshed.net viola samples and FluidGM - https://creativecommons.org/licenses/by-sa/4.0/ |
 | - VPO `libs/VSCO2-CE` (violas) | CC0 1.0 | violas | Versilian Studios |
-| VSCO 2 Community Edition 1.1.0 (`vsco2-ce`) | CC0 1.0 (public domain dedication) | oboes, harp, timpani, percussion (cymbals) | Versilian Studios, https://github.com/sgossner/VSCO-2-CE |
+| VSCO 2 Community Edition 1.1.0 (`vsco2-ce`) | CC0 1.0 (public domain dedication) | oboes, harp (incl. glissandi), timpani (incl. rolls), percussion (cymbals), muted horns (`FHornMute.sfz`, also the stopped-horn accents), straight-muted trumpets (`TrumpetStraightMuteSus.sfz`) | Versilian Studios, https://github.com/sgossner/VSCO-2-CE |
 
 ShareAlike: the converted BY-SA samples (`samples/orch/*` from `vpo-wav/libs/NoBudgetOrch` and
 `vpo-wav/libs/Mattias-Westlund`; `index.json` names the original path of every file) are offered under the same
@@ -65,6 +65,17 @@ Grand Piano V3 by Alexander Holm, CC-BY 3.0, https://sfzinstruments.github.io/pi
 files (0 bytes, names only) for sample files the composer checks or lists. `agentsound_web_tables.json`: numbers the
 composer reads from the samples (length, rate, channels; the RMS level of a zone's first 1.5 s), measured from the
 original files - no audio.
+
+## Audit (2026-10-24, AgentSound 2204ef6: the playing techniques) - the samples it added
+
+The techniques (pizzicato choir, col legno, harmonics, muted / stopped horns, straight-muted trumpet, harp
+glissando, timpani rolls, trills, woodwind chatter, sforzando) load two programs more than before, both VSCO 2
+Community Edition (CC0 1.0): `FHornMute.sfz` (17 files, `vsco2-ce/Brass/F Horn/MOHorn_mute_*`) and
+`TrumpetStraightMuteSus.sfz` (16 files, `vsco2-ce/Brass/Trumpet/Sum_SHTrumpet_straightM-sus_*`). Everything else
+(col legno, harmonics, pizzicato, rolls, harp; the stopped horn is the muted horn, loud) are regions of the SSO / VSCO 2 CE / VPO programs that
+were already loaded and published (every region of every loaded program is in the cut). Publishable: yes.
+
+`samples/index.json`: the content hash of every sample file (the page fetches `<file>?h=<hash>`); no audio.
 
 ## Audit (2026-10-24): what the orchestra uses and whether it may be published
 

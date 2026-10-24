@@ -3,12 +3,12 @@
 //   endless-shell-<v>-<a>   the app shell (precached; the page itself network-first, the cache when offline)
 //   endless-code-<v>        engine/* (cache-first; py/repo.zip and bank/** are cached there by the page, store.js)
 //   endless-pyodide-<p>     the Pyodide runtime from the CDN (a pinned version: immutable, cache-first)
-//   endless-samples-<s>     samples/** - cached by the page (store.js), kept here
+//   endless-samples         samples/** - cached by the page (store.js, each URL with its content hash), kept here
 // On activate only the caches of other versions go: a new page revision keeps the samples, the code and Pyodide.
 const Q = new URL(self.location.href).searchParams;
 const V = Q.get('v') || 'dev', A = Q.get('a') || '0', SV = Q.get('s') || '0', P = Q.get('p') || '0';
 const SHELL_CACHE = `endless-shell-${V}-${A}`, CODE = `endless-code-${V}`, PY = `endless-pyodide-${P}`;
-const KEEP = [SHELL_CACHE, CODE, PY, `endless-samples-${SV}`];
+const KEEP = [SHELL_CACHE, CODE, PY, 'endless-samples'];
 const PY_URL = `https://cdn.jsdelivr.net/npm/pyodide@${P}/`;
 const SHELL = ['index.html', `app.js?v=${V}&a=${A}`, `store.js?v=${V}&a=${A}`, `compose-worker.js?v=${V}&a=${A}&py=${P}`,
                `engine-worker.js?v=${V}&a=${A}`, 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
