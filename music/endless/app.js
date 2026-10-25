@@ -3,8 +3,8 @@
 //   engine-worker.js:  the AgentSound engine (WASM): render JSON -> streamed 16-bit PCM
 //   here: the bank (natively pre-composed set openings), the pool of ready pieces, compact storage (Opus via
 //   WebCodecs, else 16-bit PCM), playback with seeking, the history (recipes in localStorage).
-const A = 'p7';                     // page revision (app.js / the shell only: the bank, recipes and links stay valid)
-const V = 'web5-aa736aa';           // code version: recipes / links of another version are made anew with this code (noted)
+const A = 'p8';                     // page revision (app.js / the shell only: the bank, recipes and links stay valid)
+const V = 'web6-f1ced2e';           // code version: recipes / links of another version are made anew with this code (noted)
 const SV = 'b58083a615';                      // the content hash of samples/index.json (wasm-space/prod/asset_version.py writes it)
 const PYV = '314.0.7';              // Pyodide (the compose worker loads it from the CDN; the service worker caches it)
 const store = import(`./store.js?v=${V}&a=${A}`);   // Cache Storage: the samples, the bank, the composer zip stay offline
