@@ -3,9 +3,9 @@
 //   engine-worker.js:  the AgentSound engine (WASM): render JSON -> streamed 16-bit PCM
 //   here: the bank (natively pre-composed set openings), the pool of ready pieces, compact storage (Opus via
 //   WebCodecs, else 16-bit PCM), playback with seeking, the history (recipes in localStorage).
-const A = 'p4';                     // page revision (app.js / the shell only: the bank, recipes and links stay valid)
-const V = 'web3-2204ef6';           // code version: recipes / links of another version are made anew with this code (noted)
-const SV = '5323456847';                      // the content hash of samples/index.json (wasm-space/prod/asset_version.py writes it)
+const A = 'p7';                     // page revision (app.js / the shell only: the bank, recipes and links stay valid)
+const V = 'web5-aa736aa';           // code version: recipes / links of another version are made anew with this code (noted)
+const SV = 'b58083a615';                      // the content hash of samples/index.json (wasm-space/prod/asset_version.py writes it)
 const PYV = '314.0.7';              // Pyodide (the compose worker loads it from the CDN; the service worker caches it)
 const store = import(`./store.js?v=${V}&a=${A}`);   // Cache Storage: the samples, the bank, the composer zip stay offline
 const CODE_CACHE = `endless-code-${V}`, SAMPLE_CACHE = 'endless-samples';   // (sample URLs carry each file's content hash)
@@ -390,6 +390,7 @@ class MseStream {
       const st = last.piece.store;
       if (!last.done) {
         if (!st || last.piece.dropped) return this.fill(at);
+        if (last.n < 0 && !enough(last.piece)) return this.fill(at);   // (its render must stay ahead of the playback)
         if (this.full) return;
         const pk = st.packets;
         if (last.n < 0) {                              // its first packet: where the stream is now
@@ -715,7 +716,7 @@ async function pumpWork() {
         const got = await samplesFor(p);
         if (engineJob !== p) return;                   // preempted while its samples loaded
         if (p.dropped) { engineJob = null; return pumpWork(); }
-        p.store = newStore(); p.status = 'rendering';
+        p.store = newStore(); p.status = 'rendering'; p.renderT0 = performance.now();
         engine.postMessage({ job: p.id, ...got }, Object.values(got.files));
       } catch (err) {
         M.errors.push(String(err)); p.status = 'failed'; engineJob = null;
@@ -822,6 +823,19 @@ function startPlayer(offset = 0, startAt = null) {
   if (p.store) player.pump();
 }
 function canPlay(p) { return p && p.store && (p.store.kind === 'pcm' ? p.store.frames > 0 : p.store.packets.length > 0); }
+// a piece the engine still renders starts only when its render stays ahead of the playback to its end: with r seconds
+// rendered of s and the render's speed v so far (audio seconds per second, 10 % to spare), r >= s * (1 - v) + 4 s -
+// a slow device (the orchestra with choir / soloists / organ renders near real time) waits in silence before the
+// piece instead of stalling inside it
+function enough(p) {
+  if (!canPlay(p)) return false;
+  if (p.status === 'ready' || p.store.complete) return true;
+  const r = p.store.frames / SR, s = (p.info && p.info.seconds) || r;
+  const wall = (performance.now() - (p.renderT0 || performance.now())) / 1000;
+  if (wall < 2) return false;
+  const v = 0.9 * r / wall;
+  return v >= 1 || r >= s * (1 - v) + 4;
+}
 
 function advance(startAt = null) {
   const old = current;
@@ -1113,7 +1127,7 @@ function ui() {
   const making = pool.find((q) => q.status !== 'ready');
   $('pool-text').textContent = state.clicked ? `${ready === 1 ? '1 Stück' : ready + ' Stücke'} bereit` + (making ? ` · nächstes: ${progressOf(making)}` : '') : '';
   $('upnext').textContent = pool.filter((q) => q.info).length ? 'Als Nächstes: ' + pool.filter((q) => q.info).map((q) => q.info.title).join(' · ') : '';
-  if (p && !canPlay(p)) showState(progressOf(p));
+  if (p && !(USE_MSE ? enough(p) : canPlay(p))) showState(progressOf(p));
   else if (!state.playing && state.clicked) showState('Pausiert');
   else showState(state.notice && Date.now() - state.noticeAt < 60000 ? state.notice : '');
 }
