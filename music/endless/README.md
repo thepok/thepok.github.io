@@ -1,6 +1,6 @@
 # Endless browser build
 
-Current release: `web7-925b025c26`, page revision `p10`.
+Current release: `web7-925b025c26`, page revision `p11`.
 
 The symphonic generator includes reduced automatic phrase shaping, role-aware
 theme accents, and foreground dynamics for counter-lines answering during the
@@ -28,3 +28,8 @@ Mobile MediaSource playback waits for a piece to finish rendering before startin
 A persistent error panel shows a readable explanation and the last 20 technical messages. Worker errors and encoder completion failures are surfaced; failed render completion is no longer accepted as a complete song. Recovery is manual via Skip, not an automatic repair guarantee.
 
 Validation: mobile readiness cases, injected failure handling, JavaScript syntax and error-panel rendering at 420px width passed. A live desktop run started four pieces with three transitions over approximately 16 minutes of media time (first four minutes normal speed, then accelerated), without playback errors. Actual phone lock-screen behavior still needs device testing.
+
+
+## Progressive mobile playback restored (p11)
+
+At user request, mobile once again uses the original render-ahead speed estimate instead of waiting for complete rendering. A MediaSource buffer underrun during a started song now appears in the persistent GUI error panel. Startup, seeks and completed-song gaps are excluded; repeated waiting events are deduplicated until playback recovers. The panel records recovery without erasing the technical history. Background rendering can still be throttled by the phone OS.

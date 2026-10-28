@@ -3,7 +3,7 @@
 //   engine-worker.js:  the AgentSound engine (WASM): render JSON -> streamed 16-bit PCM
 //   here: the bank (natively pre-composed set openings), the pool of ready pieces, compact storage (Opus via
 //   WebCodecs, else 16-bit PCM), playback with seeking, the history (recipes in localStorage).
-const A = 'p10';                     // page revision (app.js / the shell only: the bank, recipes and links stay valid)
+const A = 'p11';                     // page revision (app.js / the shell only: the bank, recipes and links stay valid)
 const V = 'web7-925b025c26';           // code version: recipes / links of another version are made anew with this code (noted)
 const SV = 'b58083a615';                      // the content hash of samples/index.json (wasm-space/prod/asset_version.py writes it)
 const PYV = '314.0.7';              // Pyodide (the compose worker loads it from the CDN; the service worker caches it)
@@ -33,7 +33,9 @@ function reportError(error) {
   const box = $('error-panel');
   if (!box) return;
   box.hidden = false;
-  $('error-message').textContent = /engine|encoder|decoder|sourcebuffer|mse:/i.test(detail)
+  $('error-message').textContent = detail.startsWith('buffer-underrun:')
+    ? 'Der Audiopuffer ist während des Stücks leer gelaufen. Die Musik wartet auf weitere Audiodaten und läuft dann automatisch weiter. Lass die Seite möglichst im Vordergrund.'
+    : /engine|encoder|decoder|sourcebuffer|mse:/i.test(detail)
     ? 'Die Audio-Berechnung oder Wiedergabe hat einen Fehler gemeldet. Falls die Musik steht, versuche „Weiter“ oder überspringe das Stück.'
     : /composer/i.test(detail)
     ? 'Das nächste Stück konnte nicht erzeugt werden. Bereits fertige Musik kann weiterlaufen.'
@@ -852,10 +854,6 @@ function canPlay(p) { return p && p.store && (p.store.kind === 'pcm' ? p.store.f
 function enough(p) {
   if (!canPlay(p)) return false;
   if (p.status === 'ready' || p.store.complete) return true;
-  // A phone may throttle/suspend rendering after locking the screen. Foreground
-  // render speed cannot guarantee that the rest arrives before playback catches up.
-  // Only start complete pieces there; preserve progressive startup on desktop.
-  if (mobile) return false;
   const r = p.store.frames / SR, s = (p.info && p.info.seconds) || r;
   const wall = (performance.now() - (p.renderT0 || performance.now())) / 1000;
   if (wall < 2) return false;
@@ -1205,7 +1203,32 @@ $('out').addEventListener('pause', () => {
 $('out').addEventListener('play', () => {      // the system resumed us (after a call)
   if (!state.playing && state.sysPaused) { state.playing = true; state.sysPaused = false; mark('system-resume'); ui(); }
 });
-$('out').addEventListener('waiting', () => mark('stream-waiting', { at: +$('out').currentTime.toFixed(2) }));
+// Only diagnose missing audio after the first sound, not startup, seeking or the gap between pieces.
+function reportBufferUnderrun() {
+  const a = $('out'), p = player;
+  if (!USE_MSE || !p || p.dead || p.first === null || !state.playing || a.paused || a.seeking || a.readyState >= 3) return;
+  if (p.endTime !== null && a.currentTime >= p.endTime - 0.1) return;
+  for (let i = 0; i < a.buffered.length; i++) {
+    if (a.buffered.start(i) <= a.currentTime + 0.05 && a.buffered.end(i) > a.currentTime + 0.1) return;
+  }
+  if (p.bufferUnderrun) return;
+  p.bufferUnderrun = true;
+  mark('buffer-underrun', { id: p.p.id, at: +p.position().toFixed(2) });
+  reportError(`buffer-underrun: ${p.p.info?.title || 'Stück'} bei ${fmt(p.position())}; Status ${p.p.status}`);
+}
+$('out').addEventListener('waiting', () => {
+  mark('stream-waiting', { at: +$('out').currentTime.toFixed(2) });
+  reportBufferUnderrun();
+});
+$('out').addEventListener('playing', () => {
+  if (player && player.bufferUnderrun) {
+    mark('buffer-recovered', { id: player.p.id });
+    player.bufferUnderrun = false;
+    // Keep the incident in the details, but do not keep claiming playback is waiting.
+    if (M.errors[M.errors.length - 1]?.startsWith('buffer-underrun:'))
+      $('error-message').textContent = 'Der Audiopuffer war kurz leer. Die Wiedergabe läuft wieder; der Vorfall steht in den Details.';
+  }
+});
 function onVisible() {
   const vis = document.visibilityState === 'visible';
   mark(vis ? 'visible' : 'hidden', { appended: stream ? stream.segs.filter((g) => g.done).length : null, pool: pool.filter(canPlay).length });
