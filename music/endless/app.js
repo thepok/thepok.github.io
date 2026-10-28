@@ -3,7 +3,7 @@
 //   engine-worker.js:  the AgentSound engine (WASM): render JSON -> streamed 16-bit PCM
 //   here: the bank (natively pre-composed set openings), the pool of ready pieces, compact storage (Opus via
 //   WebCodecs, else 16-bit PCM), playback with seeking, the history (recipes in localStorage).
-const A = 'p9';                     // page revision (app.js / the shell only: the bank, recipes and links stay valid)
+const A = 'p10';                     // page revision (app.js / the shell only: the bank, recipes and links stay valid)
 const V = 'web7-925b025c26';           // code version: recipes / links of another version are made anew with this code (noted)
 const SV = 'b58083a615';                      // the content hash of samples/index.json (wasm-space/prod/asset_version.py writes it)
 const PYV = '314.0.7';              // Pyodide (the compose worker loads it from the CDN; the service worker caches it)
@@ -26,6 +26,25 @@ const params = new URLSearchParams(location.search);
 const MUTE = params.has('mute');
 const M = window.__metrics = { events: [], errors: [] };
 const mark = (name, extra) => M.events.push({ name, t: +(performance.now() / 1000).toFixed(2), ...extra });
+// Keep failures visible independently of the frequently refreshed transport status.
+function reportError(error) {
+  const detail = String(error && error.message || error);
+  M.errors.push(detail);
+  const box = $('error-panel');
+  if (!box) return;
+  box.hidden = false;
+  $('error-message').textContent = /engine|encoder|decoder|sourcebuffer|mse:/i.test(detail)
+    ? 'Die Audio-Berechnung oder Wiedergabe hat einen Fehler gemeldet. Falls die Musik steht, versuche „Weiter“ oder überspringe das Stück.'
+    : /composer/i.test(detail)
+    ? 'Das nächste Stück konnte nicht erzeugt werden. Bereits fertige Musik kann weiterlaufen.'
+    : /play:|NotAllowedError/i.test(detail)
+    ? 'Der Browser hat die Wiedergabe blockiert. Tippe auf Abspielen beziehungsweise Weiter.'
+    : 'Es ist ein Fehler aufgetreten. Die Details unten helfen bei der Fehlersuche.';
+  $('error-details').textContent = M.errors.slice(-20).join('\n');
+}
+window.addEventListener('error', e => reportError('Browser: ' + (e.message || 'Unbekannter Fehler')));
+window.addEventListener('unhandledrejection', e => reportError('Browser: ' + String(e.reason)));
+
 
 const GENRES = ['new-age', 'klassik', 'walzer', 'orchester'];
 const GENRE_NAME = { 'new-age': 'New Age', klassik: 'Klassisch', walzer: 'Walzer', orchester: 'Orchester' };
@@ -101,7 +120,7 @@ class OpusStore {
         this.bytes += d.byteLength; this.until = (chunk.timestamp + (chunk.duration || 20000)) / 1e6;
         if (meta && meta.decoderConfig && !this.cfg) this.cfg = meta.decoderConfig;
       },
-      error: (e) => { this.err = e; M.errors.push('encoder: ' + e); },
+      error: (e) => { this.err = e; reportError('encoder: ' + e); },
     });
     this.enc.configure({ codec: 'opus', sampleRate: SR, numberOfChannels: 2, bitrate: 128000 });   // (128k: 3 pieces fit the stream)
   }
@@ -170,7 +189,7 @@ class OpusPlayer extends Player {
   open() {
     const st = this.p.store;
     if (!st.packets.length) return false;
-    this.dec = new AudioDecoder({ output: (ad) => this.out(ad), error: (e) => { M.errors.push('decoder: ' + e); } });
+    this.dec = new AudioDecoder({ output: (ad) => this.out(ad), error: (e) => { reportError('decoder: ' + e); } });
     this.dec.configure(st.cfg || { codec: 'opus', sampleRate: SR, numberOfChannels: 2 });
     const want = (this.offset - 0.12) * 1e6;     // a little pre-roll: the decoder settles before the seek point
     let i = 0;
@@ -311,7 +330,7 @@ class MseStream {
       this.sb = this.ms.addSourceBuffer(MSE_TYPE);
       this.sb.mode = 'segments';
       this.sb.addEventListener('updateend', () => { this.ops.shift(); this.run(); });
-      this.sb.addEventListener('error', () => M.errors.push('sourcebuffer error'));
+      this.sb.addEventListener('error', () => reportError('sourcebuffer error'));
       this.run();
       if (state.playing) this.audio.play().catch(() => {});
     });
@@ -327,7 +346,7 @@ class MseStream {
       }
     } catch (e) {
       if (e.name === 'QuotaExceededError') { this.full = 1; this.evict(true); return; }   // retried after the eviction
-      M.errors.push('mse: ' + e.name + ' ' + e.message); this.ops.shift(); this.run();
+      reportError('mse: ' + e.name + ' ' + e.message); this.ops.shift(); this.run();
     }
   }
   op(o) { this.ops.push(o); this.run(); }
@@ -447,7 +466,7 @@ class MsePlayer {
       this.seg = seg;
       S.segs.splice(0, S.segs.indexOf(seg));
     } else this.seg = S.cut(piece, offset);
-    if (a.paused && state.playing) a.play().catch((e) => M.errors.push('play: ' + e.name));
+    if (a.paused && state.playing) a.play().catch((e) => reportError('play: ' + e.name));
   }
   position() {
     const s = this.seg;
@@ -470,7 +489,7 @@ function mediaClock() {
   return {
     get currentTime() { return stream.audio.currentTime; },
     get state() { return stream.audio.paused ? 'suspended' : 'running'; },
-    resume() { stream.audio.play().catch((e) => M.errors.push('play: ' + e.name)); return Promise.resolve(); },   // (play() waits for data: never awaited)
+    resume() { stream.audio.play().catch((e) => reportError('play: ' + e.name)); return Promise.resolve(); },   // (play() waits for data: never awaited)
     suspend() { stream.audio.pause(); return Promise.resolve(); },
   };
 }
@@ -536,11 +555,12 @@ const renderQueue = [];             // pieces waiting for the engine, urgent fir
 function makeComposer() {
   composer = new Worker(new URL(`./compose-worker.js?v=${V}&a=${A}&py=${PYV}`, import.meta.url), { type: 'module' });
   composerReady = false;
+  composer.onerror = e => reportError('composer: ' + (e.message || 'Worker abgebrochen'));
   composer.onmessage = (e) => {
     const m = e.data;
     if (m.type === 'ready') {
       composerReady = true; mark('composer-ready', { version: m.version });
-      if (m.version !== V) M.errors.push('composer version ' + m.version);
+      if (m.version !== V) reportError('composer version ' + m.version);
       return pumpWork();
     }
     const p = composeJob && composeJob.id === m.job ? composeJob : null;
@@ -551,13 +571,13 @@ function makeComposer() {
       if (o.info.other_version && !(p.wantHash && p.wantHash === o.hash)) notice('Dieses Stück stammt von einer älteren Version der Seite und wurde mit der aktuellen neu erzeugt - es kann anders klingen als damals.');
       if (p.wantHash && !o.info.other_version) {
         p.verify = p.wantHash === o.hash;
-        if (!p.verify) M.errors.push(`recipe ${JSON.stringify(o.recipe)}: hash ${o.hash}, expected ${p.wantHash}`);
+        if (!p.verify) reportError(`recipe ${JSON.stringify(o.recipe)}: hash ${o.hash}, expected ${p.wantHash}`);
       }
       p.status = 'queued';
       mark('composed', { id: p.id, kind: p.kind, title: o.info.title, ms: m.ms, candidates: o.info.candidates, hash: o.hash, verify: p.verify });
       renderQueue.push(p);
     } else if (m.type === 'error') {
-      M.errors.push('composer: ' + m.message);
+      reportError('composer: ' + m.message);
       if (p) { p.status = 'failed'; p.error = m.message; pool = pool.filter((q) => q !== p); }
       if (p && p === current && p.kind === 'history') { notice('Dieses Stück lässt sich mit der aktuellen Version nicht mehr erzeugen.'); advance(); }
       if (m.fatal) notice('Der Komponist konnte nicht laden. Die Musik der Bank spielt trotzdem.');
@@ -567,8 +587,10 @@ function makeComposer() {
 }
 function makeEngine() {
   engine = new Worker(new URL(`./engine-worker.js?v=${V}&a=${A}`, import.meta.url), { type: 'module' });
+  engine.onerror = e => reportError('engine: ' + (e.message || 'Worker abgebrochen, möglicherweise zu wenig Speicher'));
   engine.onmessage = (e) => {
     const m = e.data;
+    if (m.type === 'done' && m.ok === false) { m.type = 'error'; m.message = 'Render-Vorgang fehlgeschlagen; Audio unvollständig'; }
     if (m.type === 'ready') { mark('engine-ready'); return; }
     const p = engineJob && engineJob.id === m.job ? engineJob : null;
     if (m.type === 'chunk') {
@@ -580,10 +602,10 @@ function makeEngine() {
     if (m.type === 'done' && p) {
       mark('rendered', { id: p.id, render_s: m.render_s, first_chunk_s: m.first_chunk_s, realtime_x: m.realtime_x, heapMB: m.heapMB });
       p.render = null;
-      if (p.store) p.store.finish().then(() => { p.status = 'ready'; memory(); ui(); });
+      if (p.store) p.store.finish().then(() => { p.status = 'ready'; memory(); ui(); }).catch(e => { p.status = 'failed'; reportError('encoder: ' + e); ui(); });
       engine.terminate(); makeEngine();                // a fresh engine for the next piece: its memory goes
     } else if (m.type === 'error') {
-      M.errors.push('engine: ' + m.message);
+      reportError('engine: ' + m.message);
       if (p) { p.status = 'failed'; pool = pool.filter((q) => q !== p); }
     }
     pumpWork(); ui();
@@ -719,7 +741,7 @@ async function pumpWork() {
         p.store = newStore(); p.status = 'rendering'; p.renderT0 = performance.now();
         engine.postMessage({ job: p.id, ...got }, Object.values(got.files));
       } catch (err) {
-        M.errors.push(String(err)); p.status = 'failed'; engineJob = null;
+        reportError(String(err)); p.status = 'failed'; engineJob = null;
         notice('Die Klänge konnten nicht geladen werden: ' + err.message);
       }
     }
@@ -775,7 +797,7 @@ async function startSession(opts = {}) {
       state.session.ready = true;
       renderQueue.push(first);
     } catch (err) {                                            // no bank: compose the opening live
-      M.errors.push('bank: ' + err.message);
+      reportError('bank: ' + err.message);
       const seed = Math.floor(Math.random() * 900000) + 100000;
       state.session.seed = seed;
       composer.postMessage({ cmd: 'start', genre, seed, piano });
@@ -830,6 +852,10 @@ function canPlay(p) { return p && p.store && (p.store.kind === 'pcm' ? p.store.f
 function enough(p) {
   if (!canPlay(p)) return false;
   if (p.status === 'ready' || p.store.complete) return true;
+  // A phone may throttle/suspend rendering after locking the screen. Foreground
+  // render speed cannot guarantee that the rest arrives before playback catches up.
+  // Only start complete pieces there; preserve progressive startup on desktop.
+  if (mobile) return false;
   const r = p.store.frames / SR, s = (p.info && p.info.seconds) || r;
   const wall = (performance.now() - (p.renderT0 || performance.now())) / 1000;
   if (wall < 2) return false;
@@ -851,7 +877,7 @@ function advance(startAt = null) {
     bankPiece(state.genre, state.piano).then(({ e }) => {
       if (p.dropped || gen !== state.gen) return;
       adopt(p, e, state.piano); p.status = 'queued'; renderQueue.push(p); pumpWork();
-    }).catch((err) => { M.errors.push('bank: ' + err.message); p.status = 'failed'; });
+    }).catch((err) => { reportError('bank: ' + err.message); p.status = 'failed'; });
   }
   setCurrent(next, 0, startAt);
   pumpWork();
@@ -1070,6 +1096,7 @@ function keyName(k) { const [n, q] = (k || '').split(' '); return `${n}-${{ majo
 let shownId = null;
 function progressOf(p) {
   if (!p) return '';
+  if (p.status === 'failed') return 'Stück fehlgeschlagen – bitte überspringen';
   if (p.status === 'loading') return 'wird geladen…';
   if (p.status === 'composing') return composeJob === p ? 'wird komponiert…' : 'wartet auf den Komponisten…';
   if (p.status === 'samples' && p.loading && p.loading.n > 1) return `Klänge werden geladen… ${p.loading.done}/${p.loading.n}` + (p.loading.MB ? ` (${String(p.loading.MB).replace('.', ',')} MB)` : '');
@@ -1194,7 +1221,7 @@ let wantWake = false, wakeLock = null;
 async function wake() {
   if (!('wakeLock' in navigator) || wakeLock) return;
   try { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => { wakeLock = null; }); }
-  catch (e) { M.errors.push('wakelock: ' + e.name); }
+  catch (e) { reportError('wakelock: ' + e.name); }
 }
 if ('wakeLock' in navigator) {
   $('wake-row').hidden = false;
@@ -1241,7 +1268,7 @@ $('offline-load').onclick = async () => {
     await Promise.all(Array.from({ length: 6 }, one));
     b.textContent = `Offline bereit (${ORCH(state.genre) ? 'Orchester' : state.piano === 'spar' ? 'Sparklavier' : 'Flügel'})`;
     mark('offline-load', { n: total });
-  } catch (e) { b.textContent = 'Für offline laden (Fehler)'; M.errors.push('offline: ' + e.message); }
+  } catch (e) { b.textContent = 'Für offline laden (Fehler)'; reportError('offline: ' + e.message); }
   b.disabled = false; offlineUi(true);
 };
 $('offline-clear').onclick = async () => {
@@ -1290,7 +1317,7 @@ setInterval(() => {
   KEEP = OPUS ? 2 : 1;
   if (mobile && USE_MSE) POOL = Math.max(POOL, 2);   // (two pieces appended ahead when the screen goes off)
   M.config = { opus: OPUS, mse: USE_MSE, pool: POOL, keep: KEEP, mobile, deviceMemory: devMem };
-  if ('serviceWorker' in navigator && !params.has('nosw')) navigator.serviceWorker.register(`sw.js?v=${V}&a=${A}&s=${SV}&p=${PYV}`).catch((e) => M.errors.push('sw: ' + e));
+  if ('serviceWorker' in navigator && !params.has('nosw')) navigator.serviceWorker.register(`sw.js?v=${V}&a=${A}&s=${SV}&p=${PYV}`).catch((e) => reportError('sw: ' + e));
   pianoUi();
   if (mobile) $('orch-note').textContent = 'Das Orchester lädt rund 20 MB Klänge pro Stück und braucht beim Rendern rund ein halbes GB Arbeitsspeicher - auf Handys oft zu schwer (es kann stocken oder abbrechen). Das Klavier läuft überall.';
   mark('config', M.config);
