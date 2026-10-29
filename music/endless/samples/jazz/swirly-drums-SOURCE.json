@@ -1,0 +1,14 @@
+{
+  "id": "swirly-drums",
+  "title": "Karoryfer Swirly Drums (brush kit: snare stirs/sweeps 9-13 s, taps, ride, hats, toms)",
+  "url": "https://github.com/sfzinstruments/karoryfer.swirly-drums/releases/download/v1.104/Swirly.Drums_1104.zip",
+  "license": "CC0-1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "attribution": "Karoryfer Samples",
+  "homepage": "https://shop.karoryfer.com/pages/free-swirly-drums",
+  "sha256": "dbeb1ad04052da1bada490ced8cc7d9fdd3b21ea90f7c6020269968b70f836c3",
+  "fetched": "2026-10-29",
+  "files": 5102,
+  "bytes": 1826996675,
+  "converted": 0
+}

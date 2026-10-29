@@ -1,7 +1,7 @@
 {
-  "name": "Endless Piano · AgentSound",
+  "name": "Endless Music · AgentSound",
   "short_name": "Endless",
-  "description": "Endlose Klavier- und Orchestermusik, live im Browser komponiert und gespielt von AgentSound.",
+  "description": "Endlos Piano, Jazz und Orchester, live im Browser komponiert und gespielt von AgentSound.",
   "lang": "de",
   "start_url": "./",
   "scope": "./",

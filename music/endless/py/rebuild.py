@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
-"""Reproduce the browser piano upgrade without importing current native dependencies.
+"""Reproduce the browser piano and jazz release from pinned baseline plus overlays.
 
 Run `python music/endless/py/rebuild.py` from a checkout with baseline commit
 5b44e517 available. Alternatively pass --baseline path/to/original/repo.zip.
-Only the three files in register-dialogue.patch change. The engine, sample
-lookup tables, text assets and all orchestra dependencies remain pinned.
+The reviewed piano patch is applied first, then the checked jazz overlay.
+The WASM engine and existing composition modules remain pinned.
 """
 from __future__ import annotations
 
 import argparse
 import hashlib
 import io
+import json
 from pathlib import Path
 import subprocess
 import tempfile
@@ -48,13 +49,33 @@ def main():
             raise RuntimeError('Patched performer no longer matches the reviewed piano implementation')
         if f"VERSION = '{VERSION}'".encode() not in changed['compose_web.py']:
             raise RuntimeError('Browser adapter version mismatch')
+        overlay = HERE / 'jazz-overlay'
+        if overlay.exists():
+            manifest = json.loads((HERE / 'jazz-overlay.json').read_text())
+            with zipfile.ZipFile(HERE / 'jazz-assets.zip') as assets:
+                payload = {name: assets.read(name) for name in assets.namelist()}
+            payload.update({p.relative_to(overlay).as_posix(): p.read_bytes()
+                            for p in overlay.rglob('*') if p.is_file()})
+            actual = set(payload)
+            if actual != set(manifest):
+                raise RuntimeError('Jazz overlay inventory differs from its manifest')
+            for name, digest in manifest.items():
+                data = payload[name]
+                if hashlib.sha256(data).hexdigest() != digest:
+                    raise RuntimeError('Jazz overlay hash differs: ' + name)
+                changed[name] = data
         args.out.parent.mkdir(parents=True, exist_ok=True)
         temporary = args.out.with_name(args.out.name + '.tmp')
         with zipfile.ZipFile(temporary, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as target:
             for entry in source.infolist():
                 target.writestr(entry, changed.get(entry.filename, source.read(entry)))
+            for name in sorted(set(changed) - set(source.namelist())):
+                entry = zipfile.ZipInfo(name, date_time=(2026, 1, 1, 0, 0, 0))
+                entry.compress_type = zipfile.ZIP_DEFLATED
+                entry.external_attr = 0o100644 << 16
+                target.writestr(entry, changed[name])
         temporary.replace(args.out)
-    print(f'{args.out}: {hashlib.sha256(args.out.read_bytes()).hexdigest()} ({VERSION})')
+    print(f'{args.out}: {hashlib.sha256(args.out.read_bytes()).hexdigest()}')
 
 
 if __name__ == '__main__':

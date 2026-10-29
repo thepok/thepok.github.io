@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Endless Piano</title>
+<title>Endless Music · Piano, Jazz &amp; Orchester</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#15171a">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="description" content="Endlose Klavier- und Orchestermusik, live im Browser komponiert und gespielt von AgentSound.">
+<meta name="description" content="Endlos Piano, Jazz und Orchester, live im Browser komponiert und gespielt von AgentSound.">
 <style>
   :root {
     --bg: #f6f4ef; --fg: #1f1f1f; --muted: #6a6a6a; --line: #d9d5cc; --card: #ffffff;
@@ -83,8 +83,8 @@
     <strong role="alert" id="error-message"></strong>
     <details style="margin-top:8px"><summary>Technische Details (letzte 20 Meldungen)</summary><pre id="error-details" style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px"></pre></details>
   </aside>
-  <h1>Endless Piano</h1>
-  <p class="sub">Endlose Klavier- und Orchestermusik, Stück für Stück neu komponiert.</p>
+  <h1>Endless Music</h1>
+  <p class="sub">Endlos Piano, Orchester und Jazzquartett – Stück für Stück neu komponiert.</p>
 
   <section class="card" aria-live="polite">
     <p id="title">Noch nichts gespielt</p>
@@ -111,6 +111,7 @@
         <option value="klassik">Klassisch (Nocturne und Walzer)</option>
         <option value="walzer">Walzer</option>
         <option value="orchester">Orchester (sinfonisch)</option>
+        <option value="jazz">Jazz (Saxofon, Piano, Bass &amp; Drums)</option>
       </select>
     </label>
     <label>Klavier
@@ -133,6 +134,8 @@
     <button id="offline-load">Für offline laden</button>
     <button id="offline-clear">Cache leeren</button>
   </div>
+
+  <p id="jazz-note" class="note" hidden>Ein Quartett aus Hero Sax, Flügel, Kontrabass und Schlagzeug. Themen, Soli und wechselnde Grooves entwickeln sich über ganze Sets.</p>
 
   <p id="orch-note" class="note" hidden>Das Orchester lädt rund 40 MB Klänge pro Stück (nur die Instrumente und Töne, die es spielt; einmal geladen, bleiben sie gespeichert) und braucht beim Rendern viel Arbeitsspeicher.</p>
 
@@ -159,9 +162,10 @@
     Orgeln: Burea-Kirche und Musikhochschule Piteå, Samples von Lars Palo (Piteå mit Graham Goode und Panos Ghekas),
     CC BY-SA 2.5 (<a href="https://familjenpalo.se/vpo/download/">familjenpalo.se</a>).
     Gitarre: FreePats Spanish Classical Guitar (CC0). Cembalo, Glockenspiel, Röhrenglocken: VCSL (Versilian Studios, CC0).
+    Jazz: Karoryfer Weresax (Hero Sax), Meatbass und Swirly Drums (CC0).
     Raumhall: Voxengo IM Reverbs. <a href="LICENSES.md">Lizenzen</a>
   </footer>
 </main>
-<script type="module" src="app.js?v=web8-register-2bdc44ff&a=p14"></script>
+<script type="module" src="app.js?v=web9-jazz-1&a=p15"></script>
 </body>
 </html>

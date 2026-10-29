@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Read-only release verification, including optional independent recipe replay.
 
-  python music/endless/py/check_release.py --baseline-ref 5b44e517 --replay
+  python music/endless/py/check_release.py --baseline-ref 801f7765 --replay
 
 Requires only Python and (with --baseline-ref) git. No downloads or audio renders.
 The shipped archive supplies the exact render serializer. Temporary mirrors and
@@ -22,9 +22,9 @@ import zipfile
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
 WEB = HERE.parent
-VERSION = 'web8-register-2bdc44ff'
+VERSION = 'web9-jazz-1'
 PERFORM_SHA = '2bdc44ff99744e5b3703f8a550023e2153fc2435ca62f3226b0898cd45290991'
-ARCHIVE_SHA = 'f7898db6b2368224b4daffc82b6c186871022c3804f51a66a928624818c5de78'
+BASE_ARCHIVE_SHA = 'f7898db6b2368224b4daffc82b6c186871022c3804f51a66a928624818c5de78'
 
 
 def require(condition, message):
@@ -54,6 +54,34 @@ def baseline_files(ref, paths):
     return result
 
 
+def sample_zones(instrument):
+    """All real-file zones, including sampler layers of Hero Sax stacks."""
+    for zone in instrument.get('params', {}).get('samples', []):
+        if isinstance(zone.get('file'), str) and not zone['file'].startswith('*'):
+            yield zone
+    if instrument.get('type') == 'stack':
+        for layer in instrument.get('params', {}).get('layers', []):
+            yield from sample_zones(layer['instrument'])
+
+
+def real_sample_covers(instrument, pitch, velocity):
+    """Check quartet coverage after stack velocity remapping, excluding breath oscillators."""
+    params = instrument.get('params', {})
+    if instrument['type'] == 'stack':
+        for layer in params.get('layers', []):
+            if not (layer.get('keylo', 0) <= pitch <= layer.get('keyhi', 127) and
+                    layer.get('vello', 0) <= velocity <= layer.get('velhi', 127)):
+                continue
+            transformed = max(1 / 127, min(1, (velocity / 127) ** layer.get('velcurve', 1) * layer.get('velscale', 1)))
+            if real_sample_covers(layer['instrument'], pitch + layer.get('transpose', 0), round(127 * transformed)):
+                return True
+        return False
+    pitch += params.get('transpose', 0)
+    return any(z.get('lo', 0) <= pitch <= z.get('hi', 127) and
+               z.get('vello', 0) <= velocity <= z.get('velhi', 127)
+               for z in sample_zones(instrument))
+
+
 def replay_worker(mirror, request):
     os.environ['AGENTSOUND_WEB_REPO'] = str(mirror)
     os.environ['AGENTSOUND_ASSETS'] = str(mirror / 'assets')
@@ -81,18 +109,33 @@ def main():
     if args._worker:
         replay_worker(*(Path(x) for x in args._worker)); return
     archive = (HERE / 'repo.zip').read_bytes()
-    require(sha(archive) == ARCHIVE_SHA, 'Archive is not the reviewed release')
+    manifest = json.loads((WEB / 'source-version.json').read_text())
+    require(manifest['version'] == VERSION, 'Source manifest version differs')
+    require(sha(archive) == manifest['archive_sha256'], 'Archive differs from source manifest')
     index = json.loads((WEB / 'bank/index.json').read_text())
     require(index['v'] == VERSION, 'Bank manifest version differs from archive')
     samples = json.loads((WEB / 'samples/index.json').read_text())
     orchestra = json.loads((WEB / 'samples/orch/index.json').read_text())
+    jazz = json.loads((WEB / 'samples/jazz/index.json').read_text())
+    for group, files in samples.items():
+        for name, digest in files.items():
+            path = WEB / 'samples' / group / name
+            require(path.is_file(), f'Manifest sample missing: {group}/{name}')
+            require(hashlib.sha1(path.read_bytes()).hexdigest()[:len(digest)] == digest,
+                    f'Manifest sample hash differs: {group}/{name}')
     paths = [f'music/endless/bank/{g}/{n}.json.gz' for g, count in index['counts'].items() for n in range(count)]
-    baseline = baseline_files(args.baseline_ref, paths) if args.baseline_ref else {}
+    old_paths = [p for p in paths if '/jazz/' not in p]
+    baseline = baseline_files(args.baseline_ref, old_paths) if args.baseline_ref else {}
+    require(set(index['counts']) == {'new-age', 'klassik', 'walzer', 'orchester', 'jazz'}, 'Unexpected genres')
+    require(index['counts']['jazz'] > 0, 'Jazz bank is empty')
     recipes, expected, old_recipes, old_expected = [], [], [], []
+    jazz_values = {key: [] for key in ('hash', 'feel', 'layout', 'form', 'key', 'tempo')}
     with tempfile.TemporaryDirectory(prefix='endless-release-check-') as temporary:
         temporary = Path(temporary); mirror = temporary / 'current'
         with zipfile.ZipFile(HERE / 'repo.zip') as z:
             require(sha(z.read('agentsound/endless/perform.py')) == PERFORM_SHA, 'Performer source differs')
+            for name, digest in manifest['changed_source_sha256'].items():
+                require(sha(z.read(name)) == digest, f'Source manifest hash differs: {name}')
             require(f"VERSION = '{VERSION}'" in z.read('compose_web.py').decode(), 'Adapter version differs')
             z.extractall(mirror)
         sys.path.insert(0, str(mirror))
@@ -115,36 +158,52 @@ def main():
                 require(hashlib.sha1(dumps(spar).encode()).hexdigest()[:16] == entry['hash_spar'], f'{label}: spar hash')
                 for mode, document in (('beste', doc), ('spar', spar)):
                     for track in document['tracks']:
-                        for zone in track['instrument'].get('params', {}).get('samples', []):
+                        for zone in sample_zones(track['instrument']):
                             file = zone['file']
                             if genre == 'orchester':
                                 require(file in orchestra, f'{label}: missing orchestra mapping {file}')
                                 group, name = 'orch', orchestra[file][0] + '.opus'
+                            elif genre == 'jazz' and not file.startswith('samples/splendid-grand-piano/'):
+                                require(file in jazz, f'{label}: missing jazz mapping {file}')
+                                group, name = 'jazz', jazz[file][0] + '.opus'
                             else:
                                 group = mode
                                 name = Path(file).stem.replace(' ', '_').replace('#', 's') + '.opus'
                             require(name in samples[group] and (WEB / 'samples' / group / name).is_file(),
                                     f'{label}: unavailable sample {group}/{name}')
+                if genre == 'jazz':
+                    for key in jazz_values:
+                        jazz_values[key].append(entry['hash'] if key == 'hash' else entry['info'][key])
+                    require({t['id'] for t in doc['tracks']} == {'comp', 'piano', 'bass', 'drums', 'sax'},
+                            f'{label}: quartet roles differ')
+                    for track in doc['tracks']:
+                        require(bool(track['notes']), f'{label}: empty {track["id"]} part')
+                        require(all(real_sample_covers(track['instrument'], n[2], n[3]) for n in track['notes']),
+                                f'{label}: note without real sample coverage in {track["id"]}')
                 if genre == 'new-age':
                     require(entry['recipe']['slot'].get('register_texture') in ('statement', 'answer', 'lyrical'),
                             f'{label}: missing profile pin')
                     require(entry['n_first'] == 8 and entry['info']['compose_s'] == 0, f'{label}: build policy')
-                if baseline:
+                if baseline and genre != 'jazz':
                     old = json.loads(gzip.decompress(baseline[path]))
                     require(entry['S'] == old['S'] and entry['n'] == old['n'], f'{label}: reseeded')
-                    if genre != 'new-age':
-                        normalized = dict(entry, v=old['v'], recipe=dict(entry['recipe'], v=old['recipe']['v']))
-                        require(normalized == old, f'{label}: unrelated payload changed')
-                        if n == 0:
-                            old_recipes.append(old['recipe']); old_expected.append(old['hash'])
+                    normalized = dict(entry, v=old['v'], recipe=dict(entry['recipe'], v=old['recipe']['v']))
+                    require(normalized == old, f'{label}: existing payload changed')
+                    if n == 0:
+                        old_recipes.append(old['recipe']); old_expected.append(old['hash'])
                 if n == 0:
-                    for mode in (('beste', 'spar') if genre == 'new-age' else ('beste',)):
+                    for mode in (('beste', 'spar') if genre in ('new-age', 'jazz') else ('beste',)):
                         recipes.append(dict(entry['recipe'], p=mode))
                         expected.append(entry['hash_spar' if mode == 'spar' else 'hash'])
+        require(len(set(jazz_values['hash'])) == index['counts']['jazz'], 'Jazz bank contains duplicate renders')
+        require(len(set(jazz_values['feel'])) == 5, 'Jazz opening bank lacks feel diversity')
+        require(len(set(jazz_values['layout'])) >= 4, 'Jazz opening bank lacks arrangement diversity')
+        require(len(set(jazz_values['form'])) == 3, 'Jazz opening bank lacks form diversity')
         if args.baseline_ref:
             tree = git('ls-tree', '-r', '--format=%(objectname) %(path)', args.baseline_ref,
                        'music/endless/engine', 'music/endless/samples').decode().splitlines()
             objects = [line.split(' ', 1) for line in tree]
+            objects = [(digest, path) for digest, path in objects if path != 'music/endless/samples/index.json']
             names = [path for _, path in objects]
             actual_hashes = subprocess.check_output(
                 ['git', '-C', str(ROOT), 'hash-object', '--stdin-paths'],
@@ -152,7 +211,18 @@ def main():
             require(actual_hashes == [digest for digest, _ in objects], 'Engine/sample asset changed')
             current_names = {str(p.relative_to(ROOT)) for directory in ('engine', 'samples')
                              for p in (WEB / directory).rglob('*') if p.is_file()}
-            require(current_names == set(names), 'Engine/sample inventory changed')
+            added = current_names - set(names) - {'music/endless/samples/index.json'}
+            require(set(names).issubset(current_names), 'Existing engine/sample asset removed')
+            require(all(p.startswith('music/endless/samples/jazz/') for p in added),
+                    'New assets outside jazz sample set')
+            old_samples = json.loads(git('show', f'{args.baseline_ref}:music/endless/samples/index.json'))
+            require({k: v for k, v in samples.items() if k != 'jazz'} == old_samples,
+                    'Existing sample manifest changed')
+            old_index = json.loads(git('show', f'{args.baseline_ref}:music/endless/bank/index.json'))
+            require({k: v for k, v in index['counts'].items() if k != 'jazz'} == old_index['counts'],
+                    'Existing bank inventory changed')
+            old_archive = git('show', f'{args.baseline_ref}:music/endless/py/repo.zip')
+            require(sha(old_archive) == BASE_ARCHIVE_SHA, 'Unexpected baseline archive')
         if args.replay:
             def run(mirror_path, request):
                 request_path = temporary / 'recipes.json'; request_path.write_text(json.dumps(request))
@@ -171,6 +241,7 @@ def main():
                 require([x['hash'] for x in migrated] == old_expected, 'Unrelated genre replay changed')
                 require(all(x['old_version'] == r['v'] for x, r in zip(migrated, old_recipes)), 'Old-version warning missing')
     print(json.dumps({'version': VERSION, 'bank_entries': sum(index['counts'].values()),
+                      'jazz_diversity': {k: len(set(v)) for k, v in jazz_values.items()},
                       'baseline_compared': args.baseline_ref, 'recipe_replay': args.replay, 'status': 'passed'}))
 
 

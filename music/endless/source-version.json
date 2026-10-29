@@ -1,23 +1,23 @@
 {
-  "version": "web8-register-2bdc44ff",
-  "revision": "p14",
+  "version": "web9-jazz-1",
+  "revision": "p15",
   "base_commit": "a53e6a4e72c5e9369e3d9ee4e777f0c352c708fd",
-  "previous_release": "web7-925b025c26",
+  "previous_release": "web8-register-2bdc44ff",
   "browser_baseline_commit": "5b44e5175ba86d72a59b2aa46ce6c011d7befeb2",
   "native_review_base_commit": "1a8795cbc65d5e5e94a25afda025441fdb41e396",
-  "archive_sha256": "f7898db6b2368224b4daffc82b6c186871022c3804f51a66a928624818c5de78",
+  "archive_sha256": "dce1c4455efd166826fe92194909f44ee779d2402207f57c801996af96871e01",
   "changed_source_sha256": {
     "agentsound/endless/perform.py": "2bdc44ff99744e5b3703f8a550023e2153fc2435ca62f3226b0898cd45290991",
     "agentsound/endless/composer.py": "d7134f6c01f1acbaa5b11ba19133caba646c1903af2234d272f1de46f74c4d69",
-    "compose_web.py": "acd23683c9055344b015b2a9cf9d32f19fd263ebc355b1e99386a8f8eec77af2"
+    "compose_web.py": "aad43454dc5b34dd85464595687a0aea91a2d0e1ed767492b28dc86512da069a",
+    "jazz_web.py": "b9c9875abb7e8983f0076140efb592d21fe4a49f9b0f344ca531c0843b10c0fb"
   },
   "changes": [
-    "New Age set planning alternates tenor statements, complete answer phrases and restrained accompaniment.",
-    "Short chord spans retain their upper response.",
-    "Unchanged passages retain the original two-hand performance and controls.",
-    "New Age opening bank rebuilt; other genres preserve their render hashes."
+    "Added replayable jazz quartet with Hero Sax, piano, upright bass and brush drums.",
+    "Varied set planning, solo exchanges, thematic returns and reviewed performance.",
+    "Existing piano and orchestra note/render hashes preserved."
   ],
   "soloists": true,
   "engine_changed": false,
-  "samples_changed": false
+  "samples_changed": true
 }

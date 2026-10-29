@@ -1,0 +1,50 @@
+[
+  {
+    "feel": "straight",
+    "lufs": -19.7,
+    "true_peak": -1.2,
+    "clipped_samples": 0,
+    "clicks": 0,
+    "errors": [],
+    "rms": {
+      "comp": -35.2,
+      "piano": -23.7,
+      "bass": -25.5,
+      "drums": -37.1,
+      "sax": -24.3
+    },
+    "sax_phrase_db": 4.4
+  },
+  {
+    "feel": "ballad",
+    "lufs": -23.0,
+    "true_peak": -3.57,
+    "clipped_samples": 0,
+    "clicks": 0,
+    "errors": [],
+    "rms": {
+      "comp": -39.0,
+      "piano": -27.1,
+      "bass": -29.9,
+      "drums": -38.8,
+      "sax": -27.0
+    },
+    "sax_phrase_db": 5.8
+  },
+  {
+    "feel": "bossa",
+    "lufs": -20.3,
+    "true_peak": -3.11,
+    "clipped_samples": 0,
+    "clicks": 0,
+    "errors": [],
+    "rms": {
+      "comp": -36.3,
+      "piano": -24.3,
+      "bass": -26.4,
+      "drums": -36.6,
+      "sax": -24.3
+    },
+    "sax_phrase_db": 5.0
+  }
+]

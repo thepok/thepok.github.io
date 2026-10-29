@@ -3,9 +3,9 @@
 //   engine-worker.js:  the AgentSound engine (WASM): render JSON -> streamed 16-bit PCM
 //   here: the bank (natively pre-composed set openings), the pool of ready pieces, compact storage (Opus via
 //   WebCodecs, else 16-bit PCM), playback with seeking, the history (recipes in localStorage).
-const A = 'p14';                     // page revision (app.js / the shell only: the bank, recipes and links stay valid)
-const V = 'web8-register-2bdc44ff';           // code version: recipes / links of another version are made anew with this code (noted)
-const SV = 'b58083a615';                      // the content hash of samples/index.json (wasm-space/prod/asset_version.py writes it)
+const A = 'p15';                     // page revision (app.js / the shell only: the bank, recipes and links stay valid)
+const V = 'web9-jazz-1';           // code version: recipes / links of another version are made anew with this code (noted)
+const SV = 'e0d6b645e6';                      // the content hash of samples/index.json (wasm-space/prod/asset_version.py writes it)
 const PYV = '314.0.7';              // Pyodide (the compose worker loads it from the CDN; the service worker caches it)
 const store = import(`./store.js?v=${V}&a=${A}`);   // Cache Storage: the samples, the bank, the composer zip stay offline
 const CODE_CACHE = `endless-code-${V}`, SAMPLE_CACHE = 'endless-samples';   // (sample URLs carry each file's content hash)
@@ -48,12 +48,12 @@ window.addEventListener('error', e => reportError('Browser: ' + (e.message || 'U
 window.addEventListener('unhandledrejection', e => reportError('Browser: ' + String(e.reason)));
 
 
-const GENRES = ['new-age', 'klassik', 'walzer', 'orchester'];
-const GENRE_NAME = { 'new-age': 'New Age', klassik: 'Klassisch', walzer: 'Walzer', orchester: 'Orchester' };
+const GENRES = ['new-age', 'klassik', 'walzer', 'orchester', 'jazz'];
+const GENRE_NAME = { 'new-age': 'New Age', klassik: 'Klassisch', walzer: 'Walzer', orchester: 'Orchester', jazz: 'Jazzquartett' };
 const ORCH = (g) => g === 'orchester';
 const PIANOS = ['beste', 'spar'];
 const FEEL = { flowing: 'fließend', gentle: 'sanft', bright: 'hell', waltz: 'Walzer', nocturne: 'Nocturne',
-               allegro: 'Allegro', vivace: 'Vivace', scherzo: 'Scherzo', river: 'Flusslauf', andante: 'Andante' };
+               allegro: 'Allegro', vivace: 'Vivace', scherzo: 'Scherzo', river: 'Flusslauf', andante: 'Andante', swing: 'Swing', ballad: 'Ballade', bossa: 'Bossa Nova', straight: 'Swing', shuffle: 'Shuffle' };
 const SECTION = { intro: 'Intro', coda: 'Coda', interlude: 'Zwischenspiel', climax: 'Höhepunkt', build: 'Steigerung', end: 'Ausklang',
                   t: 'Thema', t1: 'Hauptthema', t1b: 'Hauptthema', trans: 'Überleitung', t2: 'Seitenthema', t2b: 'Seitenthema',
                   close: 'Schlussgruppe', dev: 'Durchführung', false: 'Scheinreprise', retrans: 'Rückführung', recap: 'Reprise',
@@ -85,7 +85,7 @@ const state = {
   gen: 0, playing: false, clicked: false, session: null,
 };
 $('genre').value = state.genre; $('piano').value = state.piano;
-function pianoUi() { $('piano').disabled = ORCH(state.genre); $('orch-note').hidden = !ORCH(state.genre); }
+function pianoUi() { $('piano').disabled = ORCH(state.genre); $('orch-note').hidden = !ORCH(state.genre); $('jazz-note').hidden = state.genre !== 'jazz'; }
 let ctx = null, out = null, sampleDecoder = null;
 let current = null, player = null;
 let pool = [];                      // the set's next pieces, in order
@@ -681,6 +681,15 @@ function wav16(ab, loop, unity) {
 const safe = (base) => base.replace(/ /g, '_').replace(/#/g, 's');
 const decoders = new Map();          // sample rate -> OfflineAudioContext (decodeAudioData resamples to it)
 function decoderAt(sr) { if (!decoders.has(sr)) decoders.set(sr, new OfflineAudioContext(2, 1, sr)); return decoders.get(sr); }
+let jazzIndex = null;
+async function quartetIndex() {
+  if (!jazzIndex) {
+    await hashes();
+    const { buf } = await (await store).cachedBuffer(surl('jazz', 'index.json'), SAMPLE_CACHE);
+    jazzIndex = JSON.parse(new TextDecoder().decode(buf));
+  }
+  return jazzIndex;
+}
 let orchIndex = null;                // the orchestra's samples: relpath -> [name, rate, frames, loop, unity]
 async function orchestraIndex() {
   if (!orchIndex) {
@@ -691,20 +700,31 @@ async function orchestraIndex() {
   return orchIndex;
 }
 
+function* sampleZones(instrument) {
+  for (const zone of instrument?.params?.samples || []) {
+    // SFZ oscillator sources (e.g. Hero Sax breath noise) are synthesized by the engine.
+    if (typeof zone.file === 'string' && !zone.file.startsWith('*')) yield zone;
+  }
+  if (instrument?.type === 'stack') {
+    for (const layer of instrument.params.layers || []) yield* sampleZones(layer.instrument);
+  }
+}
+
 // the piece's samples, loaded on demand: only the instruments (tracks) this piece plays, each file fetched once per
 // visit (kept compressed), decoded for this render; the render JSON gets the engine's paths
 async function samplesFor(p) {
   await hashes();
   const song = JSON.parse(p.render);
   const orch = ORCH(p.info.genre);
-  const idx = orch ? await orchestraIndex() : null;
+  const jazz = p.info.genre === 'jazz';
+  const idx = orch ? await orchestraIndex() : jazz ? await quartetIndex() : null;
   const jobs = new Map();            // name -> {url, sr, loop, unity}
-  for (const t of song.tracks) for (const z of (t.instrument.params.samples || [])) {
+  for (const t of song.tracks) for (const z of sampleZones(t.instrument)) {
     let name, job;
-    if (orch) {
+    if (orch || (jazz && !z.file.includes('splendid-grand-piano/'))) {
       const e = idx[z.file.replace(/^.*?assets\//, '')];
-      if (!e) throw new Error('Orchesterklang fehlt: ' + z.file.split('/').pop());
-      name = e[0]; job = { url: surl('orch', name + '.opus'), sr: e[1], loop: e[3], unity: e[4] };
+      if (!e) throw new Error('Instrumentenklang fehlt: ' + z.file.split('/').pop());
+      name = e[0]; job = { url: surl(orch ? 'orch' : 'jazz', name + '.opus'), sr: e[1], loop: e[3], unity: e[4] };
     } else {
       name = safe(z.file.split('/').pop().replace(/\.wav$/i, ''));
       job = { url: surl(p.piano, name + '.opus'), sr: SR };
@@ -1314,14 +1334,14 @@ $('offline-load').onclick = async () => {
   const b = $('offline-load'), S = await store;
   b.disabled = true; persistOnce();
   try {
-    const set = ORCH(state.genre) ? 'orch' : state.piano, H = await hashes();
-    const urls = Object.keys(H[set]).map((f) => surl(set, f)).concat(Object.keys(H.ir).filter((f) => f.endsWith('.wav')).map((f) => surl('ir', f)));
+    const sets = ORCH(state.genre) ? ['orch'] : state.genre === 'jazz' ? [state.piano, 'jazz'] : [state.piano], H = await hashes();
+    const urls = sets.flatMap(set => Object.keys(H[set]).map((f) => surl(set, f))).concat(Object.keys(H.ir).filter((f) => f.endsWith('.wav')).map((f) => surl('ir', f)));
     await S.cachedBuffer(`py/repo.zip?v=${V}`, CODE_CACHE);
     let done = 0;
     const total = urls.length, list = urls.slice();
     const one = async () => { while (list.length) { await S.cachedBuffer(list.shift(), SAMPLE_CACHE); b.textContent = `Lädt … ${++done}/${total}`; } };
     await Promise.all(Array.from({ length: 6 }, one));
-    b.textContent = `Offline bereit (${ORCH(state.genre) ? 'Orchester' : state.piano === 'spar' ? 'Sparklavier' : 'Flügel'})`;
+    b.textContent = `Offline bereit (${ORCH(state.genre) ? 'Orchester' : state.genre === 'jazz' ? 'Jazzquartett' : state.piano === 'spar' ? 'Sparklavier' : 'Flügel'})`;
     mark('offline-load', { n: total });
   } catch (e) { b.textContent = 'Für offline laden (Fehler)'; reportError('offline: ' + e.message); }
   b.disabled = false; offlineUi(true);

@@ -1,6 +1,44 @@
 # Endless browser build
 
-Current release: `web8-register-2bdc44ff`, page revision `p14`.
+Current release: `web9-jazz-1`, page revision `p15`.
+
+## Endless Jazz quartet
+
+Select Jazz, or open `?genre=jazz`. Hero Sax (Weresax alto), Splendid piano,
+Meatbass upright bass and Swirly brush drums share composed themes, solo
+exchanges and cadences. Six-song sets balance swing, shuffle, bossa, ballad and
+jazz waltz; independently seeded openings vary too. Recipes retain the complete
+arrangement plan. Both full and compact piano modes work with the quartet.
+
+New CC0 samples load only for the notes/instruments used by a piece. The offline
+button downloads the complete quartet plus the chosen piano. Nested Hero Sax
+samplers are loaded recursively; synthetic breath sources remain in the engine.
+The existing piano/orchestra composition and render hashes are preserved.
+
+Independent musical reviews compared twelve consecutive pieces before and after
+revision, plus 48 opening plans: [round 1](reviews/jazz-round1.md),
+[round 2](reviews/jazz-round2.md). These score/structure reviews found stronger
+programme diversity and development; they do not claim human listening or certify
+mastery. [Technical review and three final audio analyses](reviews/jazz-technical.md)
+and [Chromium playback checks](reviews/jazz-browser.md) complement them.
+
+Reproduce the **current** release:
+
+```sh
+python3 music/endless/py/rebuild.py
+python3 music/endless/py/rebuild_jazz_bank.py --count 48
+python3 music/endless/py/check_release.py --baseline-ref 801f7765 --replay
+```
+
+`py/jazz-overlay/` contains readable jazz sources and sample lookup tables;
+`py/jazz-assets.zip` contains SFZ text and empty WAV placeholders. Their exact
+contents are checked against `py/jazz-overlay.json` when rebuilding, after the
+previously reviewed piano patch. Actual audio is in `samples/jazz/`; rebuild it
+with `py/build_jazz_assets.py --help` and installed licensed source packs.
+
+## Previous piano upgrade (web8)
+
+The following documents the preceding piano release and its historical commands.
 
 New Age piano now alternates complete tenor statements, full answer phrases and
 restrained accompaniment across a set. The first theme and signature material
@@ -15,7 +53,7 @@ The code/recipe version changes together with the opening bank and cache key.
 Old shared recipes follow the existing migration behavior: they are recomposed
 with the current generator and identified as another version.
 
-Rebuild the archive and opening bank from this repository root:
+Historical web8 rebuild commands (checkout `497f216a`; use the current-release commands above for jazz):
 
 ```sh
 python3 music/endless/py/rebuild.py
