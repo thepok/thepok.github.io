@@ -1,6 +1,6 @@
 # Endless browser build
 
-Current release: `web10-jazz-1`, page revision `p18`.
+Current release: `web10-jazz-1`, page revision `p19`.
 
 The new quartet composition develops phrases inside short solos, retains an
 original theme kernel alongside the latest utterance, and makes piano replies
@@ -205,3 +205,5 @@ fully rendered and already present in the MSE stream, followed by both seek
 directions, with advancing playback and no application errors.
 
 Page revision p18 reduces the jazz sax plate send and its performance automation by 3 dB at playback. Composition recipes remain unchanged.
+
+Page revision p19 additionally lowers the jazz sax track gain by 2 dB.
