@@ -3,7 +3,7 @@
 //   engine-worker.js:  the AgentSound engine (WASM): render JSON -> streamed 16-bit PCM
 //   here: the bank (natively pre-composed set openings), the pool of ready pieces, compact storage (Opus via
 //   WebCodecs, else 16-bit PCM), playback with seeking, the history (recipes in localStorage).
-const A = 'p12';                     // page revision (app.js / the shell only: the bank, recipes and links stay valid)
+const A = 'p13';                     // page revision (app.js / the shell only: the bank, recipes and links stay valid)
 const V = 'web8-register-2bdc44ff';           // code version: recipes / links of another version are made anew with this code (noted)
 const SV = 'b58083a615';                      // the content hash of samples/index.json (wasm-space/prod/asset_version.py writes it)
 const PYV = '314.0.7';              // Pyodide (the compose worker loads it from the CDN; the service worker caches it)
@@ -338,17 +338,28 @@ class MseStream {
     });
   }
   run() {
-    if (!this.sb || this.sb.updating || !this.ops.length || this.ms.readyState !== 'open') return;
-    const op = this.ops[0];
-    try {
-      if (op.kind === 'append') this.sb.appendBuffer(op.data);
-      else {
-        const r = this.sb.buffered, b = Math.min(op.b, r.length ? r.end(r.length - 1) : 0);   // (remove() must stay in range)
-        if (b > op.a) this.sb.remove(op.a, b); else { this.ops.shift(); this.run(); }
+    if (!this.sb || this.ms.readyState !== 'open') return;
+    while (this.ops.length && !this.sb.updating) {
+      const op = this.ops[0];
+      // A quota failure must wait for eviction/retry. Removals may still run.
+      if (op.kind === 'append' && this.full) return;
+      try {
+        if (op.kind === 'append') this.sb.appendBuffer(op.data);
+        else {
+          const r = this.sb.buffered, b = Math.min(op.b, r.length ? r.end(r.length - 1) : 0);
+          if (b > op.a) this.sb.remove(op.a, b);
+          else { this.ops.shift(); continue; }
+        }
+        return; // updateend advances the queue after this asynchronous operation
+      } catch (e) {
+        if (op.kind === 'append' && e.name === 'QuotaExceededError') {
+          this.full = 1;
+          this.evict(true);
+          return;
+        }
+        reportError('mse: ' + e.name + ' ' + e.message);
+        this.ops.shift();
       }
-    } catch (e) {
-      if (e.name === 'QuotaExceededError') { this.full = 1; this.evict(true); return; }   // retried after the eviction
-      reportError('mse: ' + e.name + ' ' + e.message); this.ops.shift(); this.run();
     }
   }
   op(o) { this.ops.push(o); this.run(); }

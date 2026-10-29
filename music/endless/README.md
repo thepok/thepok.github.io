@@ -1,6 +1,6 @@
 # Endless browser build
 
-Current release: `web8-register-2bdc44ff`, page revision `p12`.
+Current release: `web8-register-2bdc44ff`, page revision `p13`.
 
 New Age piano now alternates complete tenor statements, full answer phrases and
 restrained accompaniment across a set. The first theme and signature material
@@ -98,3 +98,19 @@ Browser tests use the pinned Pyodide runtime fetched with verified TLS through
 a local test cache because Chromium does not trust this cloud's proxy CA.
 Certificate checks are not disabled. These checks do not establish real-phone
 background or lock-screen playback reliability.
+
+## Buffer-full recovery (p13)
+
+A MediaSource quota failure now pauses append attempts until the scheduled retry,
+while allowing old buffered audio to be removed. Previously `run -> evict -> run`
+could immediately retry the same full-buffer append indefinitely, overflowing
+the JavaScript stack. Empty removals and failed operations now advance iteratively.
+The composer, opening bank, recipes and samples are unchanged.
+
+Regression check: `node music/endless/tests/mse-quota.test.cjs`. This reproduces
+the previous overflow and checks delayed retry, eviction ordering and a long
+queue of empty removals.
+
+Chromium playback also passed with an injected `QuotaExceededError` on the
+second SourceBuffer append: the deferred append recovered and playback continued
+without app errors. The rendered recipe hash and non-silent PCM remained unchanged.
