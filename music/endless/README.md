@@ -1,6 +1,6 @@
 # Endless browser build
 
-Current release: `web8-register-2bdc44ff`, page revision `p13`.
+Current release: `web8-register-2bdc44ff`, page revision `p14`.
 
 New Age piano now alternates complete tenor statements, full answer phrases and
 restrained accompaniment across a set. The first theme and signature material
@@ -114,3 +114,26 @@ queue of empty removals.
 Chromium playback also passed with an injected `QuotaExceededError` on the
 second SourceBuffer append: the deferred append recovered and playback continued
 without app errors. The rendered recipe hash and non-silent PCM remained unchanged.
+
+## Repeated skip recovery (p14)
+
+Skipping an empty queue now reserves a new bank piece instead of leaving the
+current selection null while future pieces render unused. MSE cuts and jumps
+to prequeued pieces keep their requested position until the matching audio has
+actually been appended and the target is buffered. Completion callbacks from
+superseded skips cannot reposition the new selection. Seeking within already
+buffered audio remains immediate.
+
+Regression checks:
+
+```sh
+node music/endless/tests/skip.test.cjs
+node music/endless/tests/mse-quota.test.cjs
+```
+
+Chromium tests cover repeated early skips with an empty queue, repeated skips
+while subsequent music is being composed/rendered, and forward/backward seeks.
+Playback resumes without moving the timeline as a workaround.
+A second Chromium run also verifies triple skipping after the next piece is
+fully rendered and already present in the MSE stream, followed by both seek
+directions, with advancing playback and no application errors.

@@ -3,7 +3,7 @@
 //   engine-worker.js:  the AgentSound engine (WASM): render JSON -> streamed 16-bit PCM
 //   here: the bank (natively pre-composed set openings), the pool of ready pieces, compact storage (Opus via
 //   WebCodecs, else 16-bit PCM), playback with seeking, the history (recipes in localStorage).
-const A = 'p13';                     // page revision (app.js / the shell only: the bank, recipes and links stay valid)
+const A = 'p14';                     // page revision (app.js / the shell only: the bank, recipes and links stay valid)
 const V = 'web8-register-2bdc44ff';           // code version: recipes / links of another version are made anew with this code (noted)
 const SV = 'b58083a615';                      // the content hash of samples/index.json (wasm-space/prod/asset_version.py writes it)
 const PYV = '314.0.7';              // Pyodide (the compose worker loads it from the CDN; the service worker caches it)
@@ -331,7 +331,11 @@ class MseStream {
     this.ms.addEventListener('sourceopen', () => {
       this.sb = this.ms.addSourceBuffer(MSE_TYPE);
       this.sb.mode = 'segments';
-      this.sb.addEventListener('updateend', () => { this.ops.shift(); this.run(); });
+      this.sb.addEventListener('updateend', () => {
+        const completed = this.ops.shift();
+        if (completed && completed.segment) this.finishSeek(completed.segment);
+        this.run();
+      });
       this.sb.addEventListener('error', () => reportError('sourcebuffer error'));
       this.run();
       if (state.playing) this.audio.play().catch(() => {});
@@ -363,10 +367,10 @@ class MseStream {
     }
   }
   op(o) { this.ops.push(o); this.run(); }
-  append(list, cfg) {
+  append(list, cfg, segment = null) {
     if (!list.length) return;
     if (!this.inited) { this.op({ kind: 'append', data: webmInit(cfg) }); this.inited = true; }
-    this.op({ kind: 'append', data: webmClusters(list) });
+    this.op({ kind: 'append', data: webmClusters(list), segment });
   }
   evict(force) {
     const t = this.audio.currentTime;
@@ -379,6 +383,20 @@ class MseStream {
     }
     if (force) setTimeout(() => { this.full = 0; this.run(); }, 3000);
     this.run();
+  }
+  finishSeek(seg) {
+    // A cut may have superseded this append while SourceBuffer was updating.
+    if (seg.seekTo === undefined || seg.base === null || !this.segs.includes(seg)) return;
+    const target = Math.max(0, seg.base + seg.seekTo), ranges = this.sb.buffered;
+    for (let i = 0; i < ranges.length; i++) {
+      const a = ranges.start(i), z = ranges.end(i);
+      // Allow only codec timestamp rounding at the beginning of the new range.
+      if (target >= a - 0.02 && target < z) {
+        this.audio.currentTime = Math.max(a, target);
+        delete seg.seekTo;
+        return;
+      }
+    }
   }
   aheadBytes() { const t = this.audio.currentTime; return this.segs.reduce((s, g) => s + (g.base !== null && g.base + g.until > t ? g.bytes : 0), 0); }
   silenceAt(t0) { this.append(silence.map((p) => ({ t: t0 + p.ts / 1e6, d: p.d })), null); this.end = t0 + GAP; }
@@ -431,12 +449,11 @@ class MseStream {
           if (i >= pk.length) return this.fill(at);
           last.n = i;
           last.base = this.end - pk[i].ts / 1e6;
-          if (last.seekTo !== undefined) { this.audio.currentTime = Math.max(at, last.base + last.seekTo); last.seekTo = undefined; }
         }
         if (last.n < pk.length) {
           const list = [];
           for (let i = last.n; i < pk.length; i++) { list.push({ t: last.base + pk[i].ts / 1e6, d: pk[i].d }); last.bytes += pk[i].d.length; }
-          this.append(list, st.cfg);
+          this.append(list, st.cfg, last);
           last.n = pk.length;
           last.until = (pk[pk.length - 1].ts + pk[pk.length - 1].dur) / 1e6;
           this.end = last.base + last.until;
@@ -466,24 +483,28 @@ class MsePlayer {
     this.p = piece; this.offset = offset; this.dead = false; this.first = null; this.endTime = null;
     const S = stream, a = S.audio;
     const seg = S.segs.find((s) => s.piece === piece);
-    let keep = false;
+    let keep = false, seekTo;
     const idx = seg ? S.segs.indexOf(seg) : -1, prev = idx > 0 ? S.segs[idx - 1] : null;
     if (seg && offset === 0 && prev && (seg.base !== null || (prev.done && a.currentTime >= prev.endT - 0.2))) {
       keep = true;                                  // the next piece, appended after the one before (or due now)
-      if (seg.base !== null && a.currentTime < seg.base - GAP - 0.5) a.currentTime = Math.max(0, seg.base - 0.05);  // (a skip)
+      if (seg.base !== null && a.currentTime < seg.base - GAP - 0.5) seekTo = offset; // explicit skip
     } else if (seg && seg.base !== null && offset >= seg.from && seg.base + offset < S.end - 0.2) {   // a seek inside it
       keep = true;
-      a.currentTime = seg.base + offset;
+      seekTo = offset;
     }
     if (keep) {
       this.seg = seg;
       S.segs.splice(0, S.segs.indexOf(seg));
+      if (seekTo !== undefined) {
+        seg.seekTo = seekTo;
+        S.finishSeek(seg); // immediate only if the target is already buffered
+      }
     } else this.seg = S.cut(piece, offset);
     if (a.paused && state.playing) a.play().catch((e) => reportError('play: ' + e.name));
   }
   position() {
     const s = this.seg;
-    if (s.base === null) return this.offset;
+    if (s.base === null || s.seekTo !== undefined) return this.offset;
     return Math.max(0, Math.min(stream.audio.currentTime - s.base, this.p.info ? this.p.info.seconds + 10 : 1e9));
   }
   pump() {
@@ -491,7 +512,7 @@ class MsePlayer {
     stream.pump([current, ...pool]);
     const s = this.seg;
     if (s.done && this.endTime === null) this.endTime = s.endT;
-    if (this.first === null && s.base !== null && stream.audio.currentTime > s.base + s.from + 0.02 && !stream.audio.paused) {
+    if (this.first === null && s.base !== null && s.seekTo === undefined && stream.audio.currentTime > s.base + s.from + 0.02 && !stream.audio.paused) {
       this.first = stream.audio.currentTime; this.onFirst && this.onFirst(this.first);
     }
   }
@@ -879,8 +900,8 @@ function advance(startAt = null) {
   played = played.slice(0, KEEP);
   let next = pool.shift() || null;
   // an empty pool: the set's next piece is still being composed - a piece from the bank starts at once instead
-  if (next && !canPlay(next) && next.status === 'composing' && bankIndex) {
-    pool.unshift(next);
+  if (!next || (!canPlay(next) && next.status === 'composing' && bankIndex)) {
+    if (next) pool.unshift(next);
     next = newPiece('bank', { piano: state.piano, status: 'loading', urgent: true });
     const p = next, gen = state.gen;
     bankPiece(state.genre, state.piano).then(({ e }) => {
