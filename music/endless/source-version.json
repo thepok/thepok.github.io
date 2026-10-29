@@ -1,13 +1,23 @@
 {
-  "version": "web7-925b025c26",
-  "revision": "p9",
+  "version": "web8-register-2bdc44ff",
+  "revision": "p12",
   "base_commit": "a53e6a4e72c5e9369e3d9ee4e777f0c352c708fd",
-  "composer_source_sha256": "925b025c264f92c41a4b21d692a7378bc694463d360853f19f5f7aa83dadc250",
+  "previous_release": "web7-925b025c26",
+  "browser_baseline_commit": "5b44e5175ba86d72a59b2aa46ce6c011d7befeb2",
+  "native_review_base_commit": "1a8795cbc65d5e5e94a25afda025441fdb41e396",
+  "archive_sha256": "f7898db6b2368224b4daffc82b6c186871022c3804f51a66a928624818c5de78",
+  "changed_source_sha256": {
+    "agentsound/endless/perform.py": "2bdc44ff99744e5b3703f8a550023e2153fc2435ca62f3226b0898cd45290991",
+    "agentsound/endless/composer.py": "d7134f6c01f1acbaa5b11ba19133caba646c1903af2234d272f1de46f74c4d69",
+    "compose_web.py": "acd23683c9055344b015b2a9cf9d32f19fd263ebc355b1e99386a8f8eec77af2"
+  },
   "changes": [
-    "Reduced automatic phrase shaping",
-    "Role-aware theme accents",
-    "Foreground level for exposed answers"
+    "New Age set planning alternates tenor statements, complete answer phrases and restrained accompaniment.",
+    "Short chord spans retain their upper response.",
+    "Unchanged passages retain the original two-hand performance and controls.",
+    "New Age opening bank rebuilt; other genres preserve their render hashes."
   ],
   "soloists": true,
-  "engine_changed": false
+  "engine_changed": false,
+  "samples_changed": false
 }

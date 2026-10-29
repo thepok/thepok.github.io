@@ -1,0 +1,346 @@
+--- a/agentsound/endless/perform.py
++++ b/agentsound/endless/perform.py
+@@ -3112,7 +3112,8 @@
+     return ('end_bass' if ending in ('open', 'line', 'arpeggio') else 'roll'), None
+ 
+ 
+-def build_piano(tune: Tune, genre: Genre | None = None, arrangement: Arrangement | None = None) -> Song:
++def build_piano(tune: Tune, genre: Genre | None = None, arrangement: Arrangement | None = None,
++                *, _register: bool = True) -> Song:
+     """The Song of a tune of a 'piano' genre (plan['perform'] = 'piano'): plan['sections'] in order - each a part of
+     the tune (its changes + melody; 'lift': the climax melody, Tune.out_melody) or a frame (the intro's / tag's vamp
+     and line; keep_bars: only those bars of its line - the interlude's echoes; lh_only: the left hand alone first),
+@@ -3141,7 +3142,11 @@
+     plan = _piano_plan(tune, g, rng, dice)
+     _piano_draws(tune, g, plan, rng, dice)
+     A = dice.out
+-    return _play_piano(tune, g, s, plan, rng, A)
++    result = _play_piano(tune, g, s, plan, rng, A, _register=_register)
++    if _register and g.name == 'new-age-piano' and result.endless_register_spans:
++        reference = build_piano(tune, g, arrangement=A, _register=False)
++        return _register_locality(reference, result)
++    return result
+ 
+ 
+ def _set_pins(tune: Tune, g: Genre) -> dict:
+@@ -3341,6 +3346,9 @@
+     if lays and layout not in lays:
+         layout = _pick(random.Random(f"layout:{sd}"), lays)
+     layout = dice.put(None, 'layout', layout)
++    if g.name == 'new-age-piano':
++        dice.put(None, 'register_texture', pins.get('register_texture',
++                 random.Random(f'register-texture:{tune.seed}').choice(('statement', 'answer', 'lyrical'))))
+     sig = _signature(tune, g, dice, pins)
+     # (plan['form_bars']: the sections' bar counts are form bars - a waltz plays each as two 3/4 bars)
+     stretch = 2 if meter == 3 and P.get('form_bars') else 1
+@@ -3503,7 +3511,8 @@
+ beat stays."""
+ 
+ 
+-def _play_piano(tune: Tune, g: Genre, s: Song, plan: list, rng: random.Random, A: Arrangement) -> Song:
++def _play_piano(tune: Tune, g: Genre, s: Song, plan: list, rng: random.Random, A: Arrangement,
++                *, _register: bool = True) -> Song:
+     """build_piano's performance of its plan (the sections' material) and arrangement A (the dice `rng` after the
+     section and cadenza draws: the left hand's figures)."""
+     from .. import romantic as rom
+@@ -3532,6 +3541,10 @@
+     TX = P.get('texture')
+     if TX:                                            # the right hand's texture per section and its connecting
+         plan = _texture(tune, plan, TX, meter)        # notes (HUMAN_FEEDBACK 2026-10-15: "one finger")
++    dialogue = _register and g.name == 'new-age-piano'
++    if dialogue:
++        plan = _register_dialogue(plan, sd, meter, A.get(None, 'register_texture', 'statement'),
++                                  avoid=bl['name'] if bl else None)
+     if bl:                                            # (a blooming climax keeps its broad end)
+         plan = [(dict(sec, rit=bl['rit']) if sec['name'] == bl['name'] and sec.get('rit') and not sec.get('peak')
+                  else sec, ch, mel, L) for sec, ch, mel, L in plan]
+@@ -3572,6 +3585,11 @@
+             if (sec.get('peak') or sec['name'] in SECTION_NOTES) and _sung(P):
+                 notes = _thin(notes, {(round(a + st, 3), p) for st, du, p in mel}, a, L, meter,
+                               cap=None if sec.get('peak') else SECTION_NOTES[sec['name']].get(meter))
++        if sec.get('_tenor'):
++            ta, tz = sec['_tenor']
++            notes = [n for n in notes if not a + ta <= n.start < a + tz]
++            notes += [Note(a + st, du, p, 80) for st, du, p in mel if ta <= st < tz]
++            notes.sort(key=lambda n: n.start)
+         if sec.get('_anthem') == 'canon':              # (the head answered under the sung line: _canon)
+             ec = _canon(mel, meter, a)
+             notes += [Note(st, du, p, 72) for st, du, p in ec]
+@@ -3763,6 +3781,24 @@
+                 last = fig
+                 if sec is not None and (sec.get('_sig') or {}).get('ost'):
+                     fig = sec['_sig']['ost']           # (the signature ostinato)
++            if dialogue and sec is not None and sec.get('_tenor') and \
++                    sec['_tenor'][0] <= t - secs[sec['name']].start < sec['_tenor'][1]:
++                # Role reversal: a clean tenor line over a bass anchor, then light
++                # upper chord tones. Do not stack both hands in the low midrange.
++                rel = t - secs[sec['name']].start - sec['_tenor'][0]
++                if rel % (4 * meter) < 1e-6:
++                    fig = '0 - - -' if meter == 4 else '0 - -'
++                    own = {'cap': 48, 'mirror': True}
++                else:
++                    fig = _register_answer_figure(meter, span)
++                    sounding = [n.pitch for n in rh if n.start < t + span and n.start + n.dur > t]
++                    floor = max(72, max(sounding, default=60) + 5)
++                    ceiling = max(n.pitch for n in rh) - 1
++                    own = {'bass_lo': min(floor, ceiling - 7), 'cap': ceiling, 'mirror': True}
++            elif dialogue and sec is not None and sec.get('_lyrical'):
++                # A whole contrasting section subtracts the constant eighth-note rail.
++                fig = '0 - 1+3 -' if meter == 4 else '0 - 1+3'
++                own = {'cap': _lh_reach(rh, t, t + span, lh_cap, 0), 'mirror': True}
+             lh.append((t, span, sym, fig) + ((own,) if own else ()))
+             used.setdefault(sec['name'] if sec else 'end', []).append(fig)
+             t += span
+@@ -3878,6 +3914,14 @@
+     for d in stm:
+         d['bars'] = (int(d['at'] // meter + 1e-6) + 1, int((d['end'] - 1e-6) // meter) + 1)
+     s.endless_signature = {'moves': plan[0][0].get('_moves') or {}, 'statements': stm}
++    if dialogue:
++        b.piano._notes = _register_breath(b.piano._notes, plan, secs, meter)
++        answer_spans = [(secs[sec['name']].start + sec['_tenor'][0],
++                         secs[sec['name']].start + sec['_tenor'][1])
++                        for sec, *_ in plan if sec.get('_tenor')]
++        b.comp._notes = [n._replace(vel=max(1, round(n.vel * 0.72)))
++                         if n.pitch >= 67 and any(a - 0.15 <= n.start < z for a, z in answer_spans) else n
++                         for n in b.comp._notes]
+     if 'vinyl' in b:                                  # the vinyl bed under the whole piece (lofi_piano)
+         from ..bandlib.jazz import lofi_crackle
+         lofi_crackle(b, 0.0, end.end - 0.5, tail=4.0, seed=sd)
+@@ -3886,6 +3930,15 @@
+     s.endless_diverse = dict(dv, inter='inter' in names, anthem_played=next(
+         (x[0]['_anthem'] for x in plan if x[0].get('_anthem')), None)) if dv else None
+     s.endless_figures = used
++    s.endless_lh_limits = [(row[0], row[0] + row[1], row[4].get('cap', lh_cap))
++                          for row in lh if len(row) > 4]
++    s.endless_register_texture = A.get(None, 'register_texture')
++    s.endless_register_effective = next(('lyrical' if sec.get('_lyrical') else
++        'statement' if sec['_tenor'] == (0, length) else 'answer'
++        for sec, _, _, length in plan if sec.get('_lyrical') or sec.get('_tenor')), None)
++    s.endless_register_spans = [(sec['name'], sec.get('_tenor'), bool(sec.get('_lyrical')))
++                                for sec, *_ in plan if sec.get('_tenor') or sec.get('_lyrical')]
++    s.endless_tenor = next((sec['name'] for sec, *_ in plan if sec.get('_tenor')), None)
+     s.endless_bloom = None if not bl else {'section': bl['name'], 'push': bl['push'], 'handoffs': len(hands),
+                                            'woven': len(woven)}
+     s.endless_sections = [(sec['name'], secs[sec['name']].start, secs[sec['name']].end) for sec, *_ in plan]
+@@ -4296,6 +4349,185 @@
+     return [(a, z, d) for a, z, d, _ in out] + [(a, z, d) for _, a, z, d in sorted(picked, key=lambda c: c[1])]
+ 
+ 
++def _register_locality(reference: Song, candidate: Song) -> Song:
++    """Replace only intended attacks, retaining the reference performance elsewhere.
++
++    Timing belongs to the attack (including a 0.15-beat anticipated downbeat), not
++    the release: a note crossing a seam keeps its full duration. Compile-time body
++    noise is materialized too, since changing note count otherwise redraws later
++    phrases. The cache is used only while the built song's performance is unedited.
++    """
++    from types import MethodType
++    spans = {'piano': [], 'comp': []}
++    for name, tenor, lyrical in candidate.endless_register_spans:
++        sec = reference[name]
++        if tenor:
++            for hand in spans:
++                spans[hand].append((sec.start + tenor[0], sec.start + tenor[1]))
++        elif lyrical:
++            spans['comp'].append((sec.start, sec.end))
++
++    def inside(note, windows):
++        return any(a - .15 <= note.start < z - .15 for a, z in windows)
++
++    length = reference.length
++    tempo_map = reference.tempo_map()
++    bpm = tempo_map.bpm_at
++    tempo_points = tuple(map(tuple, tempo_map.points))
++    cache, prepared = {}, {}
++    # Both hands must be evaluated before either changes: the left hand follows
++    # the right hand's body, so evaluating it after the splice would redraw it.
++    for hand in spans:
++        original, changed = reference.tracks[hand], candidate.tracks[hand]
++        prepared[hand] = (list(Clip._raw(original._notes, length)),
++                          list(Clip._raw(changed._notes, length)),
++                          *reference._played(original, length, bpm),
++                          *candidate._played(changed, length, bpm))
++    for hand, windows in spans.items():
++        original, changed = reference.tracks[hand], candidate.tracks[hand]
++        raw0, raw1, written0, played0, written1, played1 = prepared[hand]
++        # The piano's body path supplies aligned lists. Do not silently truncate if
++        # another performer later changes that contract.
++        if not len(raw0) == len(written0) == len(played0) or not len(raw1) == len(written1) == len(played1):
++            raise ValueError('register locality requires aligned written/played piano notes')
++        rows = [(r, w, n) for r, w, n in zip(raw0, written0, played0) if not inside(r, windows)]
++        rows += [(r, w, n) for r, w, n in zip(raw1, written1, played1) if inside(r, windows)]
++        rows.sort(key=lambda x: (x[0].start, x[0].pitch))
++        origins = {id(n): o for track in (original, changed) for n, o in zip(track._notes, track._origin)}
++        original._notes = [r for r, _, _ in rows]
++        original._origin = [origins.get(id(r), '') for r, _, _ in rows]
++        cache[hand] = ([w for _, w, _ in rows], [n for _, _, n in rows])
++    reference.__dict__.pop('_motions', None)
++
++    def fingerprint(song):
++        return (song.tempo, song.key, song.seed, song.length, song.meter,
++                repr(vars(song._tempo_plan)),
++                tuple((sec.name, sec.start, sec.end) for sec in song.sections),
++                tuple((key, repr(t._notes), repr(t._human), repr(t._body), repr(t._groove),
++                       tuple(t._phrase_marks)) for key, t in song.tracks.items()))
++
++    state = fingerprint(reference)
++    ordinary = type(reference)._played
++
++    def played(self, track, L, bpm):
++        owner = getattr(bpm, '__self__', None)
++        same_tempo = (getattr(bpm, '__func__', None) is type(tempo_map).bpm_at and
++                      tuple(map(tuple, owner.points)) == tempo_points) if owner is not None else \
++                     isinstance(bpm, (int, float)) and all(v == bpm for _, v in tempo_points)
++        if track.id in cache and L == length and same_tempo and fingerprint(self) == state:
++            w, ns = cache[track.id]
++            return list(w), list(ns)
++        self.__dict__.pop('_motions', None)
++        return ordinary(self, track, L, bpm)
++
++    reference._played = MethodType(played, reference)
++    for key in ('endless_register_texture', 'endless_register_effective', 'endless_register_spans',
++                'endless_tenor', 'endless_arrangement'):
++        setattr(reference, key, getattr(candidate, key))
++    reference.endless_lh_limits = ([row for row in reference.endless_lh_limits
++                                    if not any(a - .15 <= row[0] < z for a, z in spans['comp'])] +
++                                   [row for row in candidate.endless_lh_limits
++                                    if any(a - .15 <= row[0] < z for a, z in spans['comp'])])
++    # Keep original per-section diagnostics except sections whose accompaniment changed.
++    names = {name for name, _, _ in candidate.endless_register_spans}
++    for attr in ('endless_figures', 'endless_lh'):
++        original, changed = getattr(reference, attr), getattr(candidate, attr)
++        setattr(reference, attr, {k: changed[k] if k in names else v for k, v in original.items()})
++    reference.endless_register_locality = {'attack_tolerance': .15, 'spans': spans}
++    return reference
++
++
++def _register_dialogue(plan: list, seed: int, meter: int = 4, strategy: str = 'statement', avoid=None) -> list:
++    """A return or contrasting section changes role by a complete phrase; the first theme and peak stay intact.
++
++    Strategy is pinned across a set's best-of-N candidates. A lyrical piece changes
++    accompaniment density instead of forcing the same low return into every tune.
++    """
++    if strategy not in ('statement', 'answer', 'lyrical'):
++        raise ValueError(f'unknown register texture: {strategy!r}')
++    rng = random.Random(f'register-dialogue:{seed}')
++    candidates = [i for i, (sec, _, mel, _) in enumerate(plan)
++                  if sec['name'] in ('A2', 'A3', 'A4', 'B1') and mel and not sec.get('peak')
++                  and sec['name'] != avoid and not sec.get('_sig') and not sec.get('_anthem')]
++    if not candidates:
++        return plan
++    result = list(plan)
++    if strategy == 'lyrical':
++        i = rng.choice(candidates)
++        sec, ch, mel, length = result[i]
++        result[i] = (dict(sec, _lyrical=True), ch, mel, length)
++        return result
++    unit = (8 if meter == 3 else 4) * meter
++    choices = []
++    for i in candidates:
++        sec, _, mel, length = plan[i]
++        spans = ([(0, length)] if strategy == 'statement' else
++                 [(t, t + unit) for t in range(unit, int(length), unit)
++                  if t + unit <= length])
++        if strategy == 'answer' and not spans and length > unit:
++            spans = [(0, unit)]  # a complete returning phrase answers the earlier statement
++        for a, z in spans:
++            phrase = [p for t, _, p in mel if a <= t < z]
++            if phrase and min(phrase) >= 65:
++                choices.append((i, a, z))
++    if not choices:
++        # A low-lying tune still receives a meaningful texture contrast safely.
++        return _register_dialogue(plan, seed, meter, 'lyrical', avoid)
++    i, a, z = rng.choice(choices)
++    sec, ch, mel, length = result[i]
++    result[i] = (dict(sec, _tenor=(a, z)), ch,
++                 [(t, d, p - 12 if a <= t < z else p) for t, d, p in mel], length)
++    return result
++
++
++def _register_breath(notes, plan, secs, meter):
++    """Retain written phrase breaths when register-dependent humanization erodes them.
++
++    Only near-downbeat attacks in lowered phrases may move, at most 0.12 beat,
++    retaining their original releases. Never create a rest the written melody lacks.
++    """
++    out = list(notes)
++    unit = (8 if meter == 3 else 4) * meter
++    for sec, _, mel, length in plan:
++        if not sec.get('_tenor'):
++            continue
++        a, z = sec['_tenor']
++        start = secs[sec['name']].start
++        for boundary in range(unit, int(length), unit):
++            if not a < boundary < z:
++                continue
++            before = [t for t, _, _ in mel if boundary - 2 * meter <= t < boundary - .15]
++            after = [t for t, _, _ in mel if t >= boundary - .15]
++            if not before or not after or min(after) - max(before) < 1.0 - 1e-6:
++                continue
++            beat = start + boundary
++            prior = [n.start for n in out if beat - 2 * meter <= n.start < beat - .15]
++            later = [n.start for n in out if beat - .15 <= n.start < beat + .15]
++            if not prior or not later:
++                continue
++            onset = min(later)
++            gap = onset - max(prior)
++            if .93 <= gap < 1.05:
++                shift = 1.05 - gap
++                out = [n._replace(start=n.start + shift, dur=max(.05, n.dur - shift))
++                       if abs(n.start - onset) < .03 else n for n in out]
++    return out
++
++
++def _register_answer_figure(meter: int, span: float) -> str:
++    """One upper response inside the actual harmonic span, including short changes.
++
++    figure() uses a whole-bar token grid even when span is shorter. Put the note
++    halfway through the available span on its eighth-note grid, never at/after its end.
++    """
++    toks = ['-'] * (2 * meter)
++    at = min(len(toks) - 1, max(0, int(span)))  # half a span in half-beat tokens
++    while at * 0.5 >= span and at:
++        at -= 1
++    toks[at] = '0'
++    return ' '.join(toks)
++
++
+ def _bloom(tune: Tune, g: Genre, plan: list) -> dict | None:
+     """The piece's bloom (plan['bloom'], genres._NA_BLOOM), drawn from its own seed: the section that blooms (one of
+     'at' the piece plays), its push / reach / carry / rit / fill grid; None without plan['bloom'] or a meter other
+@@ -4456,6 +4688,8 @@
+         ph, last_k = int(round(unit / meter)), -9
+         for k in range(nb):
+             t, z = x.start + k * meter, x.start + (k + 1) * meter
++            if sec.get('_tenor') and k * meter < sec['_tenor'][1] and (k + 1) * meter > sec['_tenor'][0]:
++                continue
+             link = k == nb - 1 and bloom and i + 1 < len(plan)
+             if (k == nb - 1 and not link) or (not link and (z - x.start) % unit < 1e-6):
+                 continue                               # (a phrase end breathes)
+--- a/agentsound/endless/composer.py
++++ b/agentsound/endless/composer.py
+@@ -308,6 +308,13 @@
+         out[k] = _pick(rng, fresh(w, recent, lambda h, _k=k: h.get(_k)))
+         if k == 'arrival' and out.get('signature') is not None:
+             out['signature'] = arrival_pause(genre, rng, out['arrival'], out['signature'])
++    if genre.name == 'new-age-piano':
++        # Independent stream after every upstream draw, including signature and arrival.
++        trng = random.Random(f"register-texture:{rng.getstate()}")
++        recent = hist[-1].get('register_texture') if hist else None
++        counts = {k: sum(h.get('register_texture') == k for h in hist)
++                  for k in ('statement', 'answer', 'lyrical')}
++        out['register_texture'] = _pick(trng, {k: 1.0 / (1 + count) for k, count in counts.items() if k != recent})
+     return out
+ 
+ 
+--- a/compose_web.py
++++ b/compose_web.py
+@@ -175,7 +175,7 @@
+ GENRES = {'new-age': ('new-age-piano', None, 8, 8), 'klassik': ('classical-piano', None, 8, 8),
+           'walzer': ('classical-piano', 'waltz', 8, 8), 'orchester': ('orchestra-symphonic', None, 4, 4)}
+ ORCHESTRA = ('orchester',)
+-VERSION = 'web7-925b025c26'           # the page's code version (AgentSound master commit): recipes of another say so
++VERSION = 'web8-register-2bdc44ff'           # the page's code version (AgentSound master commit): recipes of another say so
+ _GENRE_CACHE = {}
+ 
+ 
