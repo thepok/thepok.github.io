@@ -1,23 +1,23 @@
 {
-  "version": "web9-jazz-1",
-  "revision": "p15",
+  "version": "web9-jazz-2",
+  "revision": "p16",
   "base_commit": "a53e6a4e72c5e9369e3d9ee4e777f0c352c708fd",
-  "previous_release": "web8-register-2bdc44ff",
+  "previous_release": "web9-jazz-1",
   "browser_baseline_commit": "5b44e5175ba86d72a59b2aa46ce6c011d7befeb2",
   "native_review_base_commit": "1a8795cbc65d5e5e94a25afda025441fdb41e396",
-  "archive_sha256": "dce1c4455efd166826fe92194909f44ee779d2402207f57c801996af96871e01",
+  "archive_sha256": "5ce0048e33076d10262086b3b6eee0921c8395e29271439b0f07d7302e54de8b",
   "changed_source_sha256": {
     "agentsound/endless/perform.py": "2bdc44ff99744e5b3703f8a550023e2153fc2435ca62f3226b0898cd45290991",
     "agentsound/endless/composer.py": "d7134f6c01f1acbaa5b11ba19133caba646c1903af2234d272f1de46f74c4d69",
-    "compose_web.py": "aad43454dc5b34dd85464595687a0aea91a2d0e1ed767492b28dc86512da069a",
-    "jazz_web.py": "b9c9875abb7e8983f0076140efb592d21fe4a49f9b0f344ca531c0843b10c0fb"
+    "compose_web.py": "0f04ef2a2ea64514bdfc2e963ac2f194a996469fd23896857f13fa533b508ff3",
+    "jazz_web.py": "30dc359de46cef3c3f75f5fcfcbbf900857c95a493dc663b4e828dae467b7921"
   },
   "changes": [
-    "Added replayable jazz quartet with Hero Sax, piano, upright bass and brush drums.",
-    "Varied set planning, solo exchanges, thematic returns and reviewed performance.",
-    "Existing piano and orchestra note/render hashes preserved."
+    "Use the original Hero Sax default tone in the quartet, removing jazz-specific tone overrides.",
+    "Preserve notes, expressive humanization and legacy shared-recipe sound.",
+    "Document independent reviews of remaining musical development and ensemble weaknesses."
   ],
   "soloists": true,
   "engine_changed": false,
-  "samples_changed": true
+  "samples_changed": false
 }

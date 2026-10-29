@@ -22,7 +22,7 @@ import zipfile
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
 WEB = HERE.parent
-VERSION = 'web9-jazz-1'
+VERSION = 'web9-jazz-2'
 PERFORM_SHA = '2bdc44ff99744e5b3703f8a550023e2153fc2435ca62f3226b0898cd45290991'
 BASE_ARCHIVE_SHA = 'f7898db6b2368224b4daffc82b6c186871022c3804f51a66a928624818c5de78'
 

@@ -41,7 +41,7 @@ def plan_set(seed, previous=None):
                     layout=layouts[i], comp_style=rng.choice(['swing', 'charleston', 'garland']),
                     ending=rng.choice(['held', 'tag', 'stop']), intro=rng.choice([2, 4]),
                     entry=rng.choice(['piano','bass','piano']), head_entry=rng.choice(['sax','sax','piano']),
-                    form=form, solo_span=1 if f=='ballad' else rng.choice([1,2]),
+                    sax_sound='hero-default-1', form=form, solo_span=1 if f=='ballad' else rng.choice([1,2]),
                     reprise=rng.choice(['last','half','full']),development=rng.choice(['rise','space','answer']))
     return plan
 
@@ -81,14 +81,17 @@ def build(seed, slot):
     b.piano.gain_db -= 2
     sax = hero(s.track('sax', 'hero/sax', gain_db=2 if tune.feel=='ballad' else 5, pan=-.2), family='sax', genre='jazz', double=False,
                octave=False, duck=False, carve=False, dips=False, ride=False, throws=False)
-    sax.sends.pop('echo', None)
-    sax.fx.append(fx.eq({'peak3.freq':3300,'peak3.gain':-2,'peak3.q':1}))
+    default_hero = slot.get('sax_sound') == 'hero-default-1'
+    if not default_hero: sax.sends.pop('echo', None)
+    hero_compressor = next(effect for effect in sax.fx if effect.type == 'compressor')
+    # Keep the identity EQ slot for published mic-automation indices.
+    sax.fx.append(fx.eq({'peak3.freq':3300,'peak3.gain':0 if default_hero else -2,'peak3.q':1}))
     # Preserve FX indices: the horn performance writes numeric air automation targets.
     # A unity utility replaces the compressor; removing its slot would misroute those lanes.
     for index,effect in enumerate(sax.fx):
         if effect.type == 'compressor': sax.fx[index]=fx.utility(gain=0)
-        elif effect.type == 'saturator': effect.params.update(drive=3,mix=.2)
-        elif effect.type == 'tape': effect.params['drive']=2
+        elif effect.type == 'saturator' and not default_hero: effect.params.update(drive=3,mix=.2)
+        elif effect.type == 'tape' and not default_hero: effect.params['drive']=2
     b.drums.fx.append(fx.eq({'hp.freq':85,'hp.slope':24,'low.freq':120,'low.gain':-3}))
     s.master.gain_db = 0
     s.master.add(fx.limiter(gain=0,ceiling=-1.2,release=180))
@@ -201,6 +204,9 @@ def build(seed, slot):
     root=chord(tune.end_chord).root
     b.bass.play(Clip([(0,.6 if slot['ending']=='stop' else tune.meter*1.6,36+root%12,72)],length=2*tune.meter),last.start)
     b.drums.play(Clip([(0,2,jazz.SWIRLY_BRUSH['crash'],28)],length=2*tune.meter),last.start)
+    # Restore the unmodified default Hero compressor after Hornist has placed its
+    # mic EQ: its numeric air/proximity lanes remain exactly as in legacy recipes.
+    if default_hero: sax.fx[1] = hero_compressor
     s.jazz_audit=audit
     s.jazz_slot=slot
     return tune,s

@@ -1,0 +1,173 @@
+[
+  {
+    "notes_and_sections": "identical",
+    "backing_tracks": "identical",
+    "sax_sample_instrument": "identical",
+    "expression": [
+      {
+        "target": "fx.8.gain",
+        "points": 5961,
+        "identical": true
+      },
+      {
+        "target": "fx.10.high.gain",
+        "points": 5916,
+        "identical": true
+      },
+      {
+        "target": "fx.10.peak1.gain",
+        "points": 5729,
+        "identical": true
+      },
+      {
+        "target": "send.hero_plate_70s",
+        "points": 5737,
+        "constant_offset_db": 0.0
+      },
+      {
+        "target": "pan",
+        "points": 5729,
+        "identical": true
+      },
+      {
+        "target": "instrument.pitchbend",
+        "points": 737,
+        "identical": true
+      },
+      {
+        "target": "instrument.layers.sax.vibrato",
+        "points": 1278,
+        "identical": true
+      },
+      {
+        "target": "instrument.layers.sax.vibratorate",
+        "points": 34,
+        "identical": true
+      },
+      {
+        "target": "fx.10.output",
+        "points": 106,
+        "identical": true
+      }
+    ],
+    "feel": "straight",
+    "canonical_preset_fx": "exact",
+    "plate_buses": "exact",
+    "sends": "exact factory defaults including -24dB echo",
+    "all_automation": "exact"
+  },
+  {
+    "notes_and_sections": "identical",
+    "backing_tracks": "identical",
+    "sax_sample_instrument": "identical",
+    "expression": [
+      {
+        "target": "fx.8.gain",
+        "points": 7814,
+        "identical": true
+      },
+      {
+        "target": "fx.10.output",
+        "points": 351,
+        "identical": true
+      },
+      {
+        "target": "fx.10.high.gain",
+        "points": 7791,
+        "identical": true
+      },
+      {
+        "target": "fx.10.peak1.gain",
+        "points": 7446,
+        "identical": true
+      },
+      {
+        "target": "send.hero_plate_70s",
+        "points": 7462,
+        "constant_offset_db": 0.0
+      },
+      {
+        "target": "pan",
+        "points": 7446,
+        "identical": true
+      },
+      {
+        "target": "instrument.pitchbend",
+        "points": 997,
+        "identical": true
+      },
+      {
+        "target": "instrument.layers.sax.vibrato",
+        "points": 3815,
+        "identical": true
+      },
+      {
+        "target": "instrument.layers.sax.vibratorate",
+        "points": 82,
+        "identical": true
+      }
+    ],
+    "feel": "ballad",
+    "canonical_preset_fx": "exact",
+    "plate_buses": "exact",
+    "sends": "exact factory defaults including -24dB echo",
+    "all_automation": "exact"
+  },
+  {
+    "notes_and_sections": "identical",
+    "backing_tracks": "identical",
+    "sax_sample_instrument": "identical",
+    "expression": [
+      {
+        "target": "fx.8.gain",
+        "points": 7548,
+        "identical": true
+      },
+      {
+        "target": "fx.10.high.gain",
+        "points": 7517,
+        "identical": true
+      },
+      {
+        "target": "fx.10.peak1.gain",
+        "points": 7082,
+        "identical": true
+      },
+      {
+        "target": "send.hero_plate_70s",
+        "points": 7102,
+        "constant_offset_db": 0.0
+      },
+      {
+        "target": "pan",
+        "points": 7082,
+        "identical": true
+      },
+      {
+        "target": "instrument.pitchbend",
+        "points": 1349,
+        "identical": true
+      },
+      {
+        "target": "instrument.layers.sax.vibrato",
+        "points": 2035,
+        "identical": true
+      },
+      {
+        "target": "instrument.layers.sax.vibratorate",
+        "points": 62,
+        "identical": true
+      },
+      {
+        "target": "fx.10.output",
+        "points": 300,
+        "identical": true
+      }
+    ],
+    "feel": "bossa",
+    "canonical_preset_fx": "exact",
+    "plate_buses": "exact",
+    "sends": "exact factory defaults including -24dB echo",
+    "all_automation": "exact"
+  }
+]

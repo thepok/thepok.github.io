@@ -175,7 +175,7 @@ from agentsound.theory import ComposeError                       # noqa: E402
 GENRES = {'jazz': ('jazz-trio', None, 1, 1), 'new-age': ('new-age-piano', None, 8, 8), 'klassik': ('classical-piano', None, 8, 8),
           'walzer': ('classical-piano', 'waltz', 8, 8), 'orchester': ('orchestra-symphonic', None, 4, 4)}
 ORCHESTRA = ('orchester',)
-VERSION = 'web9-jazz-1'           # the page's code version (AgentSound master commit): recipes of another say so
+VERSION = 'web9-jazz-2'           # the page's code version (AgentSound master commit): recipes of another say so
 _GENRE_CACHE = {}
 
 
