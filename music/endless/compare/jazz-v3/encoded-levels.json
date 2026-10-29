@@ -1,0 +1,26 @@
+{
+  "00-after.mp3": {
+    "lufs": -18.4,
+    "true_peak_dbtp": -4.5
+  },
+  "00-before.mp3": {
+    "lufs": -18.5,
+    "true_peak_dbtp": -2.8
+  },
+  "01-after.mp3": {
+    "lufs": -18.5,
+    "true_peak_dbtp": -7.0
+  },
+  "01-before.mp3": {
+    "lufs": -18.5,
+    "true_peak_dbtp": -6.6
+  },
+  "03-after.mp3": {
+    "lufs": -18.4,
+    "true_peak_dbtp": -5.5
+  },
+  "03-before.mp3": {
+    "lufs": -18.4,
+    "true_peak_dbtp": -5.8
+  }
+}

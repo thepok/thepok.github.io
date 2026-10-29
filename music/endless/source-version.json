@@ -1,21 +1,21 @@
 {
-  "version": "web9-jazz-2",
-  "revision": "p16",
+  "version": "web10-jazz-1",
+  "revision": "p17",
   "base_commit": "a53e6a4e72c5e9369e3d9ee4e777f0c352c708fd",
-  "previous_release": "web9-jazz-1",
+  "previous_release": "web9-jazz-2",
   "browser_baseline_commit": "5b44e5175ba86d72a59b2aa46ce6c011d7befeb2",
   "native_review_base_commit": "1a8795cbc65d5e5e94a25afda025441fdb41e396",
-  "archive_sha256": "5ce0048e33076d10262086b3b6eee0921c8395e29271439b0f07d7302e54de8b",
+  "archive_sha256": "b2f1c587417adc654fbda66246932490af80dc170b18699f6b57ce320c55cc27",
   "changed_source_sha256": {
     "agentsound/endless/perform.py": "2bdc44ff99744e5b3703f8a550023e2153fc2435ca62f3226b0898cd45290991",
     "agentsound/endless/composer.py": "d7134f6c01f1acbaa5b11ba19133caba646c1903af2234d272f1de46f74c4d69",
-    "compose_web.py": "0f04ef2a2ea64514bdfc2e963ac2f194a996469fd23896857f13fa533b508ff3",
-    "jazz_web.py": "30dc359de46cef3c3f75f5fcfcbbf900857c95a493dc663b4e828dae467b7921"
+    "compose_web.py": "1ace77edca9b34fc4629301f8b859e0fd225a81b2eacf687b199c9782aeeb0bc",
+    "jazz_web.py": "2b3953a046261d7c2e023b09ef58389b5b2aec41ef4a791f6d7ef7a1c8aac36d"
   },
   "changes": [
-    "Use the original Hero Sax default tone in the quartet, removing jazz-specific tone overrides.",
-    "Preserve notes, expressive humanization and legacy shared-recipe sound.",
-    "Document independent reviews of remaining musical development and ensemble weaknesses."
+    "Develop short solos through bounded phrase memory and responses to actual previous phrases.",
+    "Use coherent solo charts, native musical peaks and form-aware ensemble transitions.",
+    "Preserve the original Hero Sax default tone and legacy shared recipes."
   ],
   "soloists": true,
   "engine_changed": false,

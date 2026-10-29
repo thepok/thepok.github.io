@@ -1,0 +1,14 @@
+<!doctype html><html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Endless Jazz – Hörvergleich</title><style>body{font:17px system-ui;background:#17191b;color:#eee;max-width:880px;margin:40px auto;padding:0 20px}section{border-top:1px solid #555;padding:20px 0}audio{width:100%;max-width:400px}p{line-height:1.5}.pair{display:flex;gap:24px;flex-wrap:wrap}.pair>div{flex:1;min-width:260px}a{color:#9dcfff}</style><h1>Endless Jazz: vorher / nachher</h1><p>Drei gleiche Ausgangsstücke mit dem unveränderten originalen Hero-Sax-Klang. Vergleiche die musikalische Entwicklung, Übergaben zwischen den Instrumenten und die Pausen.</p><p>Die Lautheit wurde je Paar mit konstanten Pegelfaktoren angenähert. Keine zusätzliche Kompression oder Begrenzung. Die Stücke können unterschiedlich lang sein.</p>
+<section><h2>Ballade</h2><div class="pair">
+<div><h3>Bisherige Komposition</h3><audio controls preload="none" src="00-before.mp3"></audio><p><a href="00-before.mp3" download>MP3 herunterladen</a></p></div>
+<div><h3>Neue Komposition</h3><audio controls preload="none" src="00-after.mp3"></audio><p><a href="00-after.mp3" download>MP3 herunterladen</a></p></div>
+</div></section>
+<section><h2>Swing</h2><div class="pair">
+<div><h3>Bisherige Komposition</h3><audio controls preload="none" src="01-before.mp3"></audio><p><a href="01-before.mp3" download>MP3 herunterladen</a></p></div>
+<div><h3>Neue Komposition</h3><audio controls preload="none" src="01-after.mp3"></audio><p><a href="01-after.mp3" download>MP3 herunterladen</a></p></div>
+</div></section>
+<section><h2>Bossa</h2><div class="pair">
+<div><h3>Bisherige Komposition</h3><audio controls preload="none" src="03-before.mp3"></audio><p><a href="03-before.mp3" download>MP3 herunterladen</a></p></div>
+<div><h3>Neue Komposition</h3><audio controls preload="none" src="03-after.mp3"></audio><p><a href="03-after.mp3" download>MP3 herunterladen</a></p></div>
+</div></section>
+<p><a href="comparison.json">Angaben zum Pegelabgleich</a></p><p><a href="../../?genre=jazz">Zum Endless-Jazz-Generator</a></p><script>document.querySelectorAll("audio").forEach(a=>a.addEventListener("play",()=>document.querySelectorAll("audio").forEach(b=>{if(b!==a)b.pause()})));</script></html>

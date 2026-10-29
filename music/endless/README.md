@@ -1,6 +1,21 @@
 # Endless browser build
 
-Current release: `web9-jazz-2`, page revision `p16`.
+Current release: `web10-jazz-1`, page revision `p17`.
+
+The new quartet composition develops phrases inside short solos, retains an
+original theme kernel alongside the latest utterance, and makes piano replies
+use the actual sax question. Solo routes use the native harmony/climax plan;
+trading is deliberately 4+4 bars, and selected ensemble pauses and drum fills
+follow the phrase and cadence. The original Hero Sax tone stays unchanged.
+
+[Listen to three matched before/after pairs](compare/jazz-v3/) (same starting
+material and Hero sound; constant-gain loudness matching only).
+Independent reviews covered twelve pieces and multiple revisions:
+[composition](reviews/jazz-v3-composition.md), [ensemble](reviews/jazz-v3-ensemble.md),
+[orchestra inspiration](reviews/jazz-v3-orchestra.md), [technical verification](reviews/jazz-v3-technical.md), [browser checks](reviews/jazz-v3-browser.md).
+The failed intermediate density/phrase-erosion candidates were corrected before
+release. Existing groove/set variety remains; orchestra-style memory of motif
+families and realized forms **across separate pieces** is still future work.
 
 The quartet now uses the original **Hero Sax default tone**: original compressor,
 tube/tape stages, plate and quiet echo. The earlier jazz-specific tone reductions
@@ -11,8 +26,8 @@ retain their original sound. [Exact preset verification](reviews/jazz-default-he
 A stricter follow-up review identified remaining compositional weaknesses:
 inactive short-solo development, independently generated question/answer passages,
 and repetitive dramatic planning. [Findings and priorities](reviews/jazz-professional.md).
-This release restores the requested sax sound; those arrangement issues remain
-work for a subsequent composition revision.
+The composition revision above addresses the concrete phrase, form and response
+issues; the earlier diagnosis remains available as the comparison baseline.
 
 ## Endless Jazz quartet
 
@@ -40,7 +55,7 @@ Reproduce the **current** release:
 python3 music/endless/py/rebuild.py
 python3 music/endless/py/rebuild_jazz_bank.py --count 48
 python3 music/endless/py/check_release.py --baseline-ref 801f7765 --replay
-python3 music/endless/py/check_jazz_tone.py
+python3 music/endless/py/check_jazz_evolution.py --bank music/endless/bank/jazz
 ```
 
 `py/jazz-overlay/` contains readable jazz sources and sample lookup tables;

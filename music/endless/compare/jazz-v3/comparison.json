@@ -1,0 +1,73 @@
+{
+  "baseline_commit": "498d071b",
+  "tone": "original Hero Sax, identical in both versions",
+  "matching": "Constant gain per track to a shared attainable target per pair; no additional compression or limiting",
+  "pairs": [
+    {
+      "entry": "00",
+      "label": "Ballade",
+      "target_lufs": -18.0,
+      "constant_gain_only": true,
+      "files": {
+        "before": {
+          "name": "00-before.mp3",
+          "gain_db": -0.7,
+          "original_lufs": -17.3,
+          "original_true_peak_dbtp": -1.73,
+          "seconds": 233.58
+        },
+        "after": {
+          "name": "00-after.mp3",
+          "gain_db": -0.6,
+          "original_lufs": -17.4,
+          "original_true_peak_dbtp": -3.25,
+          "seconds": 220.25
+        }
+      }
+    },
+    {
+      "entry": "01",
+      "label": "Swing",
+      "target_lufs": -18.0,
+      "constant_gain_only": true,
+      "files": {
+        "before": {
+          "name": "01-before.mp3",
+          "gain_db": -3.8,
+          "original_lufs": -14.2,
+          "original_true_peak_dbtp": -2.55,
+          "seconds": 113.27
+        },
+        "after": {
+          "name": "01-after.mp3",
+          "gain_db": -4.1,
+          "original_lufs": -13.9,
+          "original_true_peak_dbtp": -2.46,
+          "seconds": 107.11
+        }
+      }
+    },
+    {
+      "entry": "03",
+      "label": "Bossa",
+      "target_lufs": -18.0,
+      "constant_gain_only": true,
+      "files": {
+        "before": {
+          "name": "03-before.mp3",
+          "gain_db": -3.6,
+          "original_lufs": -14.4,
+          "original_true_peak_dbtp": -1.86,
+          "seconds": 174.97
+        },
+        "after": {
+          "name": "03-after.mp3",
+          "gain_db": -3.7,
+          "original_lufs": -14.3,
+          "original_true_peak_dbtp": -1.5,
+          "seconds": 132.81
+        }
+      }
+    }
+  ]
+}
