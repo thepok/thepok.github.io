@@ -3,7 +3,7 @@
 //   engine-worker.js:  the AgentSound engine (WASM): render JSON -> streamed 16-bit PCM
 //   here: the bank (natively pre-composed set openings), the pool of ready pieces, compact storage (Opus via
 //   WebCodecs, else 16-bit PCM), playback with seeking, the history (recipes in localStorage).
-const A = 'p17';                     // page revision (app.js / the shell only: the bank, recipes and links stay valid)
+const A = 'p18';                     // page revision (app.js / the shell only: the bank, recipes and links stay valid)
 const V = 'web10-jazz-1';           // code version: recipes / links of another version are made anew with this code (noted)
 const SV = 'e0d6b645e6';                      // the content hash of samples/index.json (wasm-space/prod/asset_version.py writes it)
 const PYV = '314.0.7';              // Pyodide (the compose worker loads it from the CDN; the service worker caches it)
@@ -710,6 +710,20 @@ function* sampleZones(instrument) {
   }
 }
 
+// Playback mix trim, applied to a fresh render copy for bank and newly composed pieces.
+// Offset the performance automation too, retaining its simulated microphone movement.
+function trimSaxReverb(song) {
+  const sax = song.tracks.find(t => t.id === 'sax');
+  if (!sax) return;
+  const bus = 'hero_plate_70s';
+  if (typeof sax.sends?.[bus] === 'number') sax.sends[bus] -= 3;
+  for (const lane of sax.automation || []) {
+    if (lane.target === `send.${bus}`) {
+      for (const point of lane.points) point[1] -= 3;
+    }
+  }
+}
+
 // the piece's samples, loaded on demand: only the instruments (tracks) this piece plays, each file fetched once per
 // visit (kept compressed), decoded for this render; the render JSON gets the engine's paths
 async function samplesFor(p) {
@@ -717,6 +731,7 @@ async function samplesFor(p) {
   const song = JSON.parse(p.render);
   const orch = ORCH(p.info.genre);
   const jazz = p.info.genre === 'jazz';
+  if (jazz) trimSaxReverb(song);
   const idx = orch ? await orchestraIndex() : jazz ? await quartetIndex() : null;
   const jobs = new Map();            // name -> {url, sr, loop, unity}
   for (const t of song.tracks) for (const z of sampleZones(t.instrument)) {

@@ -1,6 +1,6 @@
 {
   "version": "web10-jazz-1",
-  "revision": "p17",
+  "revision": "p18",
   "base_commit": "a53e6a4e72c5e9369e3d9ee4e777f0c352c708fd",
   "previous_release": "web9-jazz-2",
   "browser_baseline_commit": "5b44e5175ba86d72a59b2aa46ce6c011d7befeb2",
@@ -15,7 +15,8 @@
   "changes": [
     "Develop short solos through bounded phrase memory and responses to actual previous phrases.",
     "Use coherent solo charts, native musical peaks and form-aware ensemble transitions.",
-    "Preserve the original Hero Sax default tone and legacy shared recipes."
+    "Preserve the original Hero Sax default tone and legacy shared recipes.",
+    "Reduce sax plate reverb by 3 dB at playback, including microphone send automation."
   ],
   "soloists": true,
   "engine_changed": false,
