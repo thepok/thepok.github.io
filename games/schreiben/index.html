@@ -1,0 +1,1115 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#eee9df">
+<meta name="description" content="Buchstaben mit dem Stift nachspuren – auf Heftlinien wie in der ersten Klasse. Punkte für genau, schnell und flüssig.">
+<title>Schreibspur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&display=swap">
+<style>
+  :root {
+    --paper: #eee9df;
+    --card: #f9f7f0;
+    --ink: #232b29;
+    --muted: #5f665e;
+    --accent: #2f7a77;
+    --wash: #d5e8e5;
+    --good: #3f8f4f;
+    --ok: #c98a1c;
+    --bad: #b8453a;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    background: var(--paper); color: var(--ink);
+    font-family: "Segoe UI", system-ui, sans-serif;
+    overscroll-behavior: none;
+    -webkit-user-select: none; user-select: none;
+    -webkit-touch-callout: none;
+  }
+  canvas#pad { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; display: block; }
+  button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulation; }
+  [hidden] { display: none !important; }
+
+  /* ---------- HUD ---------- */
+  #hud {
+    position: fixed; left: 0; right: 0; top: 0;
+    padding: calc(env(safe-area-inset-top) + 8px) 10px 6px;
+    display: flex; flex-direction: column; gap: 6px;
+    pointer-events: none;
+  }
+  #hud > * { pointer-events: auto; }
+  .bar { display: flex; align-items: center; gap: 8px; }
+  .icon {
+    min-width: 44px; height: 44px; border-radius: 12px; border: 1px solid #c8c9bb;
+    background: var(--card); font-size: 20px; display: grid; place-items: center; padding: 0 10px;
+  }
+  .icon:active { transform: translateY(1px); }
+  #model { width: 58px; height: 58px; border-radius: 10px; background: #fff; border: 1px solid #c8c9bb; flex: none; }
+  .scorebox { flex: 1; min-width: 0; }
+  #score { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 28px; line-height: 1; }
+  #score small { font-size: 13px; color: var(--muted); font-weight: 500; margin-left: 4px; }
+  #dots { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+  #dots i { width: 10px; height: 10px; border-radius: 50%; background: #d7d6cb; display: block; }
+  #dots i.now { background: var(--accent); box-shadow: 0 0 0 2px var(--wash); }
+  #dots i.s0 { background: #c9b4ad; } #dots i.s1 { background: #e0b25c; }
+  #dots i.s2 { background: #9cc18a; } #dots i.s3 { background: var(--good); }
+  #penbadge { font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .tools { display: flex; gap: 8px; }
+  .tools .icon { font-size: 15px; font-weight: 600; flex: 1; }
+  #btnDone { background: var(--accent); color: #fff; border-color: var(--accent); }
+  #btnDone.pulse { animation: pulse 1.1s ease-in-out infinite; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 6px #2f7a7733; } }
+
+  /* ---------- Result card ---------- */
+  #result {
+    position: fixed; left: 50%; transform: translateX(-50%);
+    width: min(92vw, 420px);
+    background: var(--card); border: 1px solid #c8c9bb; border-top: 4px solid var(--accent);
+    border-radius: 14px; padding: 12px 14px; box-shadow: 0 10px 30px #232b2922;
+    animation: pop .25s ease-out;
+  }
+  @keyframes pop { from { transform: translateX(-50%) scale(.9); opacity: 0; } }
+  #result .top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  #stars { font-size: 30px; letter-spacing: 2px; }
+  #stars .off { filter: grayscale(1); opacity: .3; }
+  #pts { font-family: Fredoka, sans-serif; font-size: 30px; font-weight: 600; color: var(--accent); }
+  #msg { font-family: Fredoka, sans-serif; font-size: 18px; margin: 4px 0 8px; }
+  .meter { display: grid; grid-template-columns: 70px 1fr 34px; align-items: center; gap: 8px; font-size: 13px; margin: 3px 0; color: var(--muted); }
+  .meter b { height: 10px; border-radius: 6px; background: #e3e1d6; overflow: hidden; display: block; }
+  .meter b i { display: block; height: 100%; background: var(--accent); border-radius: 6px; transition: width .5s; }
+  .meter span:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+  #result .row { display: flex; gap: 8px; margin-top: 10px; }
+  #result .row button { flex: 1; height: 46px; border-radius: 12px; border: 1px solid #c8c9bb; background: #fff; font-weight: 600; font-size: 16px; }
+  #result .row button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* ---------- Overlays (Menü / Ende) ---------- */
+  .overlay {
+    position: fixed; inset: 0; background: var(--paper); overflow-y: auto;
+    padding: calc(env(safe-area-inset-top) + 18px) 18px calc(env(safe-area-inset-bottom) + 24px);
+  }
+  .wrap { max-width: 560px; margin: 0 auto; }
+  .mast { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #28312d; padding-bottom: 10px;
+    font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+  .mast a { color: inherit; text-decoration: none; }
+  h1 { font-family: Georgia, serif; font-weight: normal; font-size: 46px; letter-spacing: -2px; margin: 18px 0 4px; }
+  .lead { color: var(--muted); font-size: 14px; margin: 0 0 16px; line-height: 1.5; }
+  fieldset { border: 0; margin: 0 0 14px; padding: 0; }
+  legend { font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin-bottom: 7px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+  .chips label { position: relative; }
+  .chips input { position: absolute; opacity: 0; pointer-events: none; }
+  .chips span {
+    display: inline-block; padding: 9px 13px; border-radius: 999px; border: 1px solid #c8c9bb; background: var(--card);
+    font-size: 14px; font-weight: 600;
+  }
+  .chips input:checked + span { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .chips input:focus-visible + span { outline: 3px solid #155a94; outline-offset: 2px; }
+  #ownLetters { width: 100%; margin-top: 8px; padding: 11px 12px; font: 600 18px Fredoka, sans-serif; letter-spacing: 2px;
+    border: 1px solid #c8c9bb; border-radius: 10px; background: #fff; color: var(--ink); -webkit-user-select: text; user-select: text; }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.45; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  .big {
+    width: 100%; height: 58px; margin-top: 8px; border-radius: 14px; border: 0; background: var(--accent); color: #fff;
+    font: 600 22px Fredoka, sans-serif;
+  }
+  .ghost { width: 100%; height: 48px; margin-top: 8px; border-radius: 14px; border: 1px solid #c8c9bb; background: var(--card); font-weight: 600; font-size: 16px; }
+  #endList { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+  #endList div { background: var(--card); border: 1px solid #c8c9bb; border-radius: 10px; padding: 6px 10px; text-align: center; min-width: 54px; }
+  #endList b { display: block; font: 600 26px Fredoka, sans-serif; }
+  #endList small { font-size: 11px; color: var(--muted); }
+  #endTotal { font: 600 56px Fredoka, sans-serif; color: var(--accent); line-height: 1; margin-top: 10px; }
+  #endBest { color: var(--muted); font-size: 14px; margin-top: 6px; }
+  #toast {
+    position: fixed; left: 50%; bottom: 40%; transform: translateX(-50%); background: #232b29e6; color: #fff;
+    padding: 10px 16px; border-radius: 999px; font-size: 14px; pointer-events: none; transition: opacity .3s;
+  }
+</style>
+</head>
+<body>
+<canvas id="pad"></canvas>
+
+<div id="hud" hidden>
+  <div class="bar">
+    <button class="icon" id="btnMenu" aria-label="Menü">☰</button>
+    <canvas id="model" width="116" height="116" aria-hidden="true"></canvas>
+    <div class="scorebox">
+      <div id="score">0<small>Punkte</small></div>
+      <div id="dots"></div>
+    </div>
+    <span id="penbadge"></span>
+  </div>
+  <div class="tools">
+    <button class="icon" id="btnShow">▶ Zeigen</button>
+    <button class="icon" id="btnUndo" aria-label="Letzten Strich löschen">↶</button>
+    <button class="icon" id="btnClear" aria-label="Alles löschen">✕</button>
+    <button class="icon" id="btnDone">Fertig ✓</button>
+  </div>
+</div>
+
+<div id="result" hidden>
+  <div class="top"><div id="stars"></div><div id="pts"></div></div>
+  <div id="msg"></div>
+  <div class="meter"><span>Genau</span><b><i id="mAcc"></i></b><span id="vAcc"></span></div>
+  <div class="meter"><span>Schnell</span><b><i id="mSpd"></i></b><span id="vSpd"></span></div>
+  <div class="meter"><span>Flüssig</span><b><i id="mSmo"></i></b><span id="vSmo"></span></div>
+  <div class="row"><button id="btnAgain">↺ Nochmal</button><button id="btnNext" class="primary">Weiter →</button></div>
+</div>
+
+<div id="menu" class="overlay">
+  <div class="wrap">
+    <header class="mast"><a href="../">← thepok / Spiele</a><span>Schreiben lernen</span></header>
+    <h1>Schreibspur.</h1>
+    <p class="lead">Fahr die Buchstaben mit dem Stift nach. Je genauer, je schneller und je flüssiger, desto mehr Punkte.</p>
+
+    <fieldset>
+      <legend>Was üben?</legend>
+      <div class="chips" id="setChips">
+        <label><input type="radio" name="set" value="lower" checked><span>a b c</span></label>
+        <label><input type="radio" name="set" value="upper"><span>A B C</span></label>
+        <label><input type="radio" name="set" value="both"><span>Aa Bb</span></label>
+        <label><input type="radio" name="set" value="digits"><span>1 2 3</span></label>
+        <label><input type="radio" name="set" value="own"><span>Meine Buchstaben</span></label>
+      </div>
+      <input id="ownLetters" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="z. B. m a i l o e" hidden>
+      <div class="hint" id="ownHint" hidden></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Hilfe</legend>
+      <div class="chips">
+        <label><input type="radio" name="stage" value="1" checked><span>Grau nachspuren</span></label>
+        <label><input type="radio" name="stage" value="2"><span>Punkte</span></label>
+        <label><input type="radio" name="stage" value="3"><span>Nur Startpunkt</span></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Wo schreiben?</legend>
+      <div class="chips">
+        <label><input type="radio" name="place" value="right" checked><span>Rand rechts unten</span></label>
+        <label><input type="radio" name="place" value="left"><span>Rand links unten</span></label>
+        <label><input type="radio" name="place" value="center"><span>Mitte</span></label>
+      </div>
+      <div class="hint">Am Rand kann die Hand neben dem Handy liegen. Für Linkshänder „links unten“.</div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Größe</legend>
+      <input type="range" id="size" min="55" max="100" value="85">
+    </fieldset>
+
+    <fieldset>
+      <legend>Runde</legend>
+      <div class="chips">
+        <label><input type="radio" name="count" value="5"><span>5</span></label>
+        <label><input type="radio" name="count" value="10" checked><span>10</span></label>
+        <label><input type="radio" name="count" value="20"><span>20</span></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Eingabe</legend>
+      <div class="chips">
+        <label><input type="radio" name="pen" value="auto" checked><span>Automatisch</span></label>
+        <label><input type="radio" name="pen" value="pen"><span>Nur Stift</span></label>
+        <label><input type="radio" name="pen" value="any"><span>Stift & Finger</span></label>
+      </div>
+      <div class="hint">„Automatisch“: Sobald ein Stift erkannt wird, werden Finger und Handballen ignoriert.</div>
+    </fieldset>
+
+    <fieldset>
+      <div class="chips">
+        <label><input type="checkbox" id="sound" checked><span>🔊 Töne</span></label>
+        <label><input type="checkbox" id="fullscreen" checked><span>⛶ Vollbild</span></label>
+      </div>
+    </fieldset>
+
+    <button class="big" id="btnStart">Los geht’s ✎</button>
+    <button class="ghost" id="btnResume" hidden>Weiterspielen</button>
+  </div>
+</div>
+
+<div id="end" class="overlay" hidden>
+  <div class="wrap">
+    <header class="mast"><a href="../">← thepok / Spiele</a><span>Runde fertig</span></header>
+    <h1 id="endTitle">Geschafft!</h1>
+    <div id="endTotal"></div>
+    <div id="endBest"></div>
+    <div id="endList"></div>
+    <button class="big" id="btnRestart">Neue Runde</button>
+    <button class="ghost" id="btnToMenu">Einstellungen</button>
+  </div>
+</div>
+
+<div id="toast" hidden></div>
+
+<script>
+"use strict";
+/* =====================================================================
+   Glyphen: Druckschrift (Grundschrift-nah) in Lineatur-Einheiten.
+   y = 0 Grundlinie, 1 Mittellinie, 2 Oberlinie, -1 Unterlinie. y zeigt nach oben.
+   Bögen: Winkel in Grad, mathematisch (0° rechts, 90° oben), Richtung a0 -> a1.
+   ===================================================================== */
+const M = (x, y) => ["M", x, y];
+const L = (x, y) => ["L", x, y];
+const A = (cx, cy, rx, ry, a0, a1) => ["A", cx, cy, rx, ry, a0, a1];
+const D = (x, y) => ["D", x, y];
+const ln = (x1, y1, x2, y2) => [M(x1, y1), L(x2, y2)];
+
+const RING_A = [A(.45, .5, .42, .5, 40, 400)];
+const G = {
+  a: { w: 1, s: [RING_A, ln(.87, 1, .87, 0)] },
+  b: { w: 1, s: [ln(.08, 2, .08, 0), [A(.5, .5, .42, .5, 180, -180)]] },
+  c: { w: .95, s: [[A(.5, .5, .42, .5, 45, 315)]] },
+  d: { w: 1, s: [RING_A, ln(.87, 2, .87, 0)] },
+  e: { w: .98, s: [[M(.08, .5), L(.9, .5), A(.49, .5, .41, .5, 0, 320)]] },
+  f: { w: .85, s: [[A(.55, 1.6, .3, .35, 20, 180), L(.25, 0)], ln(.0, 1, .62, 1)] },
+  g: { w: 1, s: [RING_A, [M(.87, 1), L(.87, -.55), A(.5, -.55, .37, .4, 0, -160)]] },
+  h: { w: 1, s: [ln(.1, 2, .1, 0), [A(.5, .55, .4, .45, 180, 0), L(.9, 0)]] },
+  i: { w: .35, s: [ln(.17, 1, .17, 0), [D(.17, 1.5)]] },
+  j: { w: .75, s: [[M(.6, 1), L(.6, -.55), A(.3, -.55, .3, .4, 0, -160)], [D(.6, 1.5)]] },
+  k: { w: .92, s: [ln(.1, 2, .1, 0), [M(.82, 1), L(.12, .4), L(.86, 0)]] },
+  l: { w: .35, s: [ln(.17, 2, .17, 0)] },
+  m: { w: 1.5, s: [ln(.1, 1, .1, 0), [A(.43, .6, .33, .4, 180, 0), L(.76, 0)], [A(1.09, .6, .33, .4, 180, 0), L(1.42, 0)]] },
+  n: { w: 1, s: [ln(.1, 1, .1, 0), [A(.5, .55, .4, .45, 180, 0), L(.9, 0)]] },
+  o: { w: 1, s: [[A(.5, .5, .42, .5, 90, 450)]] },
+  p: { w: 1, s: [ln(.1, 1, .1, -1), [A(.52, .5, .42, .5, 180, -180)]] },
+  q: { w: 1, s: [RING_A, ln(.87, 1, .87, -1)] },
+  r: { w: .78, s: [ln(.1, 1, .1, 0), [A(.45, .55, .35, .45, 180, 40)]] },
+  s: { w: .85, s: [[A(.42, .75, .3, .25, 25, 270), A(.42, .25, .32, .25, 90, -160)]] },
+  t: { w: .75, s: [[M(.3, 1.65), L(.3, .18), A(.52, .18, .22, .18, 180, 320)], ln(.02, 1, .62, 1)] },
+  u: { w: 1, s: [[M(.1, 1), L(.1, .45), A(.48, .45, .38, .45, 180, 360), L(.86, 1)], ln(.86, 1, .86, 0)] },
+  v: { w: 1, s: [[M(.05, 1), L(.5, 0), L(.95, 1)]] },
+  w: { w: 1.5, s: [[M(.05, 1), L(.38, 0), L(.75, 1), L(1.12, 0), L(1.45, 1)]] },
+  x: { w: .92, s: [ln(.08, 1, .84, 0), ln(.84, 1, .08, 0)] },
+  y: { w: 1, s: [ln(.05, 1, .5, 0), ln(.95, 1, .25, -1)] },
+  z: { w: .92, s: [[M(.08, 1), L(.84, 1), L(.08, 0), L(.86, 0)]] },
+  "ß": { w: 1, s: [[M(.1, 0), L(.1, 1.5), A(.42, 1.5, .32, .45, 180, -60), L(.38, 1.0), A(.42, .5, .42, .5, 80, -115)]] },
+
+  A: { w: 1.4, s: [ln(.7, 2, .05, 0), ln(.7, 2, 1.35, 0), ln(.3, .75, 1.1, .75)] },
+  B: { w: 1.1, s: [ln(.1, 2, .1, 0), [M(.1, 2), L(.5, 2), A(.5, 1.5, .42, .5, 90, -90), L(.1, 1)], [M(.1, 1), L(.55, 1), A(.55, .5, .47, .5, 90, -90), L(.1, 0)]] },
+  C: { w: 1.3, s: [[A(.72, 1, .62, 1, 45, 315)]] },
+  D: { w: 1.3, s: [ln(.1, 2, .1, 0), [M(.1, 2), L(.45, 2), A(.45, 1, .75, 1, 90, -90), L(.1, 0)]] },
+  E: { w: 1, s: [ln(.1, 2, .1, 0), ln(.1, 2, .9, 2), ln(.1, 1, .75, 1), ln(.1, 0, .9, 0)] },
+  F: { w: 1, s: [ln(.1, 2, .1, 0), ln(.1, 2, .9, 2), ln(.1, 1, .75, 1)] },
+  G: { w: 1.4, s: [[A(.72, 1, .62, 1, 45, 360), L(.8, 1)]] },
+  H: { w: 1.2, s: [ln(.1, 2, .1, 0), ln(1.1, 2, 1.1, 0), ln(.1, 1, 1.1, 1)] },
+  I: { w: .35, s: [ln(.17, 2, .17, 0)] },
+  J: { w: .9, s: [[M(.75, 2), L(.75, .45), A(.4, .45, .35, .45, 0, -180)]] },
+  K: { w: 1.1, s: [ln(.1, 2, .1, 0), [M(1, 2), L(.12, 1), L(1.05, 0)]] },
+  L: { w: .9, s: [[M(.1, 2), L(.1, 0), L(.85, 0)]] },
+  M: { w: 1.5, s: [ln(.1, 2, .1, 0), [M(.1, 2), L(.75, .8), L(1.4, 2), L(1.4, 0)]] },
+  N: { w: 1.2, s: [ln(.1, 2, .1, 0), [M(.1, 2), L(1.1, 0), L(1.1, 2)]] },
+  O: { w: 1.45, s: [[A(.72, 1, .65, 1, 90, 450)]] },
+  P: { w: 1.05, s: [ln(.1, 2, .1, 0), [M(.1, 2), L(.5, 2), A(.5, 1.5, .45, .5, 90, -90), L(.1, 1)]] },
+  Q: { w: 1.5, s: [[A(.72, 1, .65, 1, 90, 450)], ln(.85, .45, 1.4, -.1)] },
+  R: { w: 1.1, s: [ln(.1, 2, .1, 0), [M(.1, 2), L(.5, 2), A(.5, 1.5, .45, .5, 90, -90), L(.1, 1)], ln(.5, 1, 1.02, 0)] },
+  S: { w: 1.1, s: [[A(.55, 1.5, .42, .5, 30, 270), A(.55, .5, .47, .5, 90, -150)]] },
+  T: { w: 1.2, s: [ln(.05, 2, 1.15, 2), ln(.6, 2, .6, 0)] },
+  U: { w: 1.2, s: [[M(.1, 2), L(.1, .55), A(.6, .55, .5, .55, 180, 360), L(1.1, 2)]] },
+  V: { w: 1.3, s: [[M(.05, 2), L(.65, 0), L(1.25, 2)]] },
+  W: { w: 1.9, s: [[M(.05, 2), L(.5, 0), L(.95, 2), L(1.4, 0), L(1.85, 2)]] },
+  X: { w: 1.2, s: [ln(.05, 2, 1.15, 0), ln(1.15, 2, .05, 0)] },
+  Y: { w: 1.2, s: [ln(.05, 2, .6, 1), [M(1.15, 2), L(.6, 1), L(.6, 0)]] },
+  Z: { w: 1.1, s: [[M(.08, 2), L(1.0, 2), L(.08, 0), L(1.05, 0)]] },
+
+  0: { w: 1, s: [[A(.5, 1, .45, 1, 90, 450)]] },
+  1: { w: .8, s: [[M(.1, 1.4), L(.55, 2), L(.55, 0)]] },
+  2: { w: 1, s: [[A(.5, 1.5, .4, .45, 160, -30), L(.08, 0), L(.95, 0)]] },
+  3: { w: 1, s: [[A(.48, 1.52, .4, .46, 150, -90), A(.48, .52, .45, .52, 90, -150)]] },
+  4: { w: 1.05, s: [[M(.7, 2), L(.05, .65), L(1.0, .65)], ln(.78, 1.35, .78, 0)] },
+  5: { w: 1, s: [[M(.2, 2), L(.15, 1.1), A(.5, .62, .42, .62, 120, -150)], ln(.2, 2, .85, 2)] },
+  6: { w: 1, s: [[A(.72, 1.2, .62, .8, 70, 180), L(.08, .6), A(.5, .6, .42, .6, 180, 540)]] },
+  7: { w: 1, s: [[M(.05, 2), L(.95, 2), L(.35, 0)]] },
+  8: { w: 1, s: [[A(.5, 1.5, .35, .5, 90, 450)], [A(.5, .5, .43, .5, 90, 450)]] },
+  9: { w: 1, s: [[A(.5, 1.45, .42, .55, 20, 380)], ln(.92, 1.45, .78, 0)] },
+};
+// Umlaute aus Grundbuchstaben + Punkte
+function umlaut(base, d1, d2, y) { return { w: G[base].w, s: [...G[base].s, [D(d1, y)], [D(d2, y)]] }; }
+G["ä"] = umlaut("a", .28, .62, 1.45);
+G["ö"] = umlaut("o", .3, .7, 1.45);
+G["ü"] = umlaut("u", .3, .68, 1.45);
+G["Ä"] = umlaut("A", .45, .95, 2.4);
+G["Ö"] = umlaut("O", .5, .95, 2.4);
+G["Ü"] = umlaut("U", .4, .8, 2.4);
+
+const SETS = {
+  lower: [..."abcdefghijklmnopqrstuvwxyzäöüß"],
+  upper: [..."ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ"],
+  digits: [..."0123456789"],
+};
+SETS.both = [...SETS.lower, ...SETS.upper];
+
+/* ---------- Glyph -> Abtastpunkte ---------- */
+const STEP = 0.02;
+function buildGlyph(ch) {
+  const g = G[ch];
+  const strokes = g.s.map(cmds => {
+    const pts = [];
+    let isDot = false;
+    let cur = null;
+    const push = (x, y) => { pts.push({ x, y }); cur = { x, y }; };
+    const lineTo = (x, y) => {
+      if (!cur) { push(x, y); return; }
+      const len = Math.hypot(x - cur.x, y - cur.y);
+      const n = Math.max(1, Math.ceil(len / STEP));
+      const sx = cur.x, sy = cur.y;
+      for (let i = 1; i <= n; i++) push(sx + (x - sx) * i / n, sy + (y - sy) * i / n);
+    };
+    for (const c of cmds) {
+      if (c[0] === "M") push(c[1], c[2]);
+      else if (c[0] === "L") lineTo(c[1], c[2]);
+      else if (c[0] === "D") { push(c[1], c[2]); isDot = true; }
+      else if (c[0] === "A") {
+        const [, cx, cy, rx, ry, a0, a1] = c;
+        const r0 = a0 * Math.PI / 180, r1 = a1 * Math.PI / 180;
+        const sx = cx + rx * Math.cos(r0), sy = cy + ry * Math.sin(r0);
+        if (cur && Math.hypot(sx - cur.x, sy - cur.y) > 1e-6) lineTo(sx, sy);
+        else if (!cur) push(sx, sy);
+        const n = Math.max(4, Math.ceil(Math.abs(r1 - r0) * Math.max(rx, ry) / STEP));
+        for (let i = 1; i <= n; i++) {
+          const a = r0 + (r1 - r0) * i / n;
+          push(cx + rx * Math.cos(a), cy + ry * Math.sin(a));
+        }
+      }
+    }
+    // Bogenlänge-Parameter
+    let len = 0;
+    pts[0].t = 0;
+    for (let i = 1; i < pts.length; i++) { len += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y); pts[i].len = len; }
+    pts[0].len = 0;
+    for (const p of pts) p.t = len > 0 ? p.len / len : 0;
+    const closed = !isDot && pts.length > 2 && Math.hypot(pts[0].x - pts[pts.length - 1].x, pts[0].y - pts[pts.length - 1].y) < 0.05;
+    return { pts, len, isDot, closed };
+  });
+  // Flache Liste + Mehrdeutigkeit (Punkte nahe einem anderen Strich)
+  const flat = [];
+  strokes.forEach((s, si) => s.pts.forEach(p => flat.push({ x: p.x, y: p.y, si, t: p.t, w: s.isDot ? 12 : 1 })));
+  for (const p of flat) {
+    p.amb = false;
+    for (const q of flat) {
+      if (q.si !== p.si && Math.abs(q.x - p.x) < .13 && Math.abs(q.y - p.y) < .13 && Math.hypot(q.x - p.x, q.y - p.y) < .13) { p.amb = true; break; }
+    }
+  }
+  const totalLen = strokes.reduce((a, s) => a + s.len, 0);
+  return { ch, w: g.w, strokes, flat, totalLen };
+}
+const glyphCache = {};
+const glyph = ch => glyphCache[ch] || (glyphCache[ch] = buildGlyph(ch));
+
+/* =====================================================================
+   Zustand & Einstellungen
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+};
+const settings = Object.assign({ set: "lower", stage: "1", place: "right", size: 85, count: "10", pen: "auto", sound: true, fullscreen: true, own: "" },
+  store.get("schreibspur-settings", {}));
+let stats = store.get("schreibspur-stats", {});    // {ch: {n, acc, best}}
+let highs = store.get("schreibspur-highscores", {});
+
+let penOnly = settings.pen === "pen";
+let penSeen = false;
+
+const game = {
+  state: "menu",        // menu | write | result | end
+  queue: [], idx: 0, total: 0, results: [],
+  ch: null, g: null,
+  ink: [],              // [{pts:[{x,y,t,p}], ...}] in Glyph-Einheiten
+  active: null,         // aktueller Strich
+  pointerId: null,
+  tFirst: 0, tLast: 0,
+  demo: null,
+  eval: null,
+  autoTimer: 0, nextTimer: 0, idleTimer: 0,
+};
+
+/* ---------- Bekannte Buchstaben aus "Lesewörter" ---------- */
+function lesewoerterLetters() {
+  try {
+    const s = JSON.parse(localStorage.getItem("lesewoerter") || "{}");
+    if (!s.letters) return "";
+    const str = String(s.letters).toLowerCase();
+    const parts = /[\s,;]/.test(str) ? str.split(/[\s,;]+/) : [...str];
+    const out = [];
+    for (const p of parts) for (const c of p) if (G[c] && !out.includes(c)) out.push(c);
+    return out.join(" ");
+  } catch (e) { return ""; }
+}
+function ownSet() {
+  const out = [];
+  for (const c of [...(settings.own || "")]) if (G[c] && !out.includes(c)) out.push(c);
+  return out;
+}
+function currentSet() {
+  if (settings.set === "own") { const o = ownSet(); return o.length ? o : SETS.lower; }
+  return SETS[settings.set] || SETS.lower;
+}
+
+/* =====================================================================
+   Layout / Zeichnen
+   ===================================================================== */
+const pad = $("pad");
+const ctx = pad.getContext("2d");
+let W = 0, H = 0, DPR = 1;
+let layout = { band: 100, ox: 0, base: 0, rowTop: 0, rowBottom: 0 };
+
+function resize() {
+  DPR = Math.min(3, window.devicePixelRatio || 1);
+  W = window.innerWidth; H = window.innerHeight;
+  pad.width = Math.round(W * DPR); pad.height = Math.round(H * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  computeLayout();
+  draw();
+}
+function computeLayout() {
+  const hudH = $("hud").hidden ? 120 : $("hud").getBoundingClientRect().bottom + 8;
+  const gw = game.g ? game.g.w : 1.4;
+  const factor = (settings.size || 85) / 100;
+  const maxW = 2.0 + 1.0;                    // breitester Buchstabe + Rand
+  let band = Math.min(W / maxW, (H - hudH - 16) / 3.9) * factor;
+  band = Math.max(36, Math.min(220, band));
+  const bottomPad = 18 + (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--sab")) || 0);
+  let base;
+  if (settings.place === "center") base = hudH + (H - hudH) / 2 + band * 0.55;
+  else base = H - bottomPad - band * 1.15;      // Unterlinie knapp über dem unteren Rand
+  let ox;
+  const margin = band * 0.45;
+  if (settings.place === "right") ox = W - margin - gw * band;
+  else if (settings.place === "left") ox = margin;
+  else ox = (W - gw * band) / 2;
+  layout = { band, ox, base, rowTop: base - 2.75 * band, rowBottom: base + 1.15 * band };
+}
+const toX = x => layout.ox + x * layout.band;
+const toY = y => layout.base - y * layout.band;
+const fromX = px => (px - layout.ox) / layout.band;
+const fromY = py => (layout.base - py) / layout.band;
+
+function drawLineatur(c, x0, x1, base, band) {
+  // Mittelband (wie im Heft leicht eingefärbt)
+  c.fillStyle = "#f2f5df";
+  c.fillRect(x0, base - band, x1 - x0, band);
+  c.fillStyle = "#fbfaf4";
+  c.fillRect(x0, base - 2 * band, x1 - x0, band);
+  c.fillRect(x0, base, x1 - x0, band);
+  const line = (y, col, w) => { c.strokeStyle = col; c.lineWidth = w; c.beginPath(); c.moveTo(x0, y); c.lineTo(x1, y); c.stroke(); };
+  line(base - 2 * band, "#8fa6b8", Math.max(1, band * .012));   // Oberlinie
+  line(base - band, "#8fa6b8", Math.max(1, band * .012));       // Mittellinie
+  line(base + band, "#8fa6b8", Math.max(1, band * .012));       // Unterlinie
+  line(base, "#c0574b", Math.max(1.5, band * .022));            // Grundlinie (rot)
+}
+
+function strokePath(c, pts, X, Y) {
+  c.beginPath();
+  pts.forEach((p, i) => i ? c.lineTo(X(p.x), Y(p.y)) : c.moveTo(X(p.x), Y(p.y)));
+  c.stroke();
+}
+
+function drawTemplate() {
+  const g = game.g; if (!g) return;
+  const b = layout.band;
+  const stage = settings.stage;
+  c_round();
+  if (stage === "1") {
+    ctx.strokeStyle = "#cfd6d0"; ctx.fillStyle = "#cfd6d0";
+    ctx.lineWidth = b * 0.24;
+    for (const s of g.strokes) {
+      if (s.isDot) { ctx.beginPath(); ctx.arc(toX(s.pts[0].x), toY(s.pts[0].y), b * .13, 0, 7); ctx.fill(); }
+      else strokePath(ctx, s.pts, toX, toY);
+    }
+    ctx.strokeStyle = "#b3bdb5"; ctx.lineWidth = Math.max(1, b * .015); ctx.setLineDash([b * .05, b * .07]);
+    for (const s of g.strokes) if (!s.isDot) strokePath(ctx, s.pts, toX, toY);
+    ctx.setLineDash([]);
+  } else if (stage === "2") {
+    ctx.fillStyle = "#9aa59c";
+    for (const s of g.strokes) {
+      if (s.isDot) { ctx.beginPath(); ctx.arc(toX(s.pts[0].x), toY(s.pts[0].y), b * .06, 0, 7); ctx.fill(); continue; }
+      const gap = 0.13; let next = 0;
+      for (const p of s.pts) if (p.len >= next || p === s.pts[s.pts.length - 1]) {
+        ctx.beginPath(); ctx.arc(toX(p.x), toY(p.y), b * .035, 0, 7); ctx.fill(); next = p.len + gap;
+      }
+    }
+  }
+  // Startpunkte + Richtungspfeil
+  const multi = g.strokes.length > 1;
+  g.strokes.forEach((s, i) => {
+    const p0 = s.pts[0];
+    const x = toX(p0.x), y = toY(p0.y);
+    if (!s.isDot && s.pts.length > 4) {
+      const k = Math.min(s.pts.length - 1, Math.round(0.22 / STEP));
+      const p1 = s.pts[Math.max(1, Math.min(k, Math.floor(s.pts.length / 3)))];
+      const ang = Math.atan2(toY(p1.y) - y, toX(p1.x) - x);
+      const ax = toX(p1.x), ay = toY(p1.y), al = b * .11;
+      ctx.fillStyle = "#3f8f4fcc";
+      ctx.beginPath();
+      ctx.moveTo(ax + Math.cos(ang) * al, ay + Math.sin(ang) * al);
+      ctx.lineTo(ax + Math.cos(ang + 2.5) * al, ay + Math.sin(ang + 2.5) * al);
+      ctx.lineTo(ax + Math.cos(ang - 2.5) * al, ay + Math.sin(ang - 2.5) * al);
+      ctx.closePath(); ctx.fill();
+    }
+    ctx.fillStyle = "#3f8f4f";
+    ctx.beginPath(); ctx.arc(x, y, b * (s.isDot ? .07 : .085), 0, 7); ctx.fill();
+    if (multi && !s.isDot) {
+      ctx.fillStyle = "#fff"; ctx.font = `600 ${Math.round(b * .12)}px Fredoka, sans-serif`;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText(String(g.strokes.slice(0, i + 1).filter(z => !z.isDot).length), x, y + 1);
+    }
+  });
+}
+function c_round() { ctx.lineCap = "round"; ctx.lineJoin = "round"; }
+
+function inkColor(d) {
+  const tol = TOL;
+  if (d <= tol) return "#2f6f3e";
+  if (d <= 2 * tol) return "#c98a1c";
+  return "#b8453a";
+}
+function drawInk() {
+  const b = layout.band;
+  c_round();
+  for (const s of game.ink) {
+    const pts = s.pts;
+    if (pts.length === 1) {
+      const p = pts[0];
+      ctx.fillStyle = game.eval ? inkColor(p.d) : "#1d3d72";
+      ctx.beginPath(); ctx.arc(toX(p.x), toY(p.y), b * .05, 0, 7); ctx.fill();
+      continue;
+    }
+    for (let i = 1; i < pts.length; i++) {
+      const p = pts[i], q = pts[i - 1];
+      ctx.strokeStyle = game.eval ? inkColor(Math.max(p.d, q.d)) : "#1d3d72";
+      ctx.lineWidth = b * .075 * (0.7 + 0.6 * (p.p ?? .5));
+      ctx.beginPath(); ctx.moveTo(toX(q.x), toY(q.y)); ctx.lineTo(toX(p.x), toY(p.y)); ctx.stroke();
+    }
+  }
+}
+function drawDemo() {
+  const d = game.demo; if (!d) return;
+  const b = layout.band;
+  c_round();
+  ctx.strokeStyle = "#2f7a77"; ctx.lineWidth = b * .085;
+  let remain = d.progress;
+  let tip = null;
+  for (const s of game.g.strokes) {
+    if (remain <= 0) break;
+    if (s.isDot) {
+      ctx.fillStyle = "#2f7a77";
+      ctx.beginPath(); ctx.arc(toX(s.pts[0].x), toY(s.pts[0].y), b * .06, 0, 7); ctx.fill();
+      remain -= 0.25; tip = s.pts[0]; continue;
+    }
+    const use = Math.min(remain, s.len);
+    const pts = s.pts.filter(p => p.len <= use);
+    if (pts.length > 1) strokePath(ctx, pts, toX, toY);
+    tip = pts[pts.length - 1];
+    remain -= s.len + 0.35;     // kleine Pause zwischen Strichen
+  }
+  if (tip) {
+    ctx.fillStyle = "#e9a23b";
+    ctx.beginPath(); ctx.arc(toX(tip.x), toY(tip.y), b * .09, 0, 7); ctx.fill();
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = "#eee9df"; ctx.fillRect(0, 0, W, H);
+  if (game.state === "menu" || game.state === "end" || !game.g) return;
+  const { band, base } = layout;
+  // Heftzeile über die ganze Breite (mit leichtem Papier-Rand)
+  ctx.fillStyle = "#fbfaf4";
+  ctx.fillRect(0, base - 2.75 * band, W, 3.9 * band);
+  drawLineatur(ctx, 0, W, base, band);
+  drawTemplate();
+  drawDemo();
+  drawInk();
+}
+let dirty = false;
+function requestDraw() { if (!dirty) { dirty = true; requestAnimationFrame(() => { dirty = false; draw(); }); } }
+
+function drawModel() {
+  const cv = $("model"), c = cv.getContext("2d");
+  const S = cv.width; c.clearRect(0, 0, S, S);
+  const g = game.g; if (!g) return;
+  const band = S / 3.9, base = S * .66;
+  drawLineatur(c, 0, S, base, band);
+  const ox = (S - g.w * band) / 2;
+  c.lineCap = "round"; c.lineJoin = "round";
+  c.strokeStyle = "#232b29"; c.fillStyle = "#232b29"; c.lineWidth = band * .12;
+  for (const s of g.strokes) {
+    if (s.isDot) { c.beginPath(); c.arc(ox + s.pts[0].x * band, base - s.pts[0].y * band, band * .08, 0, 7); c.fill(); }
+    else strokePath(c, s.pts, x => ox + x * band, y => base - y * band);
+  }
+}
+
+/* =====================================================================
+   Eingabe (Stift / Handballen-Schutz)
+   ===================================================================== */
+function accepts(e) {
+  if (game.state !== "write") return false;
+  if (e.pointerType === "pen") {
+    if (!penSeen) {
+      penSeen = true;
+      if (settings.pen === "auto") { penOnly = true; toast("✎ Stift erkannt – Hand wird ignoriert"); }
+      updatePenBadge();
+    }
+    return true;
+  }
+  if (e.pointerType === "touch" && penOnly) return false;
+  return true;
+}
+function updatePenBadge() { $("penbadge").textContent = penOnly ? "✎ nur Stift" : ""; }
+
+function addPoint(e) {
+  const r = pad.getBoundingClientRect();
+  const p = {
+    x: fromX(e.clientX - r.left), y: fromY(e.clientY - r.top),
+    t: e.timeStamp || performance.now(),
+    p: e.pointerType === "pen" ? (e.pressure || .5) : .5,
+  };
+  const pts = game.active.pts, last = pts[pts.length - 1];
+  if (last && Math.hypot(p.x - last.x, p.y - last.y) < 0.004) return;
+  pts.push(p);
+}
+pad.addEventListener("pointerdown", e => {
+  if (!accepts(e)) return;
+  if (game.pointerId !== null) return;            // nur ein Strich gleichzeitig
+  e.preventDefault();
+  try { pad.setPointerCapture(e.pointerId); } catch (_) {}
+  stopDemo();
+  clearTimeout(game.autoTimer); clearTimeout(game.idleTimer);
+  $("btnDone").classList.remove("pulse");
+  game.pointerId = e.pointerId;
+  game.active = { pts: [] };
+  game.ink.push(game.active);
+  if (!game.tFirst) game.tFirst = e.timeStamp || performance.now();
+  addPoint(e);
+  requestDraw();
+}, { passive: false });
+pad.addEventListener("pointermove", e => {
+  if (e.pointerId !== game.pointerId || !game.active) return;
+  e.preventDefault();
+  const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+  for (const ce of (evs.length ? evs : [e])) addPoint(ce);
+  requestDraw();
+}, { passive: false });
+function endStroke(e) {
+  if (e.pointerId !== game.pointerId) return;
+  game.pointerId = null;
+  game.tLast = e.timeStamp || performance.now();
+  game.active = null;
+  requestDraw();
+  // automatisch bewerten, wenn der Buchstabe vollständig aussieht
+  game.autoTimer = setTimeout(() => {
+    if (game.state !== "write" || game.pointerId !== null) return;
+    const q = measure(true);
+    if (q && q.cov >= 0.86) finish();
+  }, 1100);
+  game.idleTimer = setTimeout(() => { if (game.state === "write" && game.ink.length) $("btnDone").classList.add("pulse"); }, 3000);
+}
+pad.addEventListener("pointerup", endStroke);
+pad.addEventListener("pointercancel", endStroke);
+// Kontextmenü / Long-Press unterbinden
+pad.addEventListener("contextmenu", e => e.preventDefault());
+document.addEventListener("gesturestart", e => e.preventDefault());
+
+/* =====================================================================
+   Bewertung: genau · schnell · flüssig
+   ===================================================================== */
+const TOL = 0.16;            // volle Punkte innerhalb dieses Abstands (Einheiten = Bandhöhe)
+const soft = d => d <= TOL ? 1 : d >= 2 * TOL ? 0 : (2 * TOL - d) / TOL;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+function distToSeg(px, py, ax, ay, bx, by) {
+  const dx = bx - ax, dy = by - ay;
+  const l2 = dx * dx + dy * dy;
+  let t = l2 ? ((px - ax) * dx + (py - ay) * dy) / l2 : 0;
+  t = clamp(t, 0, 1);
+  return Math.hypot(px - ax - t * dx, py - ay - t * dy);
+}
+
+function measure(quick) {
+  const g = game.g;
+  const strokes = game.ink.filter(s => s.pts.length);
+  if (!strokes.length) return null;
+  // Abdeckung: jeder Vorlagenpunkt -> nächster Tintenabschnitt
+  let covSum = 0, covW = 0;
+  for (const tp of g.flat) {
+    let best = 9;
+    for (const s of strokes) {
+      const P = s.pts;
+      if (P.length === 1) best = Math.min(best, Math.hypot(tp.x - P[0].x, tp.y - P[0].y));
+      for (let i = 1; i < P.length; i++) {
+        const d = distToSeg(tp.x, tp.y, P[i - 1].x, P[i - 1].y, P[i].x, P[i].y);
+        if (d < best) best = d;
+      }
+    }
+    covSum += soft(best) * tp.w; covW += tp.w;
+  }
+  const cov = covSum / covW;
+  if (quick) return { cov };
+
+  // Präzision: jeder Tintenpunkt -> nächster Vorlagenpunkt (+ Zuordnung für Richtung)
+  let precSum = 0, n = 0;
+  for (const s of strokes) for (const p of s.pts) {
+    let best = 9, bi = null;
+    for (const tp of g.flat) {
+      const d = Math.hypot(p.x - tp.x, p.y - tp.y);
+      if (d < best) { best = d; bi = tp; }
+    }
+    p.d = best; p.near = bi;
+    precSum += soft(best); n++;
+  }
+  const prec = precSum / n;
+  const acc = clamp(0.55 * cov + 0.45 * prec, 0, 1);
+
+  // Richtung je Vorlagenstrich (nur eindeutige Stellen)
+  const dir = g.strokes.map(() => ({ pos: 0, neg: 0 }));
+  for (const s of strokes) {
+    let prev = null;
+    for (const p of s.pts) {
+      const tp = p.near;
+      if (!tp || tp.amb || p.d > TOL * 1.3 || g.strokes[tp.si].isDot) { prev = null; continue; }
+      if (prev && prev.si === tp.si) {
+        let dt = tp.t - prev.t;
+        if (g.strokes[tp.si].closed) { if (dt > .5) dt -= 1; if (dt < -.5) dt += 1; }
+        if (Math.abs(dt) < .15) { if (dt > 0) dir[tp.si].pos += dt; else dir[tp.si].neg -= dt; }
+      }
+      prev = tp;
+    }
+  }
+  const reversed = dir.some(d => d.pos + d.neg > .25 && d.neg > .65 * (d.pos + d.neg));
+
+  // Tempo: Zeit vom ersten Aufsetzen bis zum letzten Abheben
+  const dur = Math.max(.2, (game.tLast - game.tFirst) / 1000);
+  const strokeCount = g.strokes.length;
+  const ref = 0.75 * g.totalLen + 0.45 * strokeCount + 0.6;     // Erwartung für Erstklässler (s)
+  const ratio = ref / dur;
+  const spd = clamp((ratio - 0.45) / 1.25, 0, 1);              // 0 bei sehr langsam, 1 bei ~1.7x schneller als Ref
+
+  // Flüssigkeit: (a) Zittern = Krümmungsrauschen auf gleichmäßig abgetasteter Spur
+  //              (b) Stocken = Zeitanteil mit (fast) Stillstand mitten im Strich
+  let jitSum = 0, jitN = 0, stall = 0, drawT = 0;
+  for (const s of strokes) {
+    const P = s.pts;
+    if (P.length < 3) continue;
+    const R = resample(P, 0.03);
+    for (let i = 2; i < R.length - 2; i++) {
+      const ax = R[i - 2].x + R[i + 2].x - 2 * R[i].x, ay = R[i - 2].y + R[i + 2].y - 2 * R[i].y;
+      jitSum += Math.hypot(ax, ay); jitN++;
+    }
+    const st = (P[P.length - 1].t - P[0].t) / 1000;
+    drawT += st;
+    // Stillstand: Fenster von 120 ms mit < 0.05 Einheiten Bewegung
+    let j = 0;
+    for (let i = 0; i < P.length; i++) {
+      while (j < P.length && P[j].t - P[i].t < 120) j++;
+      if (j >= P.length) break;
+      const moved = Math.hypot(P[j].x - P[i].x, P[j].y - P[i].y);
+      if (moved < 0.05) stall += (P[i + 1] ? (P[i + 1].t - P[i].t) : 0) / 1000;
+    }
+  }
+  const jit = jitN ? jitSum / jitN : 0;
+  // glatter Kreis (r≈.45) ergibt ~0.008; zittrige Linie 0.03+
+  const jitScore = clamp(1 - (jit - 0.012) / 0.03, 0, 1);
+  const stallFrac = drawT > 0 ? stall / drawT : 0;
+  const stallScore = clamp(1 - (stallFrac - 0.05) * 2.5, 0, 1);
+  const smo = jitN > 6 ? 0.55 * jitScore + 0.45 * stallScore : stallScore;
+
+  // Punkte: Genauigkeit zählt am meisten; Tempo & Flüssigkeit nur, wenn genau
+  const a2 = acc * acc;
+  const gate = acc >= 0.55 ? a2 : 0;
+  let pts = 100 * a2 + 50 * spd * gate + 40 * smo * gate;
+  if (reversed) pts *= 0.85;
+  pts = Math.round(pts);
+  const stars = acc >= 0.9 ? 3 : acc >= 0.78 ? 2 : acc >= 0.6 ? 1 : 0;
+  return { cov, prec, acc, spd, smo, dur, ref, reversed, pts, stars, jit, stallFrac };
+}
+function resample(P, step) {
+  const out = [{ x: P[0].x, y: P[0].y }];
+  let carry = 0;
+  for (let i = 1; i < P.length; i++) {
+    let ax = P[i - 1].x, ay = P[i - 1].y;
+    const bx = P[i].x, by = P[i].y;
+    let seg = Math.hypot(bx - ax, by - ay);
+    while (carry + seg >= step) {
+      const t = (step - carry) / seg;
+      ax = ax + (bx - ax) * t; ay = ay + (by - ay) * t;
+      out.push({ x: ax, y: ay });
+      seg = Math.hypot(bx - ax, by - ay); carry = 0;
+    }
+    carry += seg;
+  }
+  return out;
+}
+
+/* =====================================================================
+   Spielablauf
+   ===================================================================== */
+function pickQueue() {
+  const set = currentSet();
+  const n = parseInt(settings.count, 10) || 10;
+  const q = [];
+  for (let i = 0; i < n; i++) {
+    const weights = set.map(c => {
+      const s = stats[c];
+      let w = s ? 1 + (1 - s.acc) * 3 : 2.2;     // schwache & neue Buchstaben öfter
+      if (q[q.length - 1] === c) w = 0;           // keine direkte Wiederholung
+      if (q.slice(-3).includes(c) && set.length > 4) w *= 0.3;
+      return w;
+    });
+    let r = Math.random() * weights.reduce((a, b) => a + b, 0);
+    let k = 0;
+    while (k < set.length - 1 && (r -= weights[k]) > 0) k++;
+    q.push(set[k]);
+  }
+  return q;
+}
+
+function startRound() {
+  readMenu();
+  game.queue = pickQueue();
+  game.idx = 0; game.total = 0; game.results = [];
+  $("menu").hidden = true; $("end").hidden = true; $("hud").hidden = false;
+  penOnly = settings.pen === "pen" || (settings.pen === "auto" && penSeen);
+  updatePenBadge();
+  if (settings.fullscreen && document.documentElement.requestFullscreen && !document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  }
+  keepAwake();
+  audioInit();
+  loadLetter();
+}
+function loadLetter() {
+  clearTimeout(game.nextTimer); clearTimeout(game.autoTimer); clearTimeout(game.idleTimer);
+  game.ch = game.queue[game.idx];
+  game.g = glyph(game.ch);
+  resetInk();
+  game.state = "write";
+  $("result").hidden = true;
+  $("btnDone").classList.remove("pulse");
+  updateHud();
+  drawModel();
+  computeLayout();
+  draw();
+  const s = stats[game.ch];
+  if (!s || s.n < 2) setTimeout(() => { if (game.state === "write" && !game.ink.length) startDemo(); }, 450);
+}
+function resetInk() {
+  game.ink = []; game.active = null; game.pointerId = null;
+  game.tFirst = 0; game.tLast = 0; game.eval = null;
+  stopDemo();
+}
+function updateHud() {
+  $("score").innerHTML = `${game.total}<small>Punkte</small>`;
+  const dots = $("dots"); dots.innerHTML = "";
+  game.queue.forEach((c, i) => {
+    const el = document.createElement("i");
+    const r = game.results[i];
+    if (r) el.className = "s" + r.stars;
+    else if (i === game.idx) el.className = "now";
+    dots.appendChild(el);
+  });
+}
+
+function finish() {
+  if (game.state !== "write" || !game.ink.length) return;
+  clearTimeout(game.autoTimer); clearTimeout(game.idleTimer);
+  if (!game.tLast) game.tLast = performance.now();
+  const r = measure(false);
+  if (!r) return;
+  game.eval = r;
+  game.state = "result";
+  // Wertung eintragen (bei "Nochmal" wird ersetzt)
+  const prev = game.results[game.idx];
+  if (prev) game.total -= prev.pts;
+  game.results[game.idx] = { ch: game.ch, pts: r.pts, stars: r.stars };
+  game.total += r.pts;
+  // Statistik je Buchstabe
+  const s = stats[game.ch] || { n: 0, acc: 0, best: 0 };
+  s.n++; s.acc = s.n === 1 ? r.acc : s.acc * 0.7 + r.acc * 0.3; s.best = Math.max(s.best, r.pts);
+  stats[game.ch] = s; store.set("schreibspur-stats", stats);
+  showResult(r);
+  updateHud();
+  draw();
+  sound(r.stars);
+}
+function showResult(r) {
+  $("stars").innerHTML = [1, 2, 3].map(i => `<span class="${i <= r.stars ? "" : "off"}">⭐</span>`).join("");
+  $("pts").textContent = "+" + r.pts;
+  let msg;
+  if (r.cov < 0.6) msg = "Da fehlt noch ein Stück – probier’s nochmal!";
+  else if (r.reversed) msg = "Schön! Achte auf die Richtung der Pfeile ↻";
+  else if (r.stars === 3 && r.spd > .6 && r.smo > .7) msg = "Wow – genau, schnell und flüssig! 🚀";
+  else if (r.stars === 3) msg = ["Super genau!", "Wie im Schreibheft!", "Toll gemacht!"][Math.floor(Math.random() * 3)];
+  else if (r.stars === 2) msg = r.smo < .5 ? "Gut! Versuch’s in einem Zug, ohne anzuhalten." : "Gut gemacht!";
+  else if (r.stars === 1) msg = "Schon ganz gut – bleib noch näher an der Spur.";
+  else msg = "Nochmal langsam an der grauen Spur entlang.";
+  $("msg").textContent = msg;
+  const bar = (id, v) => { $("m" + id).style.width = Math.round(v * 100) + "%"; $("v" + id).textContent = Math.round(v * 100); };
+  bar("Acc", r.acc); bar("Spd", r.spd); bar("Smo", r.smo);
+  const res = $("result");
+  res.hidden = false;
+  // Karte oben unter dem HUD platzieren, weg von der schreibenden Hand
+  const top = $("hud").getBoundingClientRect().bottom + 8;
+  const maxTop = layout.rowTop - res.offsetHeight - 6;
+  res.style.top = Math.max(top, Math.min(top, maxTop)) + "px";
+  $("btnNext").textContent = game.idx >= game.queue.length - 1 ? "Ergebnis →" : "Weiter →";
+  if (r.stars >= 2) game.nextTimer = setTimeout(next, 2600);
+}
+function next() {
+  clearTimeout(game.nextTimer);
+  if (game.state !== "result") return;
+  if (game.idx >= game.queue.length - 1) return endRound();
+  game.idx++;
+  loadLetter();
+}
+function again() {
+  clearTimeout(game.nextTimer);
+  resetInk();
+  game.state = "write";
+  $("result").hidden = true;
+  draw();
+}
+function endRound() {
+  game.state = "end";
+  $("hud").hidden = true; $("result").hidden = true;
+  const key = settings.set + (settings.set === "own" ? ":" + ownSet().join("") : "") + "|" + settings.stage + "|" + settings.count;
+  const best = highs[key] || 0;
+  const isNew = game.total > best;
+  if (isNew) { highs[key] = game.total; store.set("schreibspur-highscores", highs); }
+  $("endTitle").textContent = isNew && best > 0 ? "Neuer Rekord! 🏆" : "Geschafft!";
+  $("endTotal").textContent = game.total + " Punkte";
+  const starsSum = game.results.reduce((a, r) => a + (r ? r.stars : 0), 0);
+  $("endBest").textContent = `${starsSum} von ${game.queue.length * 3} Sternen · Rekord: ${Math.max(best, game.total)}`;
+  $("endList").innerHTML = game.results.map(r =>
+    `<div><b>${r.ch}</b><small>${"⭐".repeat(r.stars) || "–"}<br>${r.pts}</small></div>`).join("");
+  $("end").hidden = false;
+  draw();
+  if (isNew) sound(4);
+}
+
+/* ---------- Vormachen ---------- */
+function startDemo() {
+  if (game.state !== "write") return;
+  stopDemo();
+  resetInkOnly();
+  const g = game.g;
+  const total = g.strokes.reduce((a, s) => a + (s.isDot ? .25 : s.len + .35), 0);
+  const speed = 1.6;    // Einheiten pro Sekunde
+  const t0 = performance.now();
+  game.demo = { progress: 0 };
+  const step = now => {
+    if (!game.demo) return;
+    game.demo.progress = (now - t0) / 1000 * speed;
+    draw();
+    if (game.demo.progress < total + .4) game.demo.raf = requestAnimationFrame(step);
+    else { game.demo = null; draw(); }
+  };
+  game.demo.raf = requestAnimationFrame(step);
+}
+function resetInkOnly() { game.ink = []; game.active = null; game.tFirst = 0; game.tLast = 0; }
+function stopDemo() {
+  if (game.demo) { cancelAnimationFrame(game.demo.raf); game.demo = null; }
+}
+
+/* =====================================================================
+   Ton, Wachhalten, Kleinkram
+   ===================================================================== */
+let actx = null;
+function audioInit() {
+  if (!settings.sound || actx) return;
+  try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+}
+function sound(level) {
+  if (!settings.sound || !actx) return;
+  const notes = level >= 4 ? [523, 659, 784, 1047, 1319] : level === 3 ? [523, 659, 784, 1047] : level === 2 ? [523, 659, 784] : level === 1 ? [523, 659] : [330, 262];
+  const now = actx.currentTime;
+  notes.forEach((f, i) => {
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = "triangle"; o.frequency.value = f;
+    g.gain.setValueAtTime(0, now + i * .09);
+    g.gain.linearRampToValueAtTime(.18, now + i * .09 + .02);
+    g.gain.exponentialRampToValueAtTime(.001, now + i * .09 + .35);
+    o.connect(g); g.connect(actx.destination);
+    o.start(now + i * .09); o.stop(now + i * .09 + .4);
+  });
+}
+let wake = null;
+async function keepAwake() {
+  try { if ("wakeLock" in navigator && !wake) { wake = await navigator.wakeLock.request("screen"); wake.addEventListener("release", () => wake = null); } } catch (e) {}
+}
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && game.state !== "menu") keepAwake(); });
+let toastT = 0;
+function toast(t) {
+  const el = $("toast"); el.textContent = t; el.hidden = false; el.style.opacity = 1;
+  clearTimeout(toastT); toastT = setTimeout(() => { el.style.opacity = 0; setTimeout(() => el.hidden = true, 300); }, 1800);
+}
+
+/* ---------- Menü ---------- */
+function setRadio(name, v) { const el = document.querySelector(`input[name=${name}][value="${v}"]`); if (el) el.checked = true; }
+function getRadio(name) { const el = document.querySelector(`input[name=${name}]:checked`); return el ? el.value : null; }
+function initMenu() {
+  if (!settings.own) settings.own = lesewoerterLetters();
+  setRadio("set", settings.set); setRadio("stage", settings.stage); setRadio("place", settings.place);
+  setRadio("count", settings.count); setRadio("pen", settings.pen);
+  $("size").value = settings.size; $("sound").checked = settings.sound; $("fullscreen").checked = settings.fullscreen;
+  $("ownLetters").value = settings.own || "";
+  syncOwn();
+}
+function syncOwn() {
+  const own = getRadio("set") === "own";
+  $("ownLetters").hidden = !own; $("ownHint").hidden = !own;
+  if (own) {
+    const lw = lesewoerterLetters();
+    $("ownHint").textContent = lw
+      ? `Aus „Lesewörter“ übernommen: ${lw}. Du kannst die Liste ändern – Groß- und Kleinbuchstaben gehen beide.`
+      : "Buchstaben eintippen, die geübt werden sollen – z. B. „m a i l o“ oder „M m A a“.";
+  }
+}
+function readMenu() {
+  settings.set = getRadio("set"); settings.stage = getRadio("stage"); settings.place = getRadio("place");
+  settings.count = getRadio("count"); settings.pen = getRadio("pen");
+  settings.size = +$("size").value; settings.sound = $("sound").checked; settings.fullscreen = $("fullscreen").checked;
+  settings.own = $("ownLetters").value.replace(/[^a-zA-ZäöüÄÖÜß0-9 ]/g, "");
+  store.set("schreibspur-settings", settings);
+}
+document.querySelectorAll("input[name=set]").forEach(el => el.addEventListener("change", syncOwn));
+$("btnStart").addEventListener("click", startRound);
+$("btnResume").addEventListener("click", () => {
+  readMenu();
+  penOnly = settings.pen === "pen" || (settings.pen === "auto" && penSeen); updatePenBadge();
+  $("menu").hidden = true; $("hud").hidden = false;
+  game.state = game.eval ? "result" : "write";
+  if (game.eval) $("result").hidden = false;
+  computeLayout(); draw();
+});
+$("btnMenu").addEventListener("click", () => {
+  clearTimeout(game.nextTimer); stopDemo();
+  game.state = "menu"; $("hud").hidden = true; $("result").hidden = true;
+  $("menu").hidden = false; $("btnResume").hidden = false;
+  initMenu(); draw();
+});
+$("btnShow").addEventListener("click", startDemo);
+$("btnUndo").addEventListener("click", () => { if (game.state !== "write") return; game.ink.pop(); if (!game.ink.length) game.tFirst = 0; draw(); });
+$("btnClear").addEventListener("click", () => { if (game.state !== "write") return; resetInkOnly(); draw(); });
+$("btnDone").addEventListener("click", finish);
+$("btnNext").addEventListener("click", next);
+$("btnAgain").addEventListener("click", again);
+$("btnRestart").addEventListener("click", startRound);
+$("btnToMenu").addEventListener("click", () => { $("end").hidden = true; $("menu").hidden = false; $("btnResume").hidden = true; game.state = "menu"; initMenu(); });
+
+window.addEventListener("resize", resize);
+if (window.visualViewport) window.visualViewport.addEventListener("resize", resize);
+
+// Test-Hooks (für automatisierte Prüfung)
+window.__schreibspur = { G, glyph, game, measure, layout: () => layout, toX, toY, settings, finish, loadLetter, startRound };
+
+initMenu();
+resize();
+</script>
+</body>
+</html>
