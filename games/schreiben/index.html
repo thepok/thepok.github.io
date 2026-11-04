@@ -566,7 +566,7 @@ function c_round() { ctx.lineCap = "round"; ctx.lineJoin = "round"; }
 function inkColor(d) {
   const tol = TOL;
   if (d <= tol) return "#2f6f3e";
-  if (d <= 2 * tol) return "#c98a1c";
+  if (d <= OUT) return "#c98a1c";
   return "#b8453a";
 }
 function drawInk() {
@@ -576,13 +576,13 @@ function drawInk() {
     const pts = s.pts;
     if (pts.length === 1) {
       const p = pts[0];
-      ctx.fillStyle = game.eval ? inkColor(p.d) : "#1d3d72";
+      ctx.fillStyle = game.eval ? inkColor(p.d) : p.out ? "#b8453a" : "#1d3d72";
       ctx.beginPath(); ctx.arc(toX(p.x), toY(p.y), b * .05, 0, 7); ctx.fill();
       continue;
     }
     for (let i = 1; i < pts.length; i++) {
       const p = pts[i], q = pts[i - 1];
-      ctx.strokeStyle = game.eval ? inkColor(Math.max(p.d, q.d)) : "#1d3d72";
+      ctx.strokeStyle = game.eval ? inkColor(Math.max(p.d, q.d)) : (p.out || q.out) ? "#b8453a" : "#1d3d72";
       ctx.lineWidth = b * .075 * (0.7 + 0.6 * (p.p ?? .5));
       ctx.beginPath(); ctx.moveTo(toX(q.x), toY(q.y)); ctx.lineTo(toX(p.x), toY(p.y)); ctx.stroke();
     }
@@ -672,7 +672,20 @@ function addPoint(e) {
   };
   const pts = game.active.pts, last = pts[pts.length - 1];
   if (last && Math.hypot(p.x - last.x, p.y - last.y) < 0.004) return;
+  // Live-Prüfung: aus der Spur?
+  let best = 9;
+  for (const tp of game.g.flat) { const d = Math.hypot(p.x - tp.x, p.y - tp.y); if (d < best) best = d; }
+  p.out = best > OUT;
+  if (p.out && !(last && last.out)) offTrack();
   pts.push(p);
+}
+let offT = 0;
+function offTrack() {
+  const now = performance.now();
+  if (now - offT < 350) return;
+  offT = now;
+  try { navigator.vibrate && navigator.vibrate(40); } catch (_) {}
+  buzz();
 }
 pad.addEventListener("pointerdown", e => {
   if (!accepts(e)) return;
@@ -719,8 +732,9 @@ document.addEventListener("gesturestart", e => e.preventDefault());
 /* =====================================================================
    Bewertung: genau · schnell · flüssig
    ===================================================================== */
-const TOL = 0.16;            // volle Punkte innerhalb dieses Abstands (Einheiten = Bandhöhe)
-const soft = d => d <= TOL ? 1 : d >= 2 * TOL ? 0 : (2 * TOL - d) / TOL;
+const TOL = 0.13;            // volle Punkte innerhalb dieses Abstands (Einheiten = Bandhöhe)
+const OUT = 0.22;            // ab hier gilt die Tinte als "aus der Spur"
+const soft = d => d <= TOL ? 1 : d >= OUT ? 0 : (OUT - d) / (OUT - TOL);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 function distToSeg(px, py, ax, ay, bx, by) {
@@ -764,7 +778,17 @@ function measure(quick) {
     precSum += soft(best); n++;
   }
   const prec = precSum / n;
-  const acc = clamp(0.55 * cov + 0.45 * prec, 0, 1);
+  // Anteil der Tintenlänge außerhalb der Spur (weit draußen zählt doppelt)
+  let inkLen = 0, offLen = 0;
+  for (const s of strokes) for (let i = 1; i < s.pts.length; i++) {
+    const p = s.pts[i], q = s.pts[i - 1];
+    const l = Math.hypot(p.x - q.x, p.y - q.y);
+    inkLen += l;
+    const d = Math.max(p.d, q.d);
+    if (d > OUT) offLen += l * (d > 2 * OUT ? 2 : 1);
+  }
+  const offFrac = inkLen > 0 ? offLen / inkLen : 0;
+  const acc = clamp((0.5 * cov + 0.5 * prec) * (1 - 3 * offFrac), 0, 1);
 
   // Richtung je Vorlagenstrich (nur eindeutige Stellen)
   const dir = g.strokes.map(() => ({ pos: 0, neg: 0 }));
@@ -825,8 +849,10 @@ function measure(quick) {
   let pts = 100 * a2 + 50 * spd * gate + 40 * smo * gate;
   if (reversed) pts *= 0.85;
   pts = Math.round(pts);
-  const stars = acc >= 0.9 ? 3 : acc >= 0.78 ? 2 : acc >= 0.6 ? 1 : 0;
-  return { cov, prec, acc, spd, smo, dur, ref, reversed, pts, stars, jit, stallFrac };
+  let stars = acc >= 0.9 ? 3 : acc >= 0.78 ? 2 : acc >= 0.6 ? 1 : 0;
+  if (offFrac > 0.02) stars = Math.min(stars, 2);     // schon kurz raus: keine 3 Sterne
+  if (offFrac > 0.10) stars = Math.min(stars, 1);
+  return { cov, prec, acc, spd, smo, dur, ref, reversed, pts, stars, jit, stallFrac, offFrac };
 }
 function resample(P, step) {
   const out = [{ x: P[0].x, y: P[0].y }];
@@ -941,7 +967,9 @@ function showResult(r) {
   $("stars").innerHTML = [1, 2, 3].map(i => `<span class="${i <= r.stars ? "" : "off"}">⭐</span>`).join("");
   $("pts").textContent = "+" + r.pts;
   let msg;
-  if (r.cov < 0.6) msg = "Da fehlt noch ein Stück – probier’s nochmal!";
+  if (r.offFrac > 0.10) msg = "Aus der Spur gerutscht – bleib auf der grauen Linie!";
+  else if (r.cov < 0.6) msg = "Da fehlt noch ein Stück – probier’s nochmal!";
+  else if (r.offFrac > 0.02) msg = "Fast! Ein kleines Stück war außerhalb der Spur.";
   else if (r.reversed) msg = "Schön! Achte auf die Richtung der Pfeile ↻";
   else if (r.stars === 3 && r.spd > .6 && r.smo > .7) msg = "Wow – genau, schnell und flüssig! 🚀";
   else if (r.stars === 3) msg = ["Super genau!", "Wie im Schreibheft!", "Toll gemacht!"][Math.floor(Math.random() * 3)];
@@ -1037,6 +1065,15 @@ function sound(level) {
     o.connect(g); g.connect(actx.destination);
     o.start(now + i * .09); o.stop(now + i * .09 + .4);
   });
+}
+function buzz() {
+  if (!settings.sound || !actx) return;
+  const now = actx.currentTime;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = "square"; o.frequency.setValueAtTime(180, now); o.frequency.linearRampToValueAtTime(120, now + .12);
+  g.gain.setValueAtTime(.07, now); g.gain.exponentialRampToValueAtTime(.001, now + .14);
+  o.connect(g); g.connect(actx.destination);
+  o.start(now); o.stop(now + .15);
 }
 let wake = null;
 async function keepAwake() {
