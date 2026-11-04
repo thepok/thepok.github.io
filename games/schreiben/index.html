@@ -198,7 +198,7 @@
 
     <fieldset>
       <legend>Größe</legend>
-      <input type="range" id="size" min="55" max="100" value="85">
+      <input type="range" id="size" min="14" max="100" value="85">
     </fieldset>
 
     <fieldset>
@@ -473,7 +473,7 @@ function computeLayout() {
   const factor = (settings.size || 85) / 100;
   const maxW = 2.0 + 1.0;                    // breitester Buchstabe + Rand
   let band = Math.min(W / maxW, (H - hudH - 16) / 3.9) * factor;
-  band = Math.max(36, Math.min(220, band));
+  band = Math.max(9, Math.min(220, band));
   const bottomPad = 18 + (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--sab")) || 0);
   let base;
   if (settings.place === "center") base = hudH + (H - hudH) / 2 + band * 0.55;
@@ -583,7 +583,7 @@ function drawInk() {
     for (let i = 1; i < pts.length; i++) {
       const p = pts[i], q = pts[i - 1];
       ctx.strokeStyle = game.eval ? inkColor(Math.max(p.d, q.d)) : (p.out || q.out) ? "#b8453a" : "#1d3d72";
-      ctx.lineWidth = b * .075 * (0.7 + 0.6 * (p.p ?? .5));
+      ctx.lineWidth = Math.max(1.5, b * .075 * (0.7 + 0.6 * (p.p ?? .5)));
       ctx.beginPath(); ctx.moveTo(toX(q.x), toY(q.y)); ctx.lineTo(toX(p.x), toY(p.y)); ctx.stroke();
     }
   }
@@ -719,10 +719,13 @@ function endStroke(e) {
   game.autoTimer = setTimeout(() => {
     if (game.state !== "write" || game.pointerId !== null) return;
     const q = measure(true);
-    if (q && q.cov >= 0.86) finish();
-  }, 1100);
+    // nur fertig, wenn jeder Strich und jeder Punkt geschrieben ist
+    if (q && q.cov >= 0.86 && q.minStroke >= 0.75 && game.ink.length >= realStrokeCount()) finish();
+  }, 1600);
   game.idleTimer = setTimeout(() => { if (game.state === "write" && game.ink.length) $("btnDone").classList.add("pulse"); }, 3000);
 }
+// Punkte (i, j, ä …) brauchen eigene Striche; zusammenhängende Striche dürfen in einem Zug kommen
+function realStrokeCount() { return 1 + game.g.strokes.filter(s => s.isDot).length; }
 pad.addEventListener("pointerup", endStroke);
 pad.addEventListener("pointercancel", endStroke);
 // Kontextmenü / Long-Press unterbinden
@@ -751,6 +754,7 @@ function measure(quick) {
   if (!strokes.length) return null;
   // Abdeckung: jeder Vorlagenpunkt -> nächster Tintenabschnitt
   let covSum = 0, covW = 0;
+  const per = g.strokes.map(() => ({ s: 0, n: 0, us: 0, un: 0 }));
   for (const tp of g.flat) {
     let best = 9;
     for (const s of strokes) {
@@ -762,9 +766,14 @@ function measure(quick) {
       }
     }
     covSum += soft(best) * tp.w; covW += tp.w;
+    const ps = per[tp.si]; ps.s += soft(best); ps.n++;
+    if (!tp.amb) { ps.us += soft(best); ps.un++; }
   }
   const cov = covSum / covW;
-  if (quick) return { cov };
+  // schwächster Einzelstrich (Punkte vom ä, Strich vom a …) – nur eindeutige Stellen zählen,
+  // sonst gilt z. B. der a-Strich durch den Kreis schon als geschrieben
+  const minStroke = Math.min(...per.map(p => p.un >= 3 ? p.us / p.un : p.n ? p.s / p.n : 1));
+  if (quick) return { cov, minStroke };
 
   // Präzision: jeder Tintenpunkt -> nächster Vorlagenpunkt (+ Zuordnung für Richtung)
   let precSum = 0, n = 0;
