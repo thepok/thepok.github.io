@@ -119,6 +119,7 @@
   #endList { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
   #endList div { background: var(--card); border: 1px solid #c8c9bb; border-radius: 10px; padding: 6px 10px; text-align: center; min-width: 54px; }
   #endList b { display: block; font: 600 26px Fredoka, sans-serif; }
+  .cur { font-family: "Segoe Script", "Comic Sans MS", cursive; font-style: italic; }
   #endList small { font-size: 11px; color: var(--muted); }
   #endTotal { font: 600 56px Fredoka, sans-serif; color: var(--accent); line-height: 1; margin-top: 10px; }
   #endBest { color: var(--muted); font-size: 14px; margin-top: 6px; }
@@ -171,8 +172,13 @@
         <label><input type="radio" name="set" value="upper"><span>A B C</span></label>
         <label><input type="radio" name="set" value="both"><span>Aa Bb</span></label>
         <label><input type="radio" name="set" value="digits"><span>1 2 3</span></label>
+        <label><input type="radio" name="set" value="slower"><span class="cur">a b c</span></label>
+        <label><input type="radio" name="set" value="supper"><span class="cur">A B C</span></label>
+        <label><input type="radio" name="set" value="sboth"><span class="cur">Aa Bb</span></label>
+        <label><input type="radio" name="set" value="all"><span>🎲 Alles gemischt</span></label>
         <label><input type="radio" name="set" value="own"><span>Meine Buchstaben</span></label>
       </div>
+      <div class="hint">Schräg geschrieben = Schreibschrift (Schulausgangsschrift).</div>
       <input id="ownLetters" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="z. B. m a i l o e" hidden>
       <div class="hint" id="ownHint" hidden></div>
     </fieldset>
@@ -228,6 +234,7 @@
     </fieldset>
 
     <button class="big" id="btnStart">Los geht’s ✎</button>
+    <button class="ghost" id="btnMix">🎲 Alles gemischt – Druck, Schreibschrift & Zahlen</button>
     <button class="ghost" id="btnResume" hidden>Weiterspielen</button>
   </div>
 </div>
@@ -338,18 +345,100 @@ G["Ä"] = umlaut("A", .45, .95, 2.4);
 G["Ö"] = umlaut("O", .5, .95, 2.4);
 G["Ü"] = umlaut("U", .4, .8, 2.4);
 
+/* =====================================================================
+   Schreibschrift (Schulausgangsschrift, SAS) – Schlüssel "~a", "~A" …
+   Aufrecht entworfen, wird beim Aufbau schräg gestellt.
+   C(x1,y1,x2,y2,x,y) = Kurve vom aktuellen Punkt.
+   ===================================================================== */
+const C = (x1, y1, x2, y2, x, y) => ["C", x1, y1, x2, y2, x, y];
+const SL = 0.2;                                                     // Schräglage
+const END = x => [L(x, .18), C(x, .02, x + .12, -.02, x + .32, .35)];   // Endstrich nach rechts oben
+const AUF = (x, y) => [M(0, .15), C(x * .45, .3, x * .85, y * .7, x, y)]; // Aufstrich von der Grundlinie
+const OVAL = [M(0, .15), C(.25, .3, .5, .8, .76, .88), A(.55, .5, .33, .5, 50, 410)];
+const OBERSCHLEIFE = [M(0, .15), C(.3, .6, .55, 1.4, .5, 1.8), C(.45, 2.1, .2, 2.0, .2, 1.6)];
+const UNTERSCHLEIFE = x => [L(x, -.6), C(x, -1.05, x - .45, -1.05, x - .45, -.7), C(x - .45, -.4, x - .15, -.1, x + .2, .3)];
+const SAS = {
+  a: [[...OVAL, L(.88, 1), ...END(.88)]],
+  b: [[...OBERSCHLEIFE, L(.2, .3), C(.2, 0, .68, -.05, .72, .4), C(.75, .8, .55, 1.0, .45, .95), C(.6, .95, .8, 1, 1.0, .95)]],
+  c: [[M(0, .15), C(.25, .3, .5, .8, .78, .85), A(.55, .5, .33, .5, 45, 315), C(.85, .08, 1.0, .1, 1.15, .35)]],
+  d: [[...OVAL, L(.88, 2), ...END(.88)]],
+  e: [[M(0, .15), C(.25, .25, .6, .45, .7, .7), C(.78, .95, .45, 1.05, .35, .8), C(.2, .45, .3, 0, .6, 0), C(.8, 0, .95, .15, 1.05, .35)]],
+  f: [[...OBERSCHLEIFE, L(.2, -.6), C(.2, -1.0, .55, -.9, .5, -.55), C(.45, -.25, .3, -.05, .2, 0), C(.45, .05, .65, .1, .85, .35)]],
+  g: [[...OVAL, L(.88, 1), ...UNTERSCHLEIFE(.88)]],
+  h: [[...OBERSCHLEIFE, L(.2, 0), L(.2, .6), C(.25, 1.1, .75, 1.1, .75, .6), ...END(.75)]],
+  i: [[...AUF(.4, 1), ...END(.4)], [D(.4, 1.5)]],
+  j: [[...AUF(.4, 1), ...UNTERSCHLEIFE(.4)], [D(.4, 1.5)]],
+  k: [[...OBERSCHLEIFE, L(.2, 0), L(.2, .6), C(.25, 1.05, .75, 1.05, .7, .75), C(.65, .5, .35, .45, .3, .5), C(.5, .5, .65, .4, .65, .18), C(.65, .02, .77, -.02, .97, .35)]],
+  l: [[...OBERSCHLEIFE, ...END(.2)]],
+  m: [[...AUF(.25, 1), L(.25, 0), L(.25, .6), C(.28, 1.1, .62, 1.1, .62, .6), L(.62, 0), L(.62, .6), C(.65, 1.1, 1.0, 1.1, 1.0, .6), ...END(1.0)]],
+  n: [[...AUF(.25, 1), L(.25, 0), L(.25, .6), C(.3, 1.1, .75, 1.1, .75, .6), ...END(.75)]],
+  o: [[M(0, .15), C(.2, .35, .35, .9, .55, 1.0), A(.55, .5, .33, .5, 90, 450), C(.7, .95, .8, .9, 1.05, .95)]],
+  p: [[...AUF(.3, 1), L(.3, -1), L(.3, .55), C(.35, 1.05, .8, 1.05, .8, .5), C(.8, 0, .4, -.05, .3, .15), C(.5, .05, .8, .05, 1.05, .35)]],
+  q: [[...OVAL, L(.88, 1), L(.88, -.7), C(.88, -1.0, 1.25, -.9, 1.15, -.5), C(1.08, -.25, .95, -.05, .9, 0), C(1.05, .05, 1.2, .15, 1.35, .35)]],
+  r: [[...AUF(.3, 1), L(.3, 0), L(.3, .6), C(.35, .95, .6, 1.05, .8, .9)]],
+  s: [[M(0, .15), C(.2, .4, .35, .75, .45, 1), C(.75, .6, .8, .15, .5, .05), C(.35, 0, .2, .1, .25, .2), C(.4, .05, .8, 0, 1.0, .35)]],
+  t: [[...AUF(.35, 1.6), ...END(.35)], ln(.1, 1, .65, 1)],
+  u: [[...AUF(.4, 1), L(.4, .3), C(.4, -.08, .85, -.08, .85, .3), L(.85, 1), ...END(.85)]],
+  v: [[M(0, .15), C(.1, .6, .2, 1.0, .3, 1.0), C(.35, .6, .4, 0, .55, 0), C(.75, 0, .85, .6, .85, 1), C(.8, .85, .95, .85, 1.15, .95)]],
+  w: [[M(0, .15), C(.1, .6, .2, 1, .25, 1), C(.3, .5, .3, 0, .42, 0), C(.55, 0, .6, .5, .62, .75), C(.65, .3, .7, 0, .85, 0), C(1.0, 0, 1.05, .6, 1.05, 1), C(1.0, .85, 1.15, .85, 1.35, .95)]],
+  x: [[M(0, .15), C(.25, .9, .6, 1.1, .6, .6), C(.6, .1, .75, 0, .9, .1), C(1.0, .15, 1.05, .2, 1.15, .35)], ln(.95, .9, .25, .05)],
+  y: [[...AUF(.4, 1), L(.4, .3), C(.4, -.08, .85, -.08, .85, .3), L(.85, 1), ...UNTERSCHLEIFE(.85)]],
+  z: [[M(0, .15), C(.1, .6, .2, .95, .35, 1), C(.6, 1.05, .8, .95, .75, .75), C(.7, .55, .45, .45, .35, .45), C(.75, .45, .85, 0, .7, -.4), C(.6, -.8, .3, -.9, .3, -.7), C(.3, -.4, .7, -.05, 1.0, .3)]],
+  "ß": [[M(.2, 0), L(.2, 1.6), C(.2, 2.05, .8, 2.05, .8, 1.65), C(.8, 1.35, .55, 1.3, .45, 1.25), C(.95, 1.15, 1.0, .5, .8, .2), C(.65, 0, .45, 0, .35, .1)]],
+
+  A: [[M(0, .3), C(.3, .6, .7, 1.6, 1.04, 1.82), A(.75, 1, .5, 1, 55, 415), L(1.25, 2), ...END(1.25)]],
+  B: [[M(.3, 2), L(.3, .05)], [M(.05, 1.7), C(.3, 2.05, 1.0, 2.1, .95, 1.55), C(.9, 1.15, .5, 1.05, .4, 1.05), C(1.1, 1.05, 1.15, .4, .9, .15), C(.65, -.1, .3, 0, .3, .05)]],
+  C: [[M(1.05, 1.6), C(1.05, 2.1, .1, 2.15, .1, 1.0), C(.1, -.1, .95, -.1, 1.15, .4)]],
+  D: [[M(.35, 1.95), L(.3, .05)], [M(.05, 1.6), C(.4, 2.1, 1.3, 2.1, 1.3, 1.0), C(1.3, -.05, .6, -.05, .3, .05)]],
+  E: [[M(1.0, 1.7), C(.9, 2.1, .2, 2.05, .25, 1.55), C(.3, 1.15, .6, 1.05, .7, 1.05), C(.15, 1.0, 0, .6, .2, .2), C(.4, -.1, .95, 0, 1.1, .35)]],
+  F: [[M(.1, 1.9), C(.4, 2.05, .8, 1.85, 1.15, 2.0)], [M(.6, 1.95), C(.6, 1.2, .6, .4, .45, .1), C(.35, -.05, .1, 0, .05, .2)], ln(.3, 1, .9, 1)],
+  G: [[M(1.05, 1.6), C(1.05, 2.1, .1, 2.15, .1, 1.0), C(.1, -.05, .95, -.1, 1.0, .9), L(.65, .9)]],
+  H: [[M(.3, 1.95), L(.25, .05)], [M(1.0, 1.95), L(.95, .05), C(.95, -.05, 1.1, 0, 1.25, .3)], ln(.25, 1, .95, 1)],
+  I: [[M(.05, 1.7), C(.15, 2.0, .5, 2.05, .6, 1.9), C(.6, 1.2, .6, .4, .45, .1), C(.35, -.05, .1, 0, .05, .2)]],
+  J: [[M(.05, 1.7), C(.15, 2.0, .6, 2.05, .7, 1.9), ...UNTERSCHLEIFE(.7)]],
+  K: [[M(.3, 1.95), L(.25, .05)], [M(1.0, 1.95), C(.7, 1.6, .5, 1.1, .3, 1.0), C(.6, .9, .8, .5, .85, .2), C(.9, 0, 1.05, 0, 1.2, .3)]],
+  L: [[M(.9, 1.7), C(.9, 2.1, .35, 2.1, .35, 1.5), C(.35, .7, .3, .2, .1, .05), C(-.05, -.05, 0, .2, .2, .1), C(.4, 0, .8, -.05, 1.05, .25)]],
+  M: [[M(.05, 1.6), C(.15, 1.95, .3, 1.95, .3, 1.6), L(.3, 0), L(.3, 1.3), C(.32, 2.1, .75, 2.1, .75, 1.3), L(.75, 0), L(.75, 1.3), C(.78, 2.1, 1.2, 2.1, 1.2, 1.3), ...END(1.2)]],
+  N: [[M(.05, 1.6), C(.15, 1.95, .3, 1.95, .3, 1.6), L(.3, 0), L(.3, 1.3), C(.33, 2.1, .95, 2.1, .95, 1.3), ...END(.95)]],
+  O: [[M(.7, 2), A(.7, 1, .6, 1, 90, 450), C(.95, 1.95, 1.1, 1.85, 1.3, 1.9)]],
+  P: [[M(.35, 1.95), L(.3, .05)], [M(.05, 1.6), C(.4, 2.1, 1.15, 2.1, 1.1, 1.5), C(1.05, 1.0, .5, .95, .3, 1.05)]],
+  Q: [[M(.7, 2), A(.7, 1, .6, 1, 90, 450)], [M(.6, .3), C(.8, 0, 1.1, -.1, 1.35, .1)]],
+  R: [[M(.35, 1.95), L(.3, .05)], [M(.05, 1.6), C(.4, 2.1, 1.15, 2.1, 1.1, 1.5), C(1.05, 1.0, .5, .95, .35, 1.0), C(.7, .95, .8, .5, .85, .2), C(.9, 0, 1.05, 0, 1.2, .3)]],
+  S: [[M(1.0, 1.75), C(.9, 2.1, .25, 2.05, .3, 1.55), C(.35, 1.1, 1.0, 1.0, 1.0, .5), C(1.0, -.05, .3, -.05, .1, .25)]],
+  T: [[M(.1, 1.9), C(.4, 2.05, .8, 1.85, 1.15, 2.0)], [M(.6, 1.95), C(.6, 1.2, .6, .4, .45, .1), C(.35, -.05, .1, 0, .05, .2)]],
+  U: [[M(.05, 1.6), C(.15, 1.95, .3, 1.95, .3, 1.6), L(.3, .5), C(.3, -.1, 1.0, -.1, 1.0, .5), L(1.0, 2.0), ...END(1.0)]],
+  V: [[M(.05, 1.6), C(.15, 1.95, .35, 2.0, .4, 1.8), C(.45, 1.2, .5, .3, .65, 0), C(.8, .4, 1.0, 1.4, 1.2, 1.95), C(1.15, 1.8, 1.3, 1.75, 1.45, 1.85)]],
+  W: [[M(.05, 1.6), C(.15, 1.95, .3, 2.0, .35, 1.8), C(.4, 1.2, .4, .3, .5, 0), C(.6, .5, .7, 1.2, .8, 1.5), C(.85, 1.0, .9, .3, 1.0, 0), C(1.15, .5, 1.3, 1.4, 1.4, 1.95), C(1.35, 1.8, 1.55, 1.75, 1.7, 1.85)]],
+  X: [[M(.1, 1.7), C(.3, 2.1, .6, 1.9, .65, 1.0), C(.7, .1, 1.0, -.1, 1.2, .3)], ln(1.1, 1.9, .2, .05)],
+  Y: [[M(.05, 1.6), C(.15, 1.95, .3, 1.95, .3, 1.6), L(.3, .5), C(.3, -.1, 1.0, -.1, 1.0, .5), L(1.0, 2.0), ...UNTERSCHLEIFE(1.0)]],
+  Z: [[M(.15, 1.75), C(.3, 2.05, .9, 2.05, .95, 1.75), C(.95, 1.5, .6, 1.1, .45, 1.05), C(1.0, 1.0, 1.05, .4, .85, -.3), C(.7, -.8, .3, -.9, .3, -.6), C(.3, -.3, .7, -.05, 1.1, .3)]],
+};
+for (const [ch, s] of Object.entries(SAS)) G["~" + ch] = { w: 1, s, slant: SL };
+G["~ä"] = { w: 1, s: [...SAS.a, [D(.38, 1.45)], [D(.7, 1.45)]], slant: SL };
+G["~ö"] = { w: 1, s: [...SAS.o, [D(.38, 1.45)], [D(.7, 1.45)]], slant: SL };
+G["~ü"] = { w: 1, s: [...SAS.u, [D(.45, 1.45)], [D(.8, 1.45)]], slant: SL };
+G["~Ä"] = { w: 1, s: [...SAS.A, [D(.55, 2.4)], [D(.95, 2.4)]], slant: SL };
+G["~Ö"] = { w: 1, s: [...SAS.O, [D(.5, 2.4)], [D(.9, 2.4)]], slant: SL };
+G["~Ü"] = { w: 1, s: [...SAS.U, [D(.45, 2.4)], [D(.85, 2.4)]], slant: SL };
+const label = key => key.length > 1 && key[0] === "~" ? key.slice(1) : key;
+const isCursive = key => key.length > 1 && key[0] === "~";
+
 const SETS = {
   lower: [..."abcdefghijklmnopqrstuvwxyzäöüß"],
   upper: [..."ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ"],
   digits: [..."0123456789"],
 };
 SETS.both = [...SETS.lower, ...SETS.upper];
+SETS.slower = SETS.lower.map(c => "~" + c);
+SETS.supper = SETS.upper.map(c => "~" + c);
+SETS.sboth = [...SETS.slower, ...SETS.supper];
+SETS.all = [...SETS.both, ...SETS.digits, ...SETS.sboth];
 
 /* ---------- Glyph -> Abtastpunkte ---------- */
 const STEP = 0.02;
 function buildGlyph(ch) {
   const g = G[ch];
-  const strokes = g.s.map(cmds => {
+  const raw = g.s.map(cmds => {
     const pts = [];
     let isDot = false;
     let cur = null;
@@ -376,8 +465,30 @@ function buildGlyph(ch) {
           const a = r0 + (r1 - r0) * i / n;
           push(cx + rx * Math.cos(a), cy + ry * Math.sin(a));
         }
+      } else if (c[0] === "C") {
+        // kubische Bézierkurve vom aktuellen Punkt
+        const [, x1, y1, x2, y2, x, y] = c;
+        const x0 = cur.x, y0 = cur.y;
+        const est = (Math.hypot(x1 - x0, y1 - y0) + Math.hypot(x2 - x1, y2 - y1) + Math.hypot(x - x2, y - y2) + Math.hypot(x - x0, y - y0)) / 2;
+        const n = Math.max(4, Math.ceil(est / STEP));
+        for (let i = 1; i <= n; i++) {
+          const t = i / n, u = 1 - t;
+          push(u * u * u * x0 + 3 * u * u * t * x1 + 3 * u * t * t * x2 + t * t * t * x,
+               u * u * u * y0 + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t * t * t * y);
+        }
       }
     }
+    return { pts, isDot };
+  });
+  // Schreibschrift: schräg stellen und Breite selbst bestimmen
+  let w = g.w;
+  if (g.slant) {
+    let lo = 9, hi = -9;
+    for (const s of raw) for (const p of s.pts) { p.x += p.y * g.slant; lo = Math.min(lo, p.x); hi = Math.max(hi, p.x); }
+    for (const s of raw) for (const p of s.pts) p.x += 0.08 - lo;
+    w = hi - lo + 0.16;
+  }
+  const strokes = raw.map(({ pts, isDot }) => {
     // Bogenlänge-Parameter
     let len = 0;
     pts[0].t = 0;
@@ -393,11 +504,13 @@ function buildGlyph(ch) {
   for (const p of flat) {
     p.amb = false;
     for (const q of flat) {
-      if (q.si !== p.si && Math.abs(q.x - p.x) < .13 && Math.abs(q.y - p.y) < .13 && Math.hypot(q.x - p.x, q.y - p.y) < .13) { p.amb = true; break; }
+      // mehrdeutig: nahe an einem anderen Strich – oder an einer anderen Stelle desselben Strichs (Schleifen, Zurückfahren)
+      const other = q.si !== p.si || (Math.abs(q.t - p.t) > .2 && !(strokes[p.si].closed && Math.abs(q.t - p.t) > .8));
+      if (other && Math.abs(q.x - p.x) < .13 && Math.abs(q.y - p.y) < .13 && Math.hypot(q.x - p.x, q.y - p.y) < .13) { p.amb = true; break; }
     }
   }
   const totalLen = strokes.reduce((a, s) => a + s.len, 0);
-  return { ch, w: g.w, strokes, flat, totalLen };
+  return { ch, w, strokes, flat, totalLen, cursive: !!g.slant };
 }
 const glyphCache = {};
 const glyph = ch => glyphCache[ch] || (glyphCache[ch] = buildGlyph(ch));
@@ -473,7 +586,7 @@ function computeLayout() {
   const hudH = $("hud").hidden ? 120 : $("hud").getBoundingClientRect().bottom + 8;
   const gw = game.g ? game.g.w : 1.4;
   const factor = (settings.size || 85) / 100;
-  const maxW = 2.0 + 1.0;                    // breitester Buchstabe + Rand
+  const maxW = 2.3 + 1.0;                    // breitester Buchstabe (Schreibschrift-M/W) + Rand
   let band = Math.min(W / maxW, (H - hudH - 16) / 3.9) * factor;
   band = Math.max(9, Math.min(220, band));
   const bottomPad = 18 + (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--sab")) || 0);
@@ -1025,7 +1138,7 @@ function endRound() {
   const starsSum = game.results.reduce((a, r) => a + (r ? r.stars : 0), 0);
   $("endBest").textContent = `${starsSum} von ${game.queue.length * 3} Sternen · Rekord: ${Math.max(best, game.total)}`;
   $("endList").innerHTML = game.results.map(r =>
-    `<div><b>${r.ch}</b><small>${"⭐".repeat(r.stars) || "–"}<br>${r.pts}</small></div>`).join("");
+    `<div><b class="${isCursive(r.ch) ? "cur" : ""}">${label(r.ch)}</b><small>${"⭐".repeat(r.stars) || "–"}<br>${r.pts}</small></div>`).join("");
   $("end").hidden = false;
   draw();
   if (isNew) sound(4);
@@ -1127,6 +1240,7 @@ function readMenu() {
 }
 document.querySelectorAll("input[name=set]").forEach(el => el.addEventListener("change", syncOwn));
 $("btnStart").addEventListener("click", startRound);
+$("btnMix").addEventListener("click", () => { setRadio("set", "all"); syncOwn(); startRound(); });
 $("btnResume").addEventListener("click", () => {
   readMenu();
   penOnly = settings.pen === "pen" || (settings.pen === "auto" && penSeen); updatePenBadge();
