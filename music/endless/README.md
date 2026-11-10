@@ -1,6 +1,19 @@
 # Endless browser build
 
-Current release: `web10-jazz-1`, page revision `p19`.
+Current release: `web11-b8b4273a57`, page revision `p20`.
+
+The piano genres and the orchestra now run AgentSound's current generator (built with `tools/wasm` in the AgentSound
+repository, branch `web11`): the new-age piano gets the KEYBOARD texture and the PAYOFF endings, the orchestra the
+CALM pieces and the occasional **Hero Sax** guest drawn per piece exactly as the native endless loop does. The
+earlier browser-only register dialogue of the new-age piano is not part of this release. The Jazz quartet is
+unchanged (its composer, samples and bank renders are identical; the bank entries carry the new version).
+
+The orchestra's Hero Sax plays the quartet's Weresax files from `samples/jazz/` (one copy of each on the site), so
+no sample files were added. Every bank entry was recomposed by the shipped code and must give the identical render;
+the composer was checked native vs. CPython mirror vs. Pyodide for every genre, and the page was tested in Chromium
+(muted) including the service-worker upgrade from `web10-jazz-1`.
+
+## Previous release (web10-jazz-1, p19)
 
 The new quartet composition develops phrases inside short solos, retains an
 original theme kernel alongside the latest utterance, and makes piano replies

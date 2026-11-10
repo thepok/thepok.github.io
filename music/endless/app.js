@@ -3,9 +3,9 @@
 //   engine-worker.js:  the AgentSound engine (WASM): render JSON -> streamed 16-bit PCM
 //   here: the bank (natively pre-composed set openings), the pool of ready pieces, compact storage (Opus via
 //   WebCodecs, else 16-bit PCM), playback with seeking, the history (recipes in localStorage).
-const A = 'p19';                     // page revision (app.js / the shell only: the bank, recipes and links stay valid)
-const V = 'web10-jazz-1';           // code version: recipes / links of another version are made anew with this code (noted)
-const SV = 'e0d6b645e6';                      // the content hash of samples/index.json (wasm-space/prod/asset_version.py writes it)
+const A = 'p20';                     // page revision (app.js / the shell only: the bank, recipes and links stay valid)
+const V = 'web11-b8b4273a57';           // code version: recipes / links of another version are made anew with this code (noted)
+const SV = 'e0d6b645e6';                      // the content hash of samples/index.json (tools/wasm/asset_version.py writes it)
 const PYV = '314.0.7';              // Pyodide (the compose worker loads it from the CDN; the service worker caches it)
 const store = import(`./store.js?v=${V}&a=${A}`);   // Cache Storage: the samples, the bank, the composer zip stay offline
 const CODE_CACHE = `endless-code-${V}`, SAMPLE_CACHE = 'endless-samples';   // (sample URLs carry each file's content hash)
@@ -738,9 +738,12 @@ async function samplesFor(p) {
   for (const t of song.tracks) for (const z of sampleZones(t.instrument)) {
     let name, job;
     if (orch || (jazz && !z.file.includes('splendid-grand-piano/'))) {
-      const e = idx[z.file.replace(/^.*?assets\//, '')];
+      const rel = z.file.replace(/^.*?assets\//, '');
+      let e = idx[rel], set = orch ? 'orch' : 'jazz';
+      // The orchestra's Hero Sax guest plays the quartet's Weresax files (one copy of each on the site).
+      if (!e && orch) { e = (await quartetIndex())[rel]; set = 'jazz'; }
       if (!e) throw new Error('Instrumentenklang fehlt: ' + z.file.split('/').pop());
-      name = e[0]; job = { url: surl(orch ? 'orch' : 'jazz', name + '.opus'), sr: e[1], loop: e[3], unity: e[4] };
+      name = e[0]; job = { url: surl(set, name + '.opus'), sr: e[1], loop: e[3], unity: e[4] };
     } else {
       name = safe(z.file.split('/').pop().replace(/\.wav$/i, ''));
       job = { url: surl(p.piano, name + '.opus'), sr: SR };

@@ -1,23 +1,15 @@
 {
-  "version": "web10-jazz-1",
-  "revision": "p19",
-  "base_commit": "a53e6a4e72c5e9369e3d9ee4e777f0c352c708fd",
-  "previous_release": "web9-jazz-2",
-  "browser_baseline_commit": "5b44e5175ba86d72a59b2aa46ce6c011d7befeb2",
-  "native_review_base_commit": "1a8795cbc65d5e5e94a25afda025441fdb41e396",
-  "archive_sha256": "b2f1c587417adc654fbda66246932490af80dc170b18699f6b57ce320c55cc27",
-  "changed_source_sha256": {
-    "agentsound/endless/perform.py": "2bdc44ff99744e5b3703f8a550023e2153fc2435ca62f3226b0898cd45290991",
-    "agentsound/endless/composer.py": "d7134f6c01f1acbaa5b11ba19133caba646c1903af2234d272f1de46f74c4d69",
-    "compose_web.py": "1ace77edca9b34fc4629301f8b859e0fd225a81b2eacf687b199c9782aeeb0bc",
-    "jazz_web.py": "2b3953a046261d7c2e023b09ef58389b5b2aec41ef4a791f6d7ef7a1c8aac36d"
-  },
+  "version": "web11-b8b4273a57",
+  "revision": "p20",
+  "base_commit": "097d45e7abfd4049242956ec3bf3adb8a90fa138",
+  "previous_release": "web10-jazz-1",
+  "browser_baseline_commit": "78444711f525c73c58e202cc7be0af32df5d9ba5",
+  "composer_source_sha256": "b8b4273a5773102714abaff6df00d3af5890246cf817acba5ca0064c5791e29e",
   "changes": [
-    "Develop short solos through bounded phrase memory and responses to actual previous phrases.",
-    "Use coherent solo charts, native musical peaks and form-aware ensemble transitions.",
-    "Preserve the original Hero Sax default tone and legacy shared recipes.",
-    "Reduce sax plate reverb by 3 dB at playback, including microphone send automation.",
-    "Lower jazz sax track gain by 2 dB at playback."
+    "Piano genres and orchestra on AgentSound's current endless generator (new-age KEYBOARD + PAYOFF, orchestra CALM + occasional Hero Sax guest as in the native loop).",
+    "The browser-only new-age register dialogue (web8-register..web10) is not part of this release.",
+    "Jazz quartet unchanged (composer, samples and bank renders identical; entries relabelled).",
+    "The orchestra's Hero Sax plays the quartet's Weresax files from samples/jazz (no sample files added)."
   ],
   "soloists": true,
   "engine_changed": false,
